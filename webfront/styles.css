@@ -16,6 +16,11 @@ html, body, * {
   width: 100%;
 }
 
+.section-chat-boxes {
+  flex: 1;
+  padding: 0;
+}
+
 table {
   width: auto;
   border-collapse: separate;
@@ -75,6 +80,7 @@ table td {
 
 .panelHeading {
   background-color: BlueViolet !important;
+  padding: 0 1rem;
 }
 
 .panelBody {
@@ -225,6 +231,10 @@ table td {
   right: 0; /* Add right to 0 to horizontally center the element */
 }
 
-
+#chatContainer {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
 
 
