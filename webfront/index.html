@@ -19,9 +19,8 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div class="main-container">
-      <div class="top-menu">
-        <div class="row topHeader">
+    <div class="main-container container-fluid">
+      <div class="topHeader row">
           <div class="col-md-2 text-left">
             <!-- Content for the left-aligned div -->
             <div id="title">TTS.bot</div>
@@ -49,9 +48,6 @@
             </button>
           </div>
         </div>
-      </div>
-
-      <div class="button-container" id="login"></div>
 
       <div class="row settings-menu" id="settingsMenu" style="display: none">
         <!-- Move all settings options here -->
@@ -304,43 +300,47 @@
         </div>
       </div>
 
-      <!-- Chat Boxes -->
-      <div class="row">
-        <!-- Live Chat -->
-        <div class="col-md-12">
-          <div class="panel panel-primary">
-            <div class="panel-heading panelHeading">Live Chat</div>
+      <div id="chatContainer" class="row">
+        <div class="button-container" id="login"></div>
 
-            <div class="live-chat-wrapper">
-              <div id="livechatc" class="panel-body panelBody">
-                <div class="subscribe" id="livechat"></div>
+        <!-- Chat Boxes -->
+        <div class="section-chat-boxes">
+          <!-- Live Chat -->
+          <div class="col-md-12">
+            <div class="panel panel-primary">
+              <div class="panel-heading panelHeading">Live Chat</div>
+
+              <div class="live-chat-wrapper">
+                <div id="livechatc" class="panel-body panelBody">
+                  <div class="subscribe" id="livechat"></div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      <!-- Live Chat -->
+        <!-- Live Chat -->
 
-      <!-- Send Message -->
-      <div class="row mt-auto px-4">
-        <div class="col-md-2">
-          <div id="chatLangPlaceholder" class="form-group"></div>
-        </div>
+        <!-- Send Message -->
+        <div class="section-send-message row mt-auto p-4">
+          <div class="col-md-2">
+            <div id="chatLangPlaceholder" class="form-group"></div>
+          </div>
 
-        <div class="col-md-8">
-          <input type="text" id="message" class="form-control" onkeydown="message_key(this)" />
-        </div>
+          <div class="col-md-8">
+            <input type="text" id="message" class="form-control" onkeydown="message_key(this)" />
+          </div>
 
-        <div class="col-md-2">
-          <button
-            style="width: 100px"
-            type="button"
-            class="form-control btn btn-dark"
-            id="btn-send"
-            onclick="sendMessage()"
-          >
-            Send
-          </button>
+          <div class="col-md-2">
+            <button
+              style="width: 100px"
+              type="button"
+              class="form-control btn btn-dark"
+              id="btn-send"
+              onclick="sendMessage()"
+            >
+              Send
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -470,7 +470,7 @@
 
         if (hostname.includes("localhost")) {
           redirectURL =
-            "http://localhost:8080/tts.bot/very-nice-tts/webfront/safetokenXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.html";
+            "http://localhost:8080/tts.bot/webfront/safetokenXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.html";
         } else if (hostname.includes("dev.tts.bot")) {
           redirectURL =
             "https://dev.tts.bot/safetokenXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.html";
@@ -497,10 +497,13 @@
 
       function toggleSettingsMenu() {
         var menu = document.getElementById("settingsMenu");
+        var chatContainer = document.getElementById("chatContainer");
         if (menu.style.display === "none") {
           menu.style.display = "block";
+          chatContainer.style.display = "none";
         } else {
           menu.style.display = "none";
+          chatContainer.style.display = "block";
         }
       }
 
@@ -1000,7 +1003,7 @@
         channel = channel.replace("#", "");
         message = message.trim();
 
-        console.log(userstate);
+        //console.log(userstate);
         //console.log("message", message);
         //console.log("chatters:", chatters);
 
