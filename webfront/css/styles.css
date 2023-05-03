@@ -1,0 +1,81 @@
+html {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+}
+
+table {
+  width: auto;
+  border-collapse: separate;
+  border-spacing: 0;
+  background-color: var(--bubble-background-color, rgba(99, 99, 99, 0.25));
+  border: var(--border-width, 5px) var(--border-line-style, solid)
+    var(--border-color, BlueViolet);
+  border-radius: var(--border-radius, 15px);
+}
+
+table.center {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+table td {
+  /*word-break: break-all;*/
+  overflow-wrap: break-word;
+  padding: var(--padding, 33px);
+}
+
+.translatorAlign {
+  font-weight: 0;
+  text-align: center;
+  vertical-align: top;
+  -webkit-text-stroke-color: BlueViolet;
+  -webkit-text-stroke-width: 0px;
+}
+
+.translatorText {
+  font-family: null;
+  font-weight: 900;
+  background: transparent;
+
+  color: var(--font-color, white);
+  font-size: var(--font-size, 50px);
+  -webkit-text-stroke: var(--webkit-text-stroke-size, 1px)
+    var(--webkit-text-stroke-color, BlueViolet);
+}
+
+.topHeader {
+  background-color: BlueViolet;
+  padding: 10px;
+  border-bottom: solid 1px #cacaca;
+  color: white;
+}
+
+.panelHeading {
+  background-color: BlueViolet !important;
+}
+
+.panelBody {
+  min-height: 450px;
+  max-height: 450px;
+  overflow-y: scroll;
+}
+
+.outline {
+  text-shadow: 0 var(--outline-offset, 1px) var(--outline-color, BlueViolet),
+    var(--outline-offset, 1px) 0 var(--outline-color, BlueViolet),
+    0 var(--outline-offset-negative, -1px) var(--outline-color, BlueViolet),
+    var(--outline-offset-negative, -1px) 0 var(--outline-color, BlueViolet);
+}
+
+.shadow {
+  filter: drop-shadow(
+    var(--shadow-offset-horizontal, 3px) var(--shadow-offset-vertical, 4px)
+      var(--shadow-blur, 5px) var(--shadow-color, BlueViolet)
+  );
+}

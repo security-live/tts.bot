@@ -1,0 +1,27 @@
+<div id="message-id${messageID}" class="chat-bubble">
+  <div class="username-container" id="message-user-id${messageID}">
+    <div class="speaker-info">
+      <span class="speaker-icon">${speakerIcon}</span>
+      <span id="message-system-voice-id${messageID}" class="voice-name">SYSTEM VOICE</span>
+    </div>
+    <span class="username">
+      <strong style="color:${color}"> ${chatters[username].display_name}:</strong>
+      <br />
+      (${chatters[username].spoken_name.trim()})
+    </span>
+  </div>
+
+  <div class="message-container" id="message-message-id${messageID}">
+    <div class="speaker-info">
+      <span class="speaker-icon">${speakerIcon}</span>
+      <span class="voice-name">${userVoice}</span>
+    </div>
+    <span class="message">
+      ${message}<br />
+
+      ${translatedMessageHTML}
+    </span>
+  </div>
+
+  <div class="buttons-container"><span class="btn-group"> ${buttons} </span></div>
+</div>

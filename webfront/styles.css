@@ -1,0 +1,230 @@
+html, body {
+  height: 100%;
+  width: 100%;
+}
+
+html, body, * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.main-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+table {
+  width: auto;
+  border-collapse: separate;
+  border-spacing: 0;
+  background-color: var(--bubble-background-color, rgba(99, 99, 99, 0.25));
+  border: var(--border-width, 5px) var(--border-line-style, solid)
+    var(--border-color, BlueViolet);
+  border-radius: var(--border-radius, 15px);
+}
+
+p {
+  margin: 0;
+}
+
+table.center {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+table td {
+  /*word-break: break-all;*/
+  overflow-wrap: break-word;
+  padding: var(--padding, 33px);
+}
+
+.button-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.translatorAlign {
+  font-weight: 0;
+  text-align: center;
+  vertical-align: top;
+  -webkit-text-stroke-color: BlueViolet;
+  -webkit-text-stroke-width: 0px;
+}
+
+.translatorText {
+  font-family: null;
+  font-weight: 900;
+  background: #00FF00;
+
+  color: var(--font-color, rgb(0, 0, 0));
+  font-size: var(--font-size, 50px);
+  -webkit-text-stroke: var(--webkit-text-stroke-size, 1px)
+    var(--webkit-text-stroke-color, BlueViolet);
+}
+
+.topHeader {
+  background-color: BlueViolet;
+  padding: 10px;
+  border-bottom: solid 1px #cacaca;
+  color: white;
+}
+
+.panelHeading {
+  background-color: BlueViolet !important;
+}
+
+.panelBody {
+  min-height: 450px;
+  max-height: 450px;
+  overflow-y: scroll;
+}
+
+.outline {
+  text-shadow: 0 var(--outline-offset, 1px) var(--outline-color, BlueViolet),
+    var(--outline-offset, 1px) 0 var(--outline-color, BlueViolet),
+    0 var(--outline-offset-negative, -1px) var(--outline-color, BlueViolet),
+    var(--outline-offset-negative, -1px) 0 var(--outline-color, BlueViolet);
+}
+
+.shadow {
+  filter: drop-shadow(
+    var(--shadow-offset-horizontal, 3px) var(--shadow-offset-vertical, 4px)
+      var(--shadow-blur, 5px) var(--shadow-color, BlueViolet)
+  );
+}
+
+.live-chat-wrapper {
+  position: relative;
+  height: 100%;
+  padding: 10px;
+}
+
+
+
+#livechatc {
+  position: relative;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 20px; /* To prevent scroll bar overlap */
+}
+
+#livechatc .subscribe {
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+}
+
+#livechatc .message {
+  border-radius: 5px;
+  padding-top: 15px;
+  padding-bottom: 10px;
+  width: 90%;
+}
+
+.settings-toggle {
+  cursor: pointer;
+  font-size: 24px;
+}
+
+.settings-menu {
+  display: none;
+  padding: 20px;
+  border: 1px solid #333;
+  border-radius: 5px;
+}
+
+.chat-bubble {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  padding: 0px;
+  margin-top: 1px;
+  margin-bottom: 1px;
+  border-radius: 15px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  border: solid;
+  background-color: #3d3d3d;
+}
+
+.username-container {
+  background-color: #505050;
+  line-height: 1.15em;
+  flex: 1 80px;
+  display: flex;
+  align-items: center;
+  padding-top: 15px;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+}
+
+.message-container {
+  background-color: #392936;
+  line-height: 1.1em;
+  flex: 5;
+  display: flex;
+  align-items: center;
+  padding: 10px 0px 0px 0px;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+}
+
+.buttons-container {
+  background-color: #3c012b;
+  flex: 3;
+  display: flex;
+  align-items: center;
+  padding: 0px;
+}
+
+.buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.button {
+  border: none;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 14px;
+  margin-left: 5px;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.speaker-icon {
+  margin-right: 5px; /* Add some space between speaker icon and voice name */
+}
+
+.voice-name {
+  font-size: 12px; /* Decrease font size for voice name */
+  color: #f0f0f0; /* Keep the same text color as username */
+}
+
+.speaker-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  position: absolute; /* Add position absolute */
+  top: 5px; /* Add a fixed distance from the top */
+  left: 0; /* Add left to 0 to horizontally center the element */
+  right: 0; /* Add right to 0 to horizontally center the element */
+}
+
+
+
+

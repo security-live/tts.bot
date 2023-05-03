@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<!-- ReggieTheBug helped with all of the customizing options and I was pretty much a surrogate of hands -- Security_Live -->
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+    <link href="fonts.css" rel="stylesheet" />
+    <link href="styles.css" rel="stylesheet" />
+    <title>Security Live Translator</title>
+  </head>
+
+  <body class="translatorText">
+    <div class="big" id="result_text">
+      <div class="text_div" style="position: absolute; bottom: 5%; left: 30%; right: 30%">
+        <table id="text_table" class="center border" style="bottom: 33px">
+          <tbody>
+            <tr>
+              <td id="tbl_td" align="center" valign="bottom">
+                <div class="outline shadow" id="speech_text-imb">Security Live Translator</div>
+                <hr />
+                <div class="outline shadow" id="trans_text-imb"></div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <script type="text/javascript">
+      var flag_speech = 0;
+      var streamerLastSpoke = Date.now();
+      var bubble_timer = 10000;
+      var norikittea = false;
+
+      var webSocket = new WebSocket("wss://api.tts.bot");
+
+      webSocket.onopen = function () {
+        console.log("Connected to websocket backend.");
+      };
+
+      window.onload = function () {
+        vr_function();
+
+        if (norikittea) {
+          console.log("for kittea");
+          document.documentElement.style.setProperty("--border-color", "#FF00FF");
+          document.documentElement.style.setProperty("--webkit-text-stroke-color", "#FF00FF");
+          document.documentElement.style.setProperty("--border-radius", "45px");
+          document.getElementById("speech_text-imb").innerHTML = "Norikittea Translator";
+          document.title = "Norikittea Translator";
+        }
+      };
+
+      function vr_function() {
+        window.SpeechRecognition = window.SpeechRecognition || webkitSpeechRecognition;
+
+        var recognition = new webkitSpeechRecognition();
+        recognition.lang = "en";
+        recognition.interimResults = true;
+        recognition.continuous = true;
+        var recog_text = "";
+        var trans_text = "";
+        var arg_recog = null;
+        var arg_trans = null;
+
+        var trans_sourcelang = "en";
+        var trans_destlang = "ja";
+
+        var gas_key = "AKfycbwi_joFMoaC8-kiSnvNiIfUqABbVar5Mg0g2nxu2BxuPkQiHJ5WwzYAFg";
+
+        var TRANS_URL = "https://script.google.com/macros/s/" + gas_key + "/exec";
+        var query = "";
+
+        recognition.onerror = function () {
+          vr_function();
+        };
+
+        recognition.onspeechstart = function () {
+          streamerLastSpoke = Date.now();
+          document.getElementById("result_text").style.visibility = "visible";
+        };
+
+        recognition.onsoundend = function () {
+          recognition.stop();
+          vr_function();
+        };
+
+        recognition.onspeechend = function () {
+          recognition.stop();
+          vr_function();
+        };
+
+        if (getParam("recog") != null) {
+          arg_recog = getParam("recog");
+        }
+        if (getParam("trans") != null) {
+          arg_trans = getParam("trans");
+        }
+        if (getParam("src") != null) {
+          arg_recog = getParam("src");
+        }
+        if (getParam("dst") != null) {
+          arg_trans = getParam("dst");
+        }
+        if (getParam("dest") != null) {
+          arg_trans = getParam("dest");
+        }
+        if (getParam("source") != null) {
+          arg_recog = getParam("source");
+        }
+        if (getParam("destination") != null) {
+          arg_trans = getParam("destination");
+        }
+        if (getParam("norikittea") != null) {
+          norikittea = true;
+        }
+
+        if (getParam("bubble-timer") != null) {
+          bubble_timer = parseInt(getParam("bubble-timer"));
+        }
+
+        if (arg_recog != null) {
+          recognition.lang = arg_recog;
+          trans_sourcelang = recognition.lang;
+        }
+        if (arg_trans != null) {
+          trans_destlang = arg_trans;
+        }
+
+        if (trans_sourcelang == trans_destlang) {
+          alert(
+            "ERROR! Please set different language between recog and trans!\nYou set both [" + trans_sourcelang + "]!"
+          );
+        }
+
+        var request = new XMLHttpRequest();
+
+        recognition.onresult = function (event) {
+          var results = event.results;
+          for (var i = event.resultIndex; i < results.length; i++) {
+            if (results[i].isFinal) {
+              recog_text = results[i][0].transcript;
+              var wsObject = {
+                action: "textToAll",
+                text: recog_text,
+                time: Date.now(),
+              };
+              webSocket.send(JSON.stringify(wsObject));
+
+              document.getElementById("speech_text-imb").innerHTML = recog_text;
+
+              if (gas_key != null) {
+                query =
+                  TRANS_URL + "?message=" + recog_text + "&srcLang=" + trans_sourcelang + "&dstLang=" + trans_destlang;
+                request.open("GET", query, true);
+
+                request.onreadystatechange = function () {
+                  if (request.readyState === 4 && request.status === 200) {
+                    document.getElementById("speech_text-imb").innerHTML = recog_text;
+                    document.getElementById("trans_text-imb").innerHTML = request.responseText;
+                    setTimeout(function () {
+                      justWaitAMoment();
+                    }, bubble_timer);
+                    //console.log("recognition.onend() after setTimeout");
+                    streamerLastSpoke = Date.now();
+                  }
+                  vr_function();
+                };
+                request.send(null);
+              } else {
+                document.getElementById("speech_text-imb").innerHTML = recog_text;
+                vr_function();
+              }
+            } else {
+              document.getElementById("speech_text-imb").innerHTML = "<< " + results[i][0].transcript + " >>";
+              streamerLastSpoke = Date.now();
+              flag_speech = 1;
+            }
+          }
+        };
+        flag_speech = 0;
+
+        recognition.start();
+      }
+
+      function justWaitAMoment() {
+        var lastSpokeDiff = Date.now() - streamerLastSpoke;
+        console.log("Last spoke diff: " + lastSpokeDiff);
+        if (lastSpokeDiff >= bubble_timer) {
+          document.getElementById("result_text").style.visibility = "hidden";
+          document.getElementById("speech_text-imb").innerHTML = "";
+          document.getElementById("trans_text-imb").innerHTML = "";
+        }
+      }
+
+      let params = [...window.location.href.matchAll(/([\w-]+)=/gm)];
+      console.log("query string params:");
+      params.forEach(function (value) {
+        console.log(value[1] + "=" + getParam(value[1]));
+        document.documentElement.style.setProperty("--" + value[1], getParam(value[1]));
+      });
+
+      function getParam(name, url) {
+        if (!url) url = window.location.href;
+        name = name.replace(/[\[\]]/g, "\\$&");
+        var regex = new RegExp("[?&]" + name + "(=([^&]*)|&|$)"),
+          results = regex.exec(url);
+        if (!results) return null;
+        if (!results[2]) return "";
+        return decodeURIComponent(results[2].replace(/\+/g, " "));
+      }
+    </script>
+  </body>
+</html>

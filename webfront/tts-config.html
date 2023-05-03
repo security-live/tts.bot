@@ -1,0 +1,318 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>Security Live TTS Configuration</title>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <style type="text/css">
+        #login,
+        #loggedin {
+            display: none;
+        }
+
+        .text-overflow {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            width: 500px;
+        }
+
+        .play_second_part .grid_child {
+            padding: 0.8vw;
+            border: 1px solid #000;
+            width: 8vmax;
+            height: 8vmax;
+        }
+
+        .flex_center {
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-box-align: center;
+            -ms-flex-align: center;
+            align-items: center;
+            -webkit-box-pack: center;
+            -ms-flex-pack: center;
+            justify-content: center;
+        }
+
+        .play_second_part .grid_child {
+            width: 14vmax;
+            height: 14vmax;
+        }
+
+        .font_size_pt_122 {
+            font-family: barlow_condensed_regular !important;
+            font-size: 2.2vmax !important;
+        }
+
+        .text-uppercase {
+            text-transform: uppercase !important;
+        }
+
+        .text-center {
+            text-align: center !important;
+        }
+
+        .play_second_part {
+            /* margin-top: 7.5vh; */
+            display: grid;
+            grid-gap: 0.3vw;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div id="header">
+            <h1>Security Live TTS Configuration</h1>
+        </div>
+        <br>
+        <div id="login"></div>
+        <div id="loggedin">
+            <div id="user-profile"> </div>
+            <div id="tts-config"> </div>
+        </div>
+    </div>
+
+
+
+    <script id="user-profile-template" type="text/x-handlebars-template">
+    <h2>Logged in as {{display_name}}</h2>
+    <h4>{{description}}</h4>
+    <div class="media">
+      <div class="pull-left">
+        <img class="media-object" width="150" src="{{profile_image_url}}" />
+      </div>
+      <div class="media-body">
+        <dl class="dl-horizontal">
+            <dt>Login Name: </dt><dd class="clearfix">{{login}}</dd>
+            <dt>Display name: </dt><dd class="clearfix">{{display_name}}</dd>
+
+            <dt>Voice Name: </dt>
+            <dd class="clearfix">
+                <select id="selectedVoice" onchange="voiceSelected(this.value)">
+                {{#select voice}}
+                {{#each voices.Voices}}
+                    <option value="{{Id}}">{{Id}} ({{LanguageCode}} -- {{LanguageName}})</option>
+                {{/each}}
+                {{/select}}
+                </select>
+                <div id=selected-voice-option-div></div>
+                <input type="hidden" size="10" name="voice-option" id="voice-option" value="{{voice_option}}">
+            </dd>
+          <dt>Spoken Name: </dt><dd class="clearfix"><input type="text" size="60" name="spoken-name" id="spoken-name" value="{{spoken_name}}"></dd><br>
+          <dd class="clearfix"><button class="btn btn-default" id="save-config" onclick="saveConfig('{{login}}')">Save</button></dd>
+        </dl>
+      </div>
+    </div>
+    </script>
+    <script id="user-voice-option-template" type="text/x-handlebars-template">
+        <select id="selectedVoiceOption" onchange="voiceOptionSelected(this.value)">
+            {{#select voiceOption}}
+            {{#each voiceOptions}}
+                <option value="{{this}}">{{this}}</option>
+            {{/each}}
+            {{/select}}
+        </select>     
+    </script>
+
+    <hr>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.10.1.min.js"></script>
+    <script src="polly.js">
+    </script>
+
+    <script>
+        var global_access_token = '';
+        var voices = {};
+        buildVoiceLookup();
+        var hostname = window.location.hostname;
+
+        voicesDesc.Voices.sort(function (a, b) {
+            if (a.LanguageCode === b.LanguageCode) {
+                return b.Id - a.Id;
+            }
+            return a.LanguageCode > b.LanguageCode ? 1 : -1;
+        });
+
+        function voiceSelected(voice) {
+            var userVoiceOptionSource = document.getElementById('user-voice-option-template').innerHTML,
+                userVoiceOptionTemplate = Handlebars.compile(userVoiceOptionSource),
+                userVoiceOptionPlaceholder = document.getElementById('selected-voice-option-div');
+            userVoiceOptionPlaceholder.innerHTML = userVoiceOptionTemplate(voices[voice.toLowerCase()]);
+            var voiceOption = document.getElementById('voice-option');
+            voiceOption.value = voices[voice.toLowerCase()].voiceOptions[0];
+        }
+
+        function voiceOptionSelected(voiceOption) {
+            var voiceOptionElement = document.getElementById('voice-option');
+            voiceOptionElement.value = voiceOption;
+        }
+
+        function saveConfig(login) {
+            var voice = document.getElementById('selectedVoice').value;
+            var voiceOption = document.getElementById('voice-option').value;
+            var spokenName = document.getElementById('spoken-name').value;
+
+
+            var data = {};
+            var response = {};
+            data.login = login;
+            data.voice = voice;
+            data.voice_option = voiceOption;
+            data.spoken_name = spokenName;
+            data.bsvalue = "garbage";
+            data.access_token = global_access_token;
+            response.data = [];
+            response.data.push(data);
+            $.ajax({
+                url: 'https://api.securitylive.com/tts',
+                type: 'PUT',
+                dataType: 'json',
+                contentType: 'application/json',
+                data: JSON.stringify(response),
+                success: function (response) {
+                    console.log("Config Saved Successfully");
+                    console.log(response);
+                    alert("Save Much Success!");
+                },
+                error: function (response) {
+                    console.log("Config Save Failed: DynamoDB");
+                    return;
+                }
+            });
+        }
+
+        function buildVoiceLookup() {
+            for (var i = 0; i < voicesDesc.Voices.length; i++) {
+                var lcvoice = voicesDesc.Voices[i].Id.toLowerCase();
+                var idvoice = voicesDesc.Voices[i].Id;
+                voices[lcvoice] = {};
+                //voices[lcvoice].engine = voicesDesc.Voices[i].SupportedEngines[0];
+                voices[lcvoice].voiceOptions = voicesDesc.Voices[i].SupportedEngines;
+                voices[lcvoice].name = idvoice;
+            }
+            console.log(voices);
+        }
+
+        // Get synthesized speech from Amazon polly
+        function testVoice(message) {
+            console.log(message);
+            return new Promise(function (resolve, reject) {
+                var polly = new AWS.Polly();
+
+                var params = {
+                    OutputFormat: 'mp3',
+                    Engine: document.getElementById('voice-option').value,
+                    TextType: 'ssml',
+                    Text: message.text,
+                    VoiceId: document.getElementById('selectedVoice').value
+                }
+                console.log("Speaking with: ");
+                console.log(params);
+
+                polly.synthesizeSpeech(params, function (err, data) {
+                    if (err) {
+                        data = {};
+                        data.AudioStream = new Uint8Array(ssml_error);
+                    }
+                    resolve(data.AudioStream);
+                });
+            });
+        }
+
+        (function () {
+            Handlebars.registerHelper('contains', function (needle, haystack, options) {
+                //needle = Handlebars.escapeExpression(needle);
+                //haystack = Handlebars.escapeExpression(haystack);
+                return (haystack.indexOf(needle) > -1) ? options.fn(this) : options.inverse(this);
+            });
+
+            Handlebars.registerHelper('select', function (value, options) {
+                var $el = $('<select />').html(options.fn(this));
+                $el.find('[value="' + value + '"]').attr({ 'selected': 'selected' });
+                return $el.html();
+            });
+
+            /**
+             * Obtains parameters from the hash of the URL
+             * @return Object
+             */
+            function getHashParams() {
+                var hashParams = {};
+                var e, r = /([^&;=]+)=?([^&;]*)/g,
+                    q = window.location.hash.substring(1);
+                while (e = r.exec(q)) {
+                    hashParams[e[1]] = decodeURIComponent(e[2]);
+                }
+                return hashParams;
+            }
+            var userProfileSource = document.getElementById('user-profile-template').innerHTML,
+                userProfileTemplate = Handlebars.compile(userProfileSource),
+                userProfilePlaceholder = document.getElementById('user-profile');
+
+
+            var params = getHashParams();
+            var access_token = params.access_token,
+                error = params.error;
+
+            global_access_token = access_token;
+
+            if (error) {
+                alert('There was an error during the authentication');
+            } else {
+                if (access_token) {
+                    var request = {};
+                    request.data = [];
+                    var tmp = {};
+                    tmp.access_token = access_token;
+                    request.data.push(tmp);
+                    console.log(request);
+                    $.ajax({
+                        url: 'https://api.securitylive.com/tts',
+                        type: 'PUT',
+                        dataType: 'json',
+                        contentType: 'application/json',
+                        data: JSON.stringify(request),
+                        success: function (response) {
+                            response.voices = voicesDesc;
+                            userProfilePlaceholder.innerHTML = userProfileTemplate(response);
+
+                            var userVoiceOptionSource = document.getElementById('user-voice-option-template').innerHTML,
+                                userVoiceOptionTemplate = Handlebars.compile(userVoiceOptionSource),
+                                userVoiceOptionPlaceholder = document.getElementById('selected-voice-option-div');
+
+                            var optionData = {};
+                            optionData.voiceOptions = voices[response.voice.toLowerCase()].voiceOptions;
+                            optionData.voiceOption = response.voice_option;
+                            userVoiceOptionPlaceholder.innerHTML = userVoiceOptionTemplate(optionData);
+
+                            $('#login').hide();
+                            $('#loggedin').show();
+                        },
+                        error: function (error) {
+                            console.log(error);
+                            //document.location = "http://localhost/tts.html";
+                        }
+                    });
+                } else {
+                    var redirectURL = "https://securitylive.com/tts-config.html";
+
+                    if (location.hostname.includes("localhost")) {
+                        redirectURL = "http://localhost/VeryNiceTTS/tts-config.html";
+                    }
+
+                    var twitchURL = "<a href=\"https://id.twitch.tv/oauth2/authorize?client_id=dan71ek0pct1u7b8ht5u4h55zlcxvq&redirect_uri=" + redirectURL + "&response_type=token\" class=\"btn btn-primary\" > Authorize On Twitch</a >";
+                    $('#login').html(twitchURL);
+                    // render initial screen
+                    $('#login').show();
+                    $('#loggedin').hide();
+                }
+            }
+        })();
+    </script>
+</body>
+
+</html>

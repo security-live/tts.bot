@@ -1,0 +1,1 @@
+*.html:awsAccessKeyId,awsSecretAccessKey,gas_key,.*password.*
