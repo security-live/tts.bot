@@ -60,6 +60,16 @@
           >
             Stop
           </button>
+          <!--
+          <button
+            type="button"
+            id="btn-go"
+            class="btn btn-dark"
+            onclick="test()"
+          >
+            Test Button
+          </button>
+          -->
         </div>
         <div class="col-md-2 text-right">
           <!-- Content for the right-aligned div -->
@@ -981,20 +991,57 @@
       }
 
       function onCheer() {
+        /*
+        let arguments = {
+          0: "#security_live",
+          1: {
+            "badge-info": null,
+            badges: {
+              moderator: "1",
+              glitchcon2020: "1",
+            },
+            bits: "5",
+            color: "#B573B6",
+            "display-name": "MojoJojo671",
+            emotes: null,
+            "first-msg": false,
+            flags: null,
+            id: "b8ee5ce1-09e0-4945-9916-99d3f4f821b9",
+            mod: true,
+            "returning-chatter": false,
+            "room-id": "473060639",
+            subscriber: false,
+            "tmi-sent-ts": "1683212368956",
+            turbo: false,
+            "user-id": "531867432",
+            "user-type": "mod",
+            "emotes-raw": null,
+            "badge-info-raw": null,
+            "badges-raw": "moderator/1,glitchcon2020/1",
+            username: "mojojojo671",
+            "message-type": "chat",
+          },
+          2: "Cheer5",
+        };
+*/
         console.log("onCheer:");
         console.log(arguments);
+        let username = arguments[1].username;
         let message = `${arguments[1]["display-name"]} just cheered ${arguments[1].bits} bits, thank you so much!`;
+
         addSystemBubble(message, ++messageID);
-        window.audioPlayer.SpeakNext(message, "system", "ssml", messageID);
-        message = `${arguments[2]}`;
-        addSystemBubble(message, ++messageID);
+        window.audioPlayer.Speak("", message, "", "system", "text", messageID);
+
+        addMessageBubble(username, arguments[2], "", true, "", ++messageID);
+
         let prefix = "<speak>" + getSpokenName(username) + " says </speak>";
+
         audioPlayer.Speak(
           prefix,
-          message,
+          arguments[2],
           "",
-          arguments[1].username,
-          "ssml",
+          username,
+          "text",
           messageID
         );
       }
@@ -1329,12 +1376,6 @@
         //console.log("userstate:", userstate);
         var username = userstate["username"];
 
-        // TODO speak text up to comment delimiter
-        if (message.match("(^\s*-|^\s*#|^\s*<!--|^\s*;|^\s*//)")) {
-          //last_speaker = username;
-          return;
-        }
-
         if (message.match(/^(oneword|one word|!oneword)/i)) {
           return;
         }
@@ -1617,13 +1658,6 @@
                   lastMessages = lastMessages.slice(startIndex);
                 }
 
-                let color = "#FFFFFF";
-                if (chatters[username].color) {
-                  color = chatters[username].color;
-                } else {
-                  color = GetColorForUsername(username);
-                }
-
                 let translatedMessageHTML = "";
                 if (
                   document.getElementById("dstLangSelect").value !=
@@ -1634,59 +1668,23 @@
 
                 if (identicalTranslation) translatedMessageHTML = "";
 
-                let announceVoice = "System Voice";
-                let userVoice = `${chatters[username].voice} (${chatters[username].voice_option})`;
-
-                let speakerIcon = "🔊";
-                if (!allowTTS) {
-                  userVoice = `(${allowTTSmessage.slice(0, -3)})`;
-                  speakerIcon = "🔇";
-                }
-
-                messageID++;
-
                 //  let buttons = makeButton("Don't Speak", "secondary", "comment-slash", username, messageID) +
                 //makeButton("Speak Next", "success", "comment-medical", username, messageID) +
-                let buttons =
-                  makeButton(
-                    "TTS Ban",
-                    "warning",
-                    "volume-xmark",
-                    username,
-                    messageID
-                  ) + makeButton("Ban", "danger", "gavel", username, messageID);
 
-                con.liveChatUI.innerHTML += `<div id="message-id${messageID}" class="chat-bubble">
-                                    <div class="username-container" id="message-user-id${messageID}">
-                                      <div class="speaker-info">
-                                        <span class="speaker-icon">${speakerIcon}</span>
-                                        <span id="message-system-voice-id${messageID}" class="voice-name">SYSTEM VOICE</span>
-                                      </div>
-                                      <span class="username">
-                                        <strong style='color:${color}'>${
-                  chatters[username].display_name
-                }:</strong><br>
-                                        (${chatters[
-                                          username
-                                        ].spoken_name.trim()})
-                                      </span>
-                                    </div>
+                // TODO speak text up to comment delimiter
+                if (message.match("(^\s*-|^\s*#|^\s*<!--|^\s*;|^\s*\/\/)")) {
+                  allowTTS = false;
+                  allowTTSmessage = "Commentted out - ";
+                }
 
-                                    <div class="message-container" id="message-message-id${messageID}">
-                                      <div class="speaker-info">
-                                        <span class="speaker-icon">${speakerIcon}</span>
-                                        <span class="voice-name">${userVoice}</span>
-                                      </div>
-                                      <span class="message">
-                                        ${message}<br>
-                                        ${translatedMessageHTML}
-                                      </span>
-                                    </div>
-
-                                    <div class="buttons-container d-flex justify-content-center" >
-                                      <div class="btn-group p-1">${buttons}</div>
-                                    </div>
-                                  </div>`;
+                addMessageBubble(
+                  username,
+                  message,
+                  translatedMessageHTML,
+                  allowTTS,
+                  allowTTSmessage,
+                  ++messageID
+                );
 
                 //If speak translation in enabled, speak translated message
                 if (con.cbSpeak.checked && allowTTS) {
@@ -1742,6 +1740,71 @@
             }
           );
         }
+      }
+
+      function addMessageBubble(
+        username,
+        message,
+        translatedMessageHTML,
+        allowTTS,
+        allowTTSmessage,
+        messageID
+      ) {
+        let buttons =
+          makeButton(
+            "TTS Ban",
+            "warning",
+            "volume-xmark",
+            username,
+            messageID
+          ) + makeButton("Ban", "danger", "gavel", username, messageID);
+
+        let color = "#FFFFFF";
+        if (chatters[username].color) {
+          color = chatters[username].color;
+        } else {
+          color = GetColorForUsername(username);
+        }
+
+        let userVoice = `${chatters[username].voice} (${chatters[username].voice_option})`;
+
+        let speakerIcon = "🔊";
+        if (!allowTTS) {
+          userVoice = `(${allowTTSmessage.slice(0, -3)})`;
+          speakerIcon = "🔇";
+        }
+
+        con.liveChatUI.innerHTML += `<div id="message-id${messageID}" class="chat-bubble">
+                                    <div class="username-container" id="message-user-id${messageID}">
+                                      <div class="speaker-info">
+                                        <span class="speaker-icon">${speakerIcon}</span>
+                                        <span id="message-system-voice-id${messageID}" class="voice-name">SYSTEM VOICE</span>
+                                      </div>
+                                      <span class="username">
+                                        <strong style='color:${color}'>${
+          chatters[username].display_name
+        }:</strong><br>
+                                        (${chatters[
+                                          username
+                                        ].spoken_name.trim()})
+                                      </span>
+                                    </div>
+
+                                    <div class="message-container" id="message-message-id${messageID}">
+                                      <div class="speaker-info">
+                                        <span class="speaker-icon">${speakerIcon}</span>
+                                        <span class="voice-name">${userVoice}</span>
+                                      </div>
+                                      <span class="message">
+                                        ${message}<br>
+                                        ${translatedMessageHTML}
+                                      </span>
+                                    </div>
+
+                                    <div class="buttons-container d-flex justify-content-center" >
+                                      <div class="btn-group p-1">${buttons}</div>
+                                    </div>
+                                  </div>`;
       }
 
       function addSystemBubble(message, messageID) {
