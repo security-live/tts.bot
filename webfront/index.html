@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="dark">
-
   <head>
     <title>TTS.bot by Security_Live</title>
     <meta charset="utf-8" />
 
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
 
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css"
@@ -14,7 +16,10 @@
       crossorigin="anonymous"
     />
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css"
+    />
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="styles.css" />
@@ -23,33 +28,52 @@
   <body>
     <div class="main-container container-fluid">
       <div class="topHeader row">
-          <div class="col-md-2 text-left">
-            <!-- Content for the left-aligned div -->
-            <div id="title">TTS.bot</div>
-          </div>
-          <div class="col-8 text-center">
-            <!-- Content for the center-aligned div -->
-            <!-- Content for the center-aligned div -->
-            <label for="channel">Channel:</label>
-            <input type="text" id="channel" name="channel" class="bg-dark text-white" value placeholder="Channel" />
-            <button type="button" id="btn-go" class="btn btn-dark" onclick="connect()">Go</button>
-            <button
-              type="button"
-              id="btn-stop"
-              class="btn btn-dark"
-              onclick="location.href='index.html?autoconnect=false';"
-            >
-              Stop
-            </button>
-          </div>
-          <div class="col-md-2 text-right">
-            <!-- Content for the right-aligned div -->
-            <span id="status">Disconnected</span
-            ><button type="button" id="settings-gear" class="btn btn-default" onclick="toggleSettingsMenu()">
-              <i class="fa fa-cog"></i>
-            </button>
-          </div>
+        <div class="col-md-2 text-left">
+          <!-- Content for the left-aligned div -->
+          <div id="title">TTS.bot</div>
         </div>
+        <div class="col-8 text-center">
+          <!-- Content for the center-aligned div -->
+          <!-- Content for the center-aligned div -->
+          <label for="channel">Channel:</label>
+          <input
+            type="text"
+            id="channel"
+            name="channel"
+            class="bg-dark text-white"
+            value
+            placeholder="Channel"
+          />
+          <button
+            type="button"
+            id="btn-go"
+            class="btn btn-dark"
+            onclick="connect()"
+          >
+            Go
+          </button>
+          <button
+            type="button"
+            id="btn-stop"
+            class="btn btn-dark"
+            onclick="location.href='index.html?autoconnect=false';"
+          >
+            Stop
+          </button>
+        </div>
+        <div class="col-md-2 text-right">
+          <!-- Content for the right-aligned div -->
+          <span id="status">Disconnected</span
+          ><button
+            type="button"
+            id="settings-gear"
+            class="btn btn-default"
+            onclick="toggleSettingsMenu()"
+          >
+            <i class="fa fa-cog"></i>
+          </button>
+        </div>
+      </div>
 
       <div class="row settings-menu" id="settingsMenu" style="display: none">
         <!-- Move all settings options here -->
@@ -63,7 +87,9 @@
             <div class="row" style="padding: 20px">
               <div class="col-md-6">
                 <div class="form-group">
-                  <dt><label for="twitch_username">Token credentials:</label></dt>
+                  <dt>
+                    <label for="twitch_username">Token credentials:</label>
+                  </dt>
                   <dd class="clearfix">
                     <input
                       type="text"
@@ -81,90 +107,161 @@
                 <div id="dstLangPlaceholder" class="form-group"></div>
 
                 <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="cbSpeak" onchange="saveOption(this)" value="Speak" checked />
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="cbSpeak"
+                    onchange="saveOption(this)"
+                    value="Speak"
+                    checked
+                  />
                   <label class="form-check-label" for="cbSpeak">
                     TTS Enabled
                   </label>
                 </div>
 
                 <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="cbAutoTranslateChat" onchange="saveOption(this)" />
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="cbAutoTranslateChat"
+                    onchange="saveOption(this)"
+                  />
                   <label class="form-check-label" for="cbAutoTranslateChat">
-                    Auto translate chat and output to channel (Be aware this will send translations to any channel connected)
+                    Auto translate chat and output to channel (Be aware this
+                    will send translations to any channel connected)
                   </label>
                 </div>
 
                 <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="cbDeleteCommands" onchange="saveOption(this)" />
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="cbDeleteCommands"
+                    onchange="saveOption(this)"
+                  />
                   <label class="form-check-label" for="cbDeleteCommands">
                     Delete all channel commands that start with !
                   </label>
                 </div>
 
                 <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="cbEveryoneTTS" onchange="saveOption(this)" checked />
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="cbEveryoneTTS"
+                    onchange="saveOption(this)"
+                    checked
+                  />
                   <label class="form-check-label" for="cbEveryoneTTS">
                     Allow Everyone to use TTS
                   </label>
                 </div>
 
                 <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="cbModTTS" onchange="saveOption(this)" checked />
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="cbModTTS"
+                    onchange="saveOption(this)"
+                    checked
+                  />
                   <label class="form-check-label" for="cbModTTS">
                     Allow Mods to use TTS
                   </label>
                 </div>
 
                 <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="cbVipTTS" onchange="saveOption(this)" checked />
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="cbVipTTS"
+                    onchange="saveOption(this)"
+                    checked
+                  />
                   <label class="form-check-label" for="cbVipTTS">
                     Allow Vips to use TTS
                   </label>
                 </div>
 
                 <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="cbSubTTS" onchange="saveOption(this)" checked />
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="cbSubTTS"
+                    onchange="saveOption(this)"
+                    checked
+                  />
                   <label class="form-check-label" for="cbSubTTS">
                     Allow Subs to use TTS
                   </label>
                 </div>
 
                 <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="cbSpeakReplies" onchange="saveOption(this)" />
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="cbSpeakReplies"
+                    onchange="saveOption(this)"
+                  />
                   <label class="form-check-label" for="cbSpeakReplies">
                     Speak replies and @name references at start of message.
                   </label>
                 </div>
 
                 <div class="form-check d-inline-block">
-                  <input class="form-check-input" type="checkbox" id="cbSpeakEmotesTTS" onchange="saveOption(this)" checked />
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="cbSpeakEmotesTTS"
+                    onchange="saveOption(this)"
+                    checked
+                  />
                   <label class="form-check-label" for="cbSpeakEmotesTTS">
                     Speak emotes
                   </label>
                 </div>
                 <div class="form-check d-inline-block">
-                  <input class="form-check-input" type="checkbox" id="cbDedupEmotesTTS" onchange="saveOption(this)" checked />
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="cbDedupEmotesTTS"
+                    onchange="saveOption(this)"
+                    checked
+                  />
                   <label class="form-check-label" for="cbDedupEmotesTTS">
                     Dedup emotes
                   </label>
                 </div>
 
                 <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="cbCleanupTranslation" onchange="saveOption(this)" />
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="cbCleanupTranslation"
+                    onchange="saveOption(this)"
+                  />
                   <label class="form-check-label" for="cbCleanupTranslation">
-                    If translation is identical to original message don't translate.
+                    If translation is identical to original message don't
+                    translate.
                   </label>
                 </div>
 
                 <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="cbUserLevDistance" onchange="saveOption(this)" checked />
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="cbUserLevDistance"
+                    onchange="saveOption(this)"
+                    checked
+                  />
                   <label class="form-check-label" for="cbUserLevDistance">
-                    Don't speak user message if they are a % similar to the last messages in the last X seconds.
-                    (Levenshtein distance)
+                    Don't speak user message if they are a % similar to the last
+                    messages in the last X seconds. (Levenshtein distance)
                   </label>
                 </div>
                 <label for="txtUserLevPct"
-                >Percent:
+                  >Percent:
                   <input
                     style="display: inline-block; width: 75px"
                     type="number"
@@ -174,7 +271,7 @@
                     value="90"
                     placeholder="90"
                     oninput="saveOption(this)"
-                  /></label>
+                /></label>
                 <label for="txtUserLevTime">
                   Time:
                   <input
@@ -186,18 +283,23 @@
                     value="300"
                     placeholder="300"
                     oninput="saveOption(this)"
-                  /></label>
+                /></label>
 
                 <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="cbChatLevDistance"
-                         onchange="saveOption(this)" checked/>
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="cbChatLevDistance"
+                    onchange="saveOption(this)"
+                    checked
+                  />
                   <label class="form-check-label" for="cbChatLevDistance">
-                    Don't speak chat messages if they are a % similar to the last messages in the last X seconds.
-                    (Levenshtein distance)
+                    Don't speak chat messages if they are a % similar to the
+                    last messages in the last X seconds. (Levenshtein distance)
                   </label>
                 </div>
                 <label for="txtChatLevPct"
-                >Percent:
+                  >Percent:
                   <input
                     style="display: inline-block; width: 75px"
                     type="number"
@@ -207,7 +309,7 @@
                     value="90"
                     placeholder="90"
                     oninput="saveOption(this)"
-                  /></label>
+                /></label>
                 <label for="txtChatLevTime">
                   Time:
                   <input
@@ -219,127 +321,179 @@
                     value="300"
                     placeholder="300"
                     oninput="saveOption(this)"
-                  /></label>
+                /></label>
               </div>
 
               <div class="col-md-6">
                 <div class="form-group">
                   These options require microphone access:<br />
                   <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="cbPauseTTSOnSpeech" onchange="saveOption(this)" checked />
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="cbPauseTTSOnSpeech"
+                      onchange="saveOption(this)"
+                      checked
+                    />
                     <label class="form-check-label" for="cbPauseTTSOnSpeech">
-                      Pause TTS when speaking. (Must allow mic access and choose correct mic input)
+                      Pause TTS when speaking. (Must allow mic access and choose
+                      correct mic input)
                     </label>
                   </div>
 
                   <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="cbPoofMessage" onchange="saveOption(this)" />
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="cbPoofMessage"
+                      onchange="saveOption(this)"
+                    />
                     <label class="form-check-label" for="cbPoofMessage">
-                      Say "poof" message to stop speaking a message and continue.
+                      Say "poof" message to stop speaking a message and
+                      continue.
                     </label>
                   </div>
-                  <label class="d-block mb-1"><input
-                    type="text"
-                    size="80"
-                    id="txtPoofRegex"
-                    class="form-control"
-                    value="(poof|proof|poop)"
-                    placeholder="example regex: (poof|proof|poop)"
-                    onchange="saveOption(this)"
+                  <label class="d-block mb-1"
+                    ><input
+                      type="text"
+                      size="80"
+                      id="txtPoofRegex"
+                      class="form-control"
+                      value="(poof|proof|poop)"
+                      placeholder="example regex: (poof|proof|poop)"
+                      onchange="saveOption(this)"
                   /></label>
 
                   <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="cbBanHammer" onchange="saveOption(this)" />
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="cbBanHammer"
+                      onchange="saveOption(this)"
+                    />
                     <label class="form-check-label" for="cbBanHammer">
-                      Say "ban" message to stop speaking and speak "ban confirmation" message.
+                      Say "ban" message to stop speaking and speak "ban
+                      confirmation" message.
                     </label>
                   </div>
-                  <label class="d-block mb-4"><input
-                    type="text"
-                    size="80"
-                    id="txtBanRegex"
-                    class="form-control"
-                    value="(band hammer|ben hammer|ban hammer|banhammer|ben hammer|jan hammer)"
-                    placeholder="example regex: (ben hammer|ban hammer|banhammer|ben hammer|jan hammer)"
-                    oninput="saveOption(this)"
+                  <label class="d-block mb-4"
+                    ><input
+                      type="text"
+                      size="80"
+                      id="txtBanRegex"
+                      class="form-control"
+                      value="(band hammer|ben hammer|ban hammer|banhammer|ben hammer|jan hammer)"
+                      placeholder="example regex: (ben hammer|ban hammer|banhammer|ben hammer|jan hammer)"
+                      oninput="saveOption(this)"
                   /></label>
-                  <label class="d-block mb-4"><input
-                    type="text"
-                    size="80"
-                    id="txtBanConfirmRegex"
-                    class="form-control"
-                    value="(affirmative)"
-                    placeholder="example regex: (affirmative)"
-                    oninput="saveOption(this)"
+                  <label class="d-block mb-4"
+                    ><input
+                      type="text"
+                      size="80"
+                      id="txtBanConfirmRegex"
+                      class="form-control"
+                      value="(affirmative)"
+                      placeholder="example regex: (affirmative)"
+                      oninput="saveOption(this)"
                   /></label>
 
                   <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="cbSTTS" onchange="saveOption(this)" />
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="cbSTTS"
+                      onchange="saveOption(this)"
+                    />
                     <label class="form-check-label" for="cbSTTS">
-                      Use Webkit Voice Recognition and speak result in system language and voice. (Must allow mic access and
-                      choose correct mic input)
+                      Use Webkit Voice Recognition and speak result in system
+                      language and voice. (Must allow mic access and choose
+                      correct mic input)
                     </label>
                   </div>
 
                   <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="cbSendDictationTranslation" onchange="saveOption(this)" />
-                    <label class="form-check-label" for="cbSendDictationTranslation">
-                      Send Dictation Text and Translation to Channel (Be aware this will send translations to any channel
-                      connected)
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="cbSendDictationTranslation"
+                      onchange="saveOption(this)"
+                    />
+                    <label
+                      class="form-check-label"
+                      for="cbSendDictationTranslation"
+                    >
+                      Send Dictation Text and Translation to Channel (Be aware
+                      this will send translations to any channel connected)
                     </label>
                   </div>
 
                   <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="cbSendTextToWebsocket"
-                           onchange="saveOption(this); enableCustomWebsocket(this.checked);"
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="cbSendTextToWebsocket"
+                      onchange="saveOption(this); enableCustomWebsocket(this.checked);"
                     />
                     <label class="form-check-label" for="cbSendTextToWebsocket">
                       Send spoken text to websocket for comannds.
                     </label>
                   </div>
-                  <label class="d-block mb-4"><input
-                    type="text"
-                    id="txtWebsocketURL"
-                    class="form-control"
-                    value="ws://localhost:1880/stt"
-                    placeholder="ws://localhost:1880/stt"
-                    oninput="saveOption(this)"
+                  <label class="d-block mb-4"
+                    ><input
+                      type="text"
+                      id="txtWebsocketURL"
+                      class="form-control"
+                      value="ws://localhost:1880/stt"
+                      placeholder="ws://localhost:1880/stt"
+                      oninput="saveOption(this)"
                   /></label>
 
                   <div class="form-check">
-                    <input class="form-check-input"
+                    <input
+                      class="form-check-input"
                       type="checkbox"
                       id="cbSendTextToAWSWebsocket"
                       onchange="saveOption(this); enableAWSWebsocket(this.checked);"
                     />
-                    <label class="form-check-label" for="cbSendTextToAWSWebsocket">
+                    <label
+                      class="form-check-label"
+                      for="cbSendTextToAWSWebsocket"
+                    >
                       Send spoken text to AWS for end user clients.
                     </label>
                   </div>
-                  <label class="d-block mb-4"><input
-                    type="text"
-                    id="txtAWSWebsocketURL"
-                    class="form-control"
-                    value="wss://api.tts.bot"
-                    placeholder="wss://api.tts.bot"
-                    oninput="saveOption(this)"
+                  <label class="d-block mb-4"
+                    ><input
+                      type="text"
+                      id="txtAWSWebsocketURL"
+                      class="form-control"
+                      value="wss://api.tts.bot"
+                      placeholder="wss://api.tts.bot"
+                      oninput="saveOption(this)"
                   /></label>
 
-                  <a href="node-red-example-command-flow.json">Example Node-RED Command Flow</a>
+                  <a href="node-red-example-command-flow.json"
+                    >Example Node-RED Command Flow</a
+                  >
                 </div>
 
                 <div id="systemLangPlaceholder"></div>
                 <div id="systemVoicePlaceholder"></div>
                 <br />
-                <label class="d-block mb-4"><input
-                  type="text"
-                  id="txtCCTURL"
-                  class="form-control"
-                  value="https://securitylive.com/translator.html?popup=true&src=en&dst=de&webkit-text-stroke-color=red&outline-color=red&shadow-color=red&border-color=red"
-                  placeholder="test"
+                <label class="d-block mb-4"
+                  ><input
+                    type="text"
+                    id="txtCCTURL"
+                    class="form-control"
+                    value="https://securitylive.com/translator.html?popup=true&src=en&dst=de&webkit-text-stroke-color=red&outline-color=red&shadow-color=red&border-color=red"
+                    placeholder="test"
                 /></label>
 
-                <input type="button" value="Open Dictation Window" onclick="OpenPopup()" />
+                <input
+                  type="button"
+                  value="Open Dictation Window"
+                  onclick="OpenPopup()"
+                />
               </div>
             </div>
           </div>
@@ -350,12 +504,18 @@
         <div class="button-container col-12" id="login"></div>
 
         <!-- Chat Boxes -->
-        <div class="section-chat-boxes col-12 d-flex flex-column overflow-hidden">
+        <div
+          class="section-chat-boxes col-12 d-flex flex-column overflow-hidden"
+        >
           <!-- Live Chat -->
-          <div class="panel panel-primary row d-flex flex-column overflow-hidden flex-nowrap">
+          <div
+            class="panel panel-primary row d-flex flex-column overflow-hidden flex-nowrap"
+          >
             <div class="panel-heading panelHeading col-12">Live Chat</div>
 
-            <div class="live-chat-wrapper col-12 d-flex flex-column overflow-hidden flex-nowrap">
+            <div
+              class="live-chat-wrapper col-12 d-flex flex-column overflow-hidden flex-nowrap"
+            >
               <div id="livechatc" class="panel-body panelBody">
                 <div class="subscribe" id="livechat"></div>
               </div>
@@ -371,7 +531,12 @@
           </div>
 
           <div class="col-md-8">
-            <input type="text" id="message" class="form-control" onkeydown="message_key(this)" />
+            <input
+              type="text"
+              id="message"
+              class="form-control"
+              onkeydown="message_key(this)"
+            />
           </div>
 
           <div class="col-md-2">
@@ -415,7 +580,13 @@
             {{/each}}
           {{/select}}
         </select>
-        <input type="hidden" size="10" name="voice-option" id="voice-option" value="{{voice_option}}" />
+        <input
+          type="hidden"
+          size="10"
+          name="voice-option"
+          id="voice-option"
+          value="{{voice_option}}"
+        />
       </dd>
       <div id="systemVoiceOptionPlaceholder"></div>
     </script>
@@ -433,7 +604,11 @@
     <script id="lang-template" type="text/x-handlebars-template">
       <dt>{{name}}</dt>
       <dd class="clearfix">
-        <select id="{{elementId}}" class="form-control" onchange="saveLocalStorageLang('{{elementId}}')">
+        <select
+          id="{{elementId}}"
+          class="form-control"
+          onchange="saveLocalStorageLang('{{elementId}}')"
+        >
           <option value="auto">Auto</option>
           {{#each langs}}
             <option value="{{this.languageCode}}">{{this.languageName}}
@@ -486,15 +661,32 @@
         "#00FF7F",
       ];
 
-      const HashCode = (str) => str.split("").reduce((s, c) => (Math.imul(31, s) + c.charCodeAt(0)) | 0, 0);
+      const HashCode = (str) =>
+        str
+          .split("")
+          .reduce((s, c) => (Math.imul(31, s) + c.charCodeAt(0)) | 0, 0);
 
       const GetColorForUsername = (userName) =>
-        DEFAULT_COLORS[Math.abs(HashCode(userName)) % (DEFAULT_COLORS.length - 1)];
+        DEFAULT_COLORS[
+          Math.abs(HashCode(userName)) % (DEFAULT_COLORS.length - 1)
+        ];
 
       const defaultOutput = [{ label: "Default", deviceId: "default" }];
 
+      cred = {
+        awsAccessKeyId: "",
+        awsSecretAccessKey: "",
+        sessionToken: "",
+      };
+
+      AWS.config.region = "us-west-2";
+
       var hash = window.location.hash;
-      history.pushState("", document.title, window.location.pathname + window.location.search);
+      history.pushState(
+        "",
+        document.title,
+        window.location.pathname + window.location.search
+      );
       //window.location.hash = "";
 
       function getHashParams() {
@@ -590,17 +782,26 @@
         var popupURL = document.getElementById("txtCCTURL").value;
         if (hostname.includes("localhost")) {
           console.log("popup replace");
-          popupURL = popupURL.replace(/securitylive\.com/g, "localhost/VeryNiceTTS");
+          popupURL = popupURL.replace(
+            /securitylive\.com/g,
+            "localhost/VeryNiceTTS"
+          );
         }
-        cctPopup = window.open(popupURL, "Translator Window", "width=800,height=600");
+        cctPopup = window.open(
+          popupURL,
+          "Translator Window",
+          "width=800,height=600"
+        );
       }
 
       if (localStorage.getItem("twitch_username")) {
-        document.getElementById("twitch_username").value = localStorage.getItem("twitch_username");
+        document.getElementById("twitch_username").value =
+          localStorage.getItem("twitch_username");
       }
 
       if (localStorage.getItem("twitch_channel")) {
-        document.getElementById("channel").value = localStorage.getItem("twitch_channel");
+        document.getElementById("channel").value =
+          localStorage.getItem("twitch_channel");
       }
       if (localStorage.getItem("chatters")) {
         chatters = JSON.parse(localStorage.getItem("chatters"));
@@ -608,11 +809,13 @@
       }
 
       if (localStorage.getItem("websocketURL")) {
-        document.getElementById("txtWebsocketURL").value = localStorage.getItem("websocketURL");
+        document.getElementById("txtWebsocketURL").value =
+          localStorage.getItem("websocketURL");
         document.getElementById("cbSendTextToWebsocket").checked = true;
       }
       if (localStorage.getItem("AWSwebsocketURL")) {
-        document.getElementById("txtAWSWebsocketURL").value = localStorage.getItem("AWSwebsocketURL");
+        document.getElementById("txtAWSWebsocketURL").value =
+          localStorage.getItem("AWSwebsocketURL");
         document.getElementById("cbSendTextToAWSWebsocket").checked = true;
       }
 
@@ -626,36 +829,14 @@
       chatters["system"].voice = "justin";
       chatters["system"].voice_option = "neural";
 
-      cred = {
-        //
-        // Generate your twitch OAuth Token at: https://twitchapps.com/tmi/ */
-        //
-        twitchUsername: "use input field",
-        twitchOAuthToken: "use input field",
-
-        //
-        // This AWS token may go away at any time, register for a free AWS account and create an IAM role with
-        // AmazonPollyReadOnlyAccess and TranslateReadOnly
-        //
-        awsAccessKeyId: "AKIAZOBVRH3RIEHEABV2",
-        awsSecretAccessKey: "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",
-      };
-
-      AWS.config.region = "us-west-2";
-      ep = new AWS.Endpoint("translate.us-west-2.amazonaws.com");
-
-      AWS.config.credentials = new AWS.Credentials(cred.awsAccessKeyId, cred.awsSecretAccessKey);
-      window.translator = new AWS.Translate({
-        endpoint: ep,
-        region: AWS.config.region,
-      });
-
       async function loadFFZEmotes() {
         var request = new XMLHttpRequest();
         var set_id = 0;
 
         await $.ajax({
-          url: "https://api.frankerfacez.com/v1/_room/" + document.getElementById("twitch_username").value,
+          url:
+            "https://api.frankerfacez.com/v1/_room/" +
+            document.getElementById("twitch_username").value,
           success: function (response) {
             //console.log("response:", response);
             twitch_id = response.room.twitch_id;
@@ -686,7 +867,11 @@
       // Hack job to get twitch_id from FFZ first, call this second, always.
       async function loadBTTVEmotes() {
         var request = new XMLHttpRequest();
-        request.open("GET", "https://api.betterttv.net/3/cached/users/twitch/" + twitch_id, true);
+        request.open(
+          "GET",
+          "https://api.betterttv.net/3/cached/users/twitch/" + twitch_id,
+          true
+        );
         request.onreadystatechange = function () {
           if (request.readyState === 4 && request.status === 200) {
             var responseJSON = JSON.parse(request.responseText);
@@ -703,7 +888,11 @@
 
       async function loadBTTVGlobalEmotes() {
         var request = new XMLHttpRequest();
-        request.open("GET", "https://api.betterttv.net/3/cached/emotes/global", true);
+        request.open(
+          "GET",
+          "https://api.betterttv.net/3/cached/emotes/global",
+          true
+        );
         request.onreadystatechange = function () {
           if (request.readyState === 4 && request.status === 200) {
             var responseJSON = JSON.parse(request.responseText);
@@ -716,23 +905,22 @@
       }
 
       function saveOption(element) {
-          if (element.type === "checkbox") {
-              localStorage.setItem(element.id, element.checked);
-          }
-          else if (element.type === "text") {
-              localStorage.setItem(element.id, element.value);
-          }
+        if (element.type === "checkbox") {
+          localStorage.setItem(element.id, element.checked);
+        } else if (element.type === "text") {
+          localStorage.setItem(element.id, element.value);
+        }
       }
 
       function loadOptions() {
-          const entries = Object.entries(localStorage);
-          entries.forEach(([key, value]) => {
-              if (key.startsWith("cb")) {
-                  document.getElementById(key).checked = JSON.parse(value);
-              } else if (key.startsWith("txt")) {
-                  document.getElementById(key).value = value;
-              }
-          })
+        const entries = Object.entries(localStorage);
+        entries.forEach(([key, value]) => {
+          if (key.startsWith("cb")) {
+            document.getElementById(key).checked = JSON.parse(value);
+          } else if (key.startsWith("txt")) {
+            document.getElementById(key).value = value;
+          }
+        });
       }
 
       /**************************Client Connecting****************************/
@@ -742,16 +930,31 @@
 
       function onConnected(address, port) {
         document.getElementById("status").innerHTML = " [ Connected ]";
-        let message = "<speak>Connected to channel " + getSpokenName(con.channel) + ".</speak>";
+        let message =
+          "<speak>Connected to channel " +
+          getSpokenName(con.channel) +
+          ".</speak>";
         addSystemBubble(message, ++messageID);
         window.audioPlayer.Speak("", message, "", "system", "ssml", messageID);
 
         //window.audioPlayer.Speak("Connected to channel " + con.channel, "justin");
 
-        localStorage.setItem("twitch_username", document.getElementById("twitch_username").value);
-        localStorage.setItem("twitch_channel", document.getElementById("channel").value);
-        localStorage.setItem("systemVoice", document.getElementById("systemVoice").value);
-        localStorage.setItem("systemVoiceOption", document.getElementById("systemVoiceOption").value);
+        localStorage.setItem(
+          "twitch_username",
+          document.getElementById("twitch_username").value
+        );
+        localStorage.setItem(
+          "twitch_channel",
+          document.getElementById("channel").value
+        );
+        localStorage.setItem(
+          "systemVoice",
+          document.getElementById("systemVoice").value
+        );
+        localStorage.setItem(
+          "systemVoiceOption",
+          document.getElementById("systemVoiceOption").value
+        );
 
         if (localStorage.getItem("cbAutoTranslateChat")) {
           document.getElementById("cbAutoTranslateChat").checked = JSON.parse(
@@ -769,23 +972,44 @@
         console.log("arguments:", arguments, "reason:", reason);
         //ttsBanByUser(channel.substring(1), username);
         window.audioPlayer.SpeakNow(
-          "<speak>Hey chat, " + username + " was banned, thought you should know.</speak>",
+          "<speak>Hey chat, " +
+            username +
+            " was banned, thought you should know.</speak>",
           "system",
           "ssml"
         );
       }
 
       function onCheer() {
-        console.log("onCheer:", arguments);
+        console.log("onCheer:");
+        console.log(arguments);
+        let message = `${arguments[1]["display-name"]} just cheered ${arguments[1].bits} bits, thank you so much!`;
+        addSystemBubble(message, ++messageID);
+        window.audioPlayer.SpeakNext(message, "system", "ssml", messageID);
+        message = `${arguments[2]}`;
+        addSystemBubble(message, ++messageID);
+        let prefix = "<speak>" + getSpokenName(username) + " says </speak>";
+        audioPlayer.Speak(
+          prefix,
+          message,
+          "",
+          arguments[1].username,
+          "ssml",
+          messageID
+        );
       }
+
       function onSub() {
-        console.log("onSub:", arguments);
+        console.log("onSub:");
+        console.log(arguments);
       }
       function onRitual() {
-        console.log("onRitual:", arguments);
+        console.log("onRitual:");
+        console.log(arguments);
       }
       function onRaid() {
-        console.log("onRaid:", arguments);
+        console.log("onRaid:");
+        console.log(arguments);
       }
 
       /**************************Init and Connect to Chat****************************/
@@ -862,7 +1086,10 @@
       }
 
       function websocketCustomConnect() {
-        console.log("setting up websocket", document.getElementById("cbSendTextToWebsocket").value);
+        console.log(
+          "setting up websocket",
+          document.getElementById("cbSendTextToWebsocket").value
+        );
         var websocketURL = document.getElementById("txtWebsocketURL").value;
 
         try {
@@ -883,14 +1110,26 @@
 
           if (command.topic == "TTS") {
             console.log(command);
-            window.audioPlayer.SpeakNow(command.text, command.username, "text", command.voice);
+            window.audioPlayer.SpeakNow(
+              command.text,
+              command.username,
+              "text",
+              command.voice
+            );
           } else {
-            window.audioPlayer.SpeakNow("<speak>" + event.data + "</speak>", "system", "ssml");
+            window.audioPlayer.SpeakNow(
+              "<speak>" + event.data + "</speak>",
+              "system",
+              "ssml"
+            );
           }
         };
 
         websocketCustom.onclose = function (e) {
-          console.log("Socket is closed. Reconnect will be attempted in 1 second.", e.reason);
+          console.log(
+            "Socket is closed. Reconnect will be attempted in 1 second.",
+            e.reason
+          );
           setTimeout(function () {
             websocketCustomConnect();
           }, 1000);
@@ -905,10 +1144,16 @@
       }
 
       function websocketAWSConnect() {
-        console.log("setting up AWS websocket", document.getElementById("cbSendTextToAWSWebsocket").value);
-        var AWSWebsocketURL = document.getElementById("txtAWSWebsocketURL").value;
+        console.log(
+          "setting up AWS websocket",
+          document.getElementById("cbSendTextToAWSWebsocket").value
+        );
+        var AWSWebsocketURL =
+          document.getElementById("txtAWSWebsocketURL").value;
 
-        websocketProd = new WebSocket(AWSWebsocketURL + "/?channel=" + con.channel);
+        websocketProd = new WebSocket(
+          AWSWebsocketURL + "/?channel=" + con.channel
+        );
 
         websocketProd.onopen = function () {
           console.log("Connected to AWS websocket backend.");
@@ -925,7 +1170,10 @@
         websocketProd.onmessage = function (event) {};
 
         websocketProd.onclose = function (e) {
-          console.log("AWS Socket is closed. Reconnect will be attempted in 1 second.", e.reason);
+          console.log(
+            "AWS Socket is closed. Reconnect will be attempted in 1 second.",
+            e.reason
+          );
           setTimeout(function () {
             websocketAWSConnect();
           }, 1000);
@@ -978,28 +1226,49 @@
       }
 
       function voiceSelected(voice) {
-        var userVoiceOptionSource = document.getElementById("system-voice-option-template").innerHTML,
+        var userVoiceOptionSource = document.getElementById(
+            "system-voice-option-template"
+          ).innerHTML,
           userVoiceOptionTemplate = Handlebars.compile(userVoiceOptionSource),
-          userVoiceOptionPlaceholder = document.getElementById("systemVoiceOptionPlaceholder");
-        userVoiceOptionPlaceholder.innerHTML = userVoiceOptionTemplate(voices[voice.toLowerCase()]);
+          userVoiceOptionPlaceholder = document.getElementById(
+            "systemVoiceOptionPlaceholder"
+          );
+        userVoiceOptionPlaceholder.innerHTML = userVoiceOptionTemplate(
+          voices[voice.toLowerCase()]
+        );
         var voiceOption = document.getElementById("voice-option");
         voiceOption.value = voices[voice.toLowerCase()].voiceOptions[0];
 
-        localStorage.setItem("systemVoice", document.getElementById("systemVoice").value);
-        localStorage.setItem("systemVoiceOption", document.getElementById("systemVoiceOption").value);
+        localStorage.setItem(
+          "systemVoice",
+          document.getElementById("systemVoice").value
+        );
+        localStorage.setItem(
+          "systemVoiceOption",
+          document.getElementById("systemVoiceOption").value
+        );
       }
 
       function voiceOptionSelected(voiceOption) {
         var voiceOptionElement = document.getElementById("voice-option");
         voiceOptionElement.value = voiceOption;
 
-        localStorage.setItem("systemVoice", document.getElementById("systemVoice").value);
-        localStorage.setItem("systemVoiceOption", document.getElementById("systemVoiceOption").value);
+        localStorage.setItem(
+          "systemVoice",
+          document.getElementById("systemVoice").value
+        );
+        localStorage.setItem(
+          "systemVoiceOption",
+          document.getElementById("systemVoiceOption").value
+        );
       }
 
       function saveLocalStorageLang(elementId) {
         console.log("elementId:", elementId);
-        localStorage.setItem(elementId, document.getElementById(elementId).value);
+        localStorage.setItem(
+          elementId,
+          document.getElementById(elementId).value
+        );
       }
 
       /**************************Init and Connect to Chat****************************/
@@ -1038,7 +1307,10 @@
         //console.log("message", message);
         //console.log("chatters:", chatters);
 
-        if (userstate["custom-reward-id"] == "9914796b-d33c-4317-bb9e-e66b5d372ac2") {
+        if (
+          userstate["custom-reward-id"] ==
+          "9914796b-d33c-4317-bb9e-e66b5d372ac2"
+        ) {
           client
             .deletemessage(channel, userstate.id)
             .then((data) => {
@@ -1073,13 +1345,22 @@
         if (document.getElementById("cbEveryoneTTS").checked) {
           //console.log("cbEveryone");
           allowTTS = true;
-        } else if (document.getElementById("cbModTTS").checked && userstate.mod) {
+        } else if (
+          document.getElementById("cbModTTS").checked &&
+          userstate.mod
+        ) {
           //console.log("cbMod");
           allowTTS = true;
-        } else if (document.getElementById("cbVipTTS").checked && userstate.badges.hasOwnProperty("vip")) {
+        } else if (
+          document.getElementById("cbVipTTS").checked &&
+          userstate.badges.hasOwnProperty("vip")
+        ) {
           //console.log("cbVip");
           allowTTS = true;
-        } else if (document.getElementById("cbSubTTS").checked && userstate.subscriber) {
+        } else if (
+          document.getElementById("cbSubTTS").checked &&
+          userstate.subscriber
+        ) {
           //console.log("cbSub");
           allowTTS = true;
         }
@@ -1093,7 +1374,9 @@
           var twitchEmotes = [];
           for (const key in userstate.emotes) {
             var strPos = userstate.emotes[key][0].split("-");
-            twitchEmotes.push(message.substring(parseInt(strPos[0]), parseInt(strPos[1]) + 1));
+            twitchEmotes.push(
+              message.substring(parseInt(strPos[0]), parseInt(strPos[1]) + 1)
+            );
           }
           for (let emote of twitchEmotes) {
             emote = escapeRegExp(emote);
@@ -1127,13 +1410,17 @@
 
           var time_diff = window.performance.now() - emoteParsingStart;
           /*console.log(
-                                  "processed emotes in:",
-                                  parseFloat(time_diff).toFixed(2),
-                                  "ms"
-                                );*/
+                                                    "processed emotes in:",
+                                                    parseFloat(time_diff).toFixed(2),
+                                                    "ms"
+                                                  );*/
         }
 
-        if (username == "streamelements" || username == "pretzelrocks" || username.includes("welcome to my channel")) {
+        if (
+          username == "streamelements" ||
+          username == "pretzelrocks" ||
+          username.includes("welcome to my channel")
+        ) {
           last_speaker = username;
           return;
         }
@@ -1158,7 +1445,10 @@
         await loadVoice(userstate);
         localStorage.setItem("chatters", JSON.stringify(chatters));
 
-        if (chatters[username].hasOwnProperty("ttsBanned") && chatters[username].ttsBanned) {
+        if (
+          chatters[username].hasOwnProperty("ttsBanned") &&
+          chatters[username].ttsBanned
+        ) {
           allowTTS = false;
           allowTTSmessage += "TTS Banned - ";
         }
@@ -1189,222 +1479,293 @@
             TargetLanguageCode: con.targetLanguage,
           };
 
-          window.translator.translateText(params, function onIncomingMessageTranslate(err, data) {
-            //console.log('Original Message  : ' + message);
-            //console.log('Translated Message: ' + data.TranslatedText);
+          window.translator.translateText(
+            params,
+            function onIncomingMessageTranslate(err, data) {
+              //console.log('Original Message  : ' + message);
+              //console.log('Translated Message: ' + data.TranslatedText);
 
-            var translatedMessage = data.TranslatedText;
-            var identicalTranslation = false;
-            if (message.trim() === translatedMessage.trim()) {
-              identicalTranslation = true;
-            }
-
-            if (err) {
-              console.log("Error calling Translate. " + err.message + err.stack);
-            }
-            if (data) {
-              let spokenText = translatedMessage;
-              spokenText = spokenText.replace(/&/g, function (i) {
-                return "and";
-              });
-              translatedMessage = translatedMessage.replace(/[<>;&'"]/g, function (i) {
-                var entity = getHTMLEntityEncoding(i);
-                return entity;
-              });
-              message = message.replace(/[<>;&'"]/g, function (i) {
-                var entity = getHTMLEntityEncoding(i);
-                return entity;
-              });
-
-              var targetLang = document.getElementById("dstLangSelect").value;
-              var translatedFromMessage = "";
-
-              if (document.getElementById("dstLangSelect").value != data.SourceLanguageCode) {
-                if (message.startsWith("~")) {
-                  spokenText = message.substring(1);
-                } else {
-                  translatedFromMessage = "Translated from " + supportedLanguages.en[data.SourceLanguageCode];
-                }
-
-                if (con.cbAutoTranslateChat.checked && !identicalTranslation) {
-                  window.client.action(
-                    con.channel,
-                    chatters[username].display_name +
-                      ": " +
-                      translatedMessage +
-                      " (Translated from " +
-                      supportedLanguages.en[data.SourceLanguageCode] +
-                      ")"
-                  );
-                }
+              var translatedMessage = data.TranslatedText;
+              var identicalTranslation = false;
+              if (message.trim() === translatedMessage.trim()) {
+                identicalTranslation = true;
               }
 
-              let similarity = 0;
-              let minSimilarity = 75;
-              let maxTimeAgoMS = 300000;
-              let now = Date.now();
+              if (err) {
+                console.log(
+                  "Error calling Translate. " + err.message + err.stack
+                );
+              }
+              if (data) {
+                let spokenText = translatedMessage;
+                spokenText = spokenText.replace(/&/g, function (i) {
+                  return "and";
+                });
+                translatedMessage = translatedMessage.replace(
+                  /[<>;&'"]/g,
+                  function (i) {
+                    var entity = getHTMLEntityEncoding(i);
+                    return entity;
+                  }
+                );
+                message = message.replace(/[<>;&'"]/g, function (i) {
+                  var entity = getHTMLEntityEncoding(i);
+                  return entity;
+                });
 
-              if (document.getElementById("cbUserLevDistance").checked) {
-                minSimilarity = parseInt(document.getElementById("txtUserLevPct").value);
-                maxTimeAgoMS = parseInt(document.getElementById("txtUserLevTime").value) * 1000;
-                if (localChattersData[username] && localChattersData[username].hasOwnProperty("lastMessages")) {
-                  for (const message of localChattersData[username].lastMessages) {
-                    similarity = similarityPercentage(spokenText, message.message);
+                var targetLang = document.getElementById("dstLangSelect").value;
+                var translatedFromMessage = "";
 
-                    if (similarity > minSimilarity && now - message.timestamp < maxTimeAgoMS) {
+                if (
+                  document.getElementById("dstLangSelect").value !=
+                  data.SourceLanguageCode
+                ) {
+                  if (message.startsWith("~")) {
+                    spokenText = message.substring(1);
+                  } else {
+                    translatedFromMessage =
+                      "Translated from " +
+                      supportedLanguages.en[data.SourceLanguageCode];
+                  }
+
+                  if (
+                    con.cbAutoTranslateChat.checked &&
+                    !identicalTranslation
+                  ) {
+                    window.client.action(
+                      con.channel,
+                      chatters[username].display_name +
+                        ": " +
+                        translatedMessage +
+                        " (Translated from " +
+                        supportedLanguages.en[data.SourceLanguageCode] +
+                        ")"
+                    );
+                  }
+                }
+
+                let similarity = 0;
+                let minSimilarity = 75;
+                let maxTimeAgoMS = 300000;
+                let now = Date.now();
+
+                if (document.getElementById("cbUserLevDistance").checked) {
+                  minSimilarity = parseInt(
+                    document.getElementById("txtUserLevPct").value
+                  );
+                  maxTimeAgoMS =
+                    parseInt(document.getElementById("txtUserLevTime").value) *
+                    1000;
+                  if (
+                    localChattersData[username] &&
+                    localChattersData[username].hasOwnProperty("lastMessages")
+                  ) {
+                    for (const message of localChattersData[username]
+                      .lastMessages) {
+                      similarity = similarityPercentage(
+                        spokenText,
+                        message.message
+                      );
+
+                      if (
+                        similarity > minSimilarity &&
+                        now - message.timestamp < maxTimeAgoMS
+                      ) {
+                        allowTTS = false;
+                        allowTTSmessage += "User Lev Distance - ";
+                        break;
+                      }
+                    }
+
+                    const startIndex = Math.max(
+                      0,
+                      localChattersData[username].lastMessages.length - 20
+                    );
+                    localChattersData[username].lastMessages =
+                      localChattersData[username].lastMessages.slice(
+                        startIndex
+                      );
+                  }
+                }
+
+                now = Date.now();
+
+                if (document.getElementById("cbChatLevDistance").checked) {
+                  maxTimeAgoMS =
+                    parseInt(document.getElementById("txtChatLevTime").value) *
+                    1000;
+                  minSimilarity = parseInt(
+                    document.getElementById("txtChatLevPct").value
+                  );
+                  for (const message of lastMessages) {
+                    similarity = similarityPercentage(
+                      spokenText,
+                      message.message
+                    );
+
+                    if (
+                      similarity > minSimilarity &&
+                      now - message.timestamp < maxTimeAgoMS
+                    ) {
                       allowTTS = false;
-                      allowTTSmessage += "User Lev Distance - ";
+                      allowTTSmessage += "Chat Lev Distance - ";
                       break;
                     }
                   }
 
-                  const startIndex = Math.max(0, localChattersData[username].lastMessages.length - 20);
-                  localChattersData[username].lastMessages = localChattersData[username].lastMessages.slice(startIndex);
+                  const startIndex = Math.max(0, lastMessages.length - 20);
+                  lastMessages = lastMessages.slice(startIndex);
                 }
-              }
 
-              now = Date.now();
+                let color = "#FFFFFF";
+                if (chatters[username].color) {
+                  color = chatters[username].color;
+                } else {
+                  color = GetColorForUsername(username);
+                }
 
-              if (document.getElementById("cbChatLevDistance").checked) {
-                maxTimeAgoMS = parseInt(document.getElementById("txtChatLevTime").value) * 1000;
-                minSimilarity = parseInt(document.getElementById("txtChatLevPct").value);
-                for (const message of lastMessages) {
-                  similarity = similarityPercentage(spokenText, message.message);
+                let translatedMessageHTML = "";
+                if (
+                  document.getElementById("dstLangSelect").value !=
+                  data.SourceLanguageCode
+                ) {
+                  translatedMessageHTML = `${translatedMessage} (${translatedFromMessage})`;
+                }
 
-                  if (similarity > minSimilarity && now - message.timestamp < maxTimeAgoMS) {
-                    allowTTS = false;
-                    allowTTSmessage += "Chat Lev Distance - ";
-                    break;
+                if (identicalTranslation) translatedMessageHTML = "";
+
+                let announceVoice = "System Voice";
+                let userVoice = `${chatters[username].voice} (${chatters[username].voice_option})`;
+
+                let speakerIcon = "🔊";
+                if (!allowTTS) {
+                  userVoice = `(${allowTTSmessage.slice(0, -3)})`;
+                  speakerIcon = "🔇";
+                }
+
+                messageID++;
+
+                //  let buttons = makeButton("Don't Speak", "secondary", "comment-slash", username, messageID) +
+                //makeButton("Speak Next", "success", "comment-medical", username, messageID) +
+                let buttons =
+                  makeButton(
+                    "TTS Ban",
+                    "warning",
+                    "volume-xmark",
+                    username,
+                    messageID
+                  ) + makeButton("Ban", "danger", "gavel", username, messageID);
+
+                con.liveChatUI.innerHTML += `<div id="message-id${messageID}" class="chat-bubble">
+                                    <div class="username-container" id="message-user-id${messageID}">
+                                      <div class="speaker-info">
+                                        <span class="speaker-icon">${speakerIcon}</span>
+                                        <span id="message-system-voice-id${messageID}" class="voice-name">SYSTEM VOICE</span>
+                                      </div>
+                                      <span class="username">
+                                        <strong style='color:${color}'>${
+                  chatters[username].display_name
+                }:</strong><br>
+                                        (${chatters[
+                                          username
+                                        ].spoken_name.trim()})
+                                      </span>
+                                    </div>
+
+                                    <div class="message-container" id="message-message-id${messageID}">
+                                      <div class="speaker-info">
+                                        <span class="speaker-icon">${speakerIcon}</span>
+                                        <span class="voice-name">${userVoice}</span>
+                                      </div>
+                                      <span class="message">
+                                        ${message}<br>
+                                        ${translatedMessageHTML}
+                                      </span>
+                                    </div>
+
+                                    <div class="buttons-container d-flex justify-content-center" >
+                                      <div class="btn-group p-1">${buttons}</div>
+                                    </div>
+                                  </div>`;
+
+                //If speak translation in enabled, speak translated message
+                if (con.cbSpeak.checked && allowTTS) {
+                  var regex = /_/gi;
+                  var longnumex = /\d{6,}/;
+                  var linkex =
+                    /(?:(?:https?):\/\/)?(?:[\w-]+(?:\.[\w-]+)+)(?:\/[^\s]*)?/g;
+                  //var longex = /\S{100,}/g;
+
+                  spokenText = spokenText.replace(regex, " ");
+                  spokenText = spokenText.replace(linkex, " (Web link) ");
+                  spokenText = spokenText.replace(longnumex, " (Long number) ");
+                  //spokenText = spokenText.replace(longex, ' (long word) ');
+
+                  var prefix = "";
+                  if (last_speaker != username) {
+                    prefix =
+                      "<speak>" + getSpokenName(username) + " says </speak>";
                   }
+                  audioPlayer.Speak(
+                    prefix,
+                    spokenText,
+                    translatedFromMessage,
+                    username,
+                    ssmlTextType,
+                    messageID
+                  );
+
+                  if (!localChattersData[username]) {
+                    localChattersData[username] = {};
+                    localChattersData[username].lastMessages = [];
+                    console.log(
+                      `A new chatter has entered the ring: ${username} --  ${spokenText} -- ${similarity}`
+                    );
+                  }
+
+                  let tmpMessage = {
+                    message: spokenText,
+                    timestamp: Date.now(),
+                  };
+
+                  localChattersData[username].lastMessages.push(tmpMessage);
+                  lastMessages.push(tmpMessage);
+
+                  last_speaker = username;
+                } else {
+                  console.log("DENIED TTS:", userstate);
                 }
 
-                const startIndex = Math.max(0, lastMessages.length - 20);
-                lastMessages = lastMessages.slice(startIndex);
+                con.liveChatUIContainer.scrollTop =
+                  con.liveChatUIContainer.scrollHeight;
               }
-
-              let color = "#FFFFFF";
-              if (chatters[username].color) {
-                color = chatters[username].color;
-              } else {
-                color = GetColorForUsername(username);
-              }
-
-              let translatedMessageHTML = "";
-              if (document.getElementById("dstLangSelect").value != data.SourceLanguageCode) {
-                translatedMessageHTML = `${translatedMessage} (${translatedFromMessage})`;
-              }
-
-              if (identicalTranslation) translatedMessageHTML = "";
-
-              let announceVoice = "System Voice";
-              let userVoice = `${chatters[username].voice} (${chatters[username].voice_option})`;
-
-              let speakerIcon = "🔊";
-              if (!allowTTS) {
-                userVoice = `(${allowTTSmessage.slice(0, -3)})`;
-                speakerIcon = "🔇";
-              }
-
-              messageID++;
-
-              //  let buttons = makeButton("Don't Speak", "secondary", "comment-slash", username, messageID) +
-              //makeButton("Speak Next", "success", "comment-medical", username, messageID) +
-              let buttons =
-                makeButton("TTS Ban", "warning", "volume-xmark", username, messageID) +
-                makeButton("Ban", "danger", "gavel", username, messageID);
-
-              con.liveChatUI.innerHTML +=
-                `<div id="message-id${messageID}" class="chat-bubble">
-                  <div class="username-container" id="message-user-id${messageID}">
-                    <div class="speaker-info">
-                      <span class="speaker-icon">${speakerIcon}</span>
-                      <span id="message-system-voice-id${messageID}" class="voice-name">SYSTEM VOICE</span>
-                    </div>
-                    <span class="username">
-                      <strong style='color:${color}'>${chatters[username].display_name}:</strong><br>
-                      (${chatters[username].spoken_name.trim()})
-                    </span>
-                  </div>
-
-                  <div class="message-container" id="message-message-id${messageID}">
-                    <div class="speaker-info">
-                      <span class="speaker-icon">${speakerIcon}</span>
-                      <span class="voice-name">${userVoice}</span>
-                    </div>
-                    <span class="message">
-                      ${message}<br>
-                      ${translatedMessageHTML}
-                    </span>
-                  </div>
-
-                  <div class="buttons-container d-flex justify-content-center" >
-                    <div class="btn-group p-1">${buttons}</div>
-                  </div>
-                </div>`;
-
-              //If speak translation in enabled, speak translated message
-              if (con.cbSpeak.checked && allowTTS) {
-                var regex = /_/gi;
-                var longnumex = /\d{6,}/;
-                var linkex = /(?:(?:https?):\/\/)?(?:[\w-]+(?:\.[\w-]+)+)(?:\/[^\s]*)?/g;
-                //var longex = /\S{100,}/g;
-
-                spokenText = spokenText.replace(regex, " ");
-                spokenText = spokenText.replace(linkex, " (Web link) ");
-                spokenText = spokenText.replace(longnumex, " (Long number) ");
-                //spokenText = spokenText.replace(longex, ' (long word) ');
-
-                var prefix = "";
-                if (last_speaker != username) {
-                  prefix = "<speak>" + getSpokenName(username) + " says </speak>";
-                }
-                audioPlayer.Speak(prefix, spokenText, translatedFromMessage, username, ssmlTextType, messageID);
-
-                if (!localChattersData[username]) {
-                  localChattersData[username] = {};
-                  localChattersData[username].lastMessages = [];
-                  console.log(`A new chatter has entered the ring: ${username} --  ${spokenText} -- ${similarity}`);
-                }
-
-                let tmpMessage = {
-                  message: spokenText,
-                  timestamp: Date.now(),
-                };
-
-                localChattersData[username].lastMessages.push(tmpMessage);
-                lastMessages.push(tmpMessage);
-
-                last_speaker = username;
-              } else {
-                console.log("DENIED TTS:", userstate);
-              }
-
-              con.liveChatUIContainer.scrollTop = con.liveChatUIContainer.scrollHeight;
             }
-          });
+          );
         }
       }
 
       function addSystemBubble(message, messageID) {
         con.liveChatUI.innerHTML += `<div id="message-id${messageID}" class="chat-bubble">
-  <div class="username-container" id="message-user-id${messageID}">
-    <div class="speaker-info">
-      <span class="speaker-icon">🔊</span>
-      <span id="message-system-voice-id${messageID}" class="voice-name">SYSTEM VOICE</span>
-    </div>
-    <span class="username">
-      <strong style="color:${GetColorForUsername("System")}">System</strong>
-     </span>
-  </div>
+                    <div class="username-container" id="message-user-id${messageID}">
+                      <div class="speaker-info">
+                        <span class="speaker-icon">🔊</span>
+                        <span id="message-system-voice-id${messageID}" class="voice-name">SYSTEM VOICE</span>
+                      </div>
+                      <span class="username">
+                        <strong style="color:${GetColorForUsername(
+                          "System"
+                        )}">System</strong>
+                       </span>
+                    </div>
 
-  <div class="message-container" id="message-message-id${messageID}">
-    <span class="message">
-      ${message}
-    </span>
-  </div>
-  <div class="buttons-container"><span class="btn-group"></span></div>
-</div>
-`;
+                    <div class="message-container" id="message-message-id${messageID}">
+                      <span class="message">
+                        ${message}
+                      </span>
+                    </div>
+                    <div class="buttons-container"><span class="btn-group"></span></div>
+                  </div>
+                  `;
       }
 
       function makeButton(btnName, btnClass, btnIcon, btnArgument, mID) {
@@ -1417,23 +1778,27 @@
           btnArgument = mID;
         }
 
-        let btnPadding = 'px-4';
+        let btnPadding = "px-4";
         switch (messageButtonName) {
-          case 'TTSBan': btnPadding = 'px-2'; break;
-          case 'TTSUnban': btnPadding = 'px-2'; break;
+          case "TTSBan":
+            btnPadding = "px-2";
+            break;
+          case "TTSUnban":
+            btnPadding = "px-2";
+            break;
         }
 
         return `<button id="messageButton-${messageButtonName}-id${mID}"
-                        class="btn btn-sm btn-${btnClass} py-0 ${btnPadding}"
-                        title="${messageButtonName}"
-                        onclick='onButtonClick("${messageButtonName}", "${btnArgument}", event)'>
-                  <div>
-                    <i class="fa-solid fa-${btnIcon}"></i>
-                  </div>
-                  <div>
-                    <span class="small">${btnName}</span>
-                  </div>
-                </button>`;
+                                          class="btn btn-sm btn-${btnClass} py-0 ${btnPadding}"
+                                          title="${messageButtonName}"
+                                          onclick='onButtonClick("${messageButtonName}", "${btnArgument}", event)'>
+                                    <div>
+                                      <i class="fa-solid fa-${btnIcon}"></i>
+                                    </div>
+                                    <div>
+                                      <span class="small">${btnName}</span>
+                                    </div>
+                                  </button>`;
       }
 
       function onButtonClick(button, argument, event) {
@@ -1470,7 +1835,14 @@
             if (c1 === c2) {
               distances_.push(distances[i1]);
             } else {
-              distances_.push(1 + Math.min(distances[i1], distances[i1 + 1], distances_[distances_.length - 1]));
+              distances_.push(
+                1 +
+                  Math.min(
+                    distances[i1],
+                    distances[i1 + 1],
+                    distances_[distances_.length - 1]
+                  )
+              );
             }
           }
           distances = distances_;
@@ -1528,7 +1900,10 @@
             chatters[username].voice_option = voice_option;
           }
           saveTTSConfig(channel, username);
-        } else if (message.startsWith("!setspoken") || message.startsWith("!setname")) {
+        } else if (
+          message.startsWith("!setspoken") ||
+          message.startsWith("!setname")
+        ) {
           message = message.replace("!setspoken", "");
           message = message.replace("!setname", "");
           message = message.trim();
@@ -1540,9 +1915,16 @@
           saveTTSConfig(channel, username);
         } else if (message.startsWith("!voices")) {
           sendVoiceListToChat();
-        } else if (message.startsWith("!poof") || message.startsWith("!poop") || message.startsWith("!pop")) {
+        } else if (
+          message.startsWith("!poof") ||
+          message.startsWith("!poop") ||
+          message.startsWith("!pop")
+        ) {
           window.audioPlayer.PopLastMessage(username);
-        } else if (message.startsWith("!ttsdump") || message.startsWith("!dump")) {
+        } else if (
+          message.startsWith("!ttsdump") ||
+          message.startsWith("!dump")
+        ) {
           parts = message.split(" ");
           if (parts.length < 2 && (mod || channel == username)) {
             window.audioPlayer.Dump();
@@ -1552,9 +1934,15 @@
           } else {
             window.audioPlayer.DumpByUser(username);
           }
-        } else if (message.startsWith("!ttsban") && (mod || channel == username)) {
+        } else if (
+          message.startsWith("!ttsban") &&
+          (mod || channel == username)
+        ) {
           ttsBan(channel, message, true);
-        } else if (message.startsWith("!ttsunban") && (mod || channel == username)) {
+        } else if (
+          message.startsWith("!ttsunban") &&
+          (mod || channel == username)
+        ) {
           ttsBan(channel, message, false);
         }
       }
@@ -1579,10 +1967,10 @@
         banUser(twitch_id, user);
 
         /*client.ban(channel, user).then(function () {
-                                      console.log("Successfully banned " + user.username + " on " + channel + "!");
-                                    }, function (err) {
-                                      console.log(err);
-                                    });*/
+                                                        console.log("Successfully banned " + user.username + " on " + channel + "!");
+                                                      }, function (err) {
+                                                        console.log(err);
+                                                      });*/
       }
 
       function ttsUnbanByUser(channel, user) {
@@ -1591,12 +1979,12 @@
         saveTTSConfig(channel, user);
         unbanUser(twitch_id, user);
         /*
-                                    client.unban(channel, user).then(function () {
-                                      console.log("Successfully unbanned " + user.username + " on " + channel + "!");
-                                    }, function (err) {
-                                      console.log(err);
-                                    });
-                                    */
+                                                      client.unban(channel, user).then(function () {
+                                                        console.log("Successfully unbanned " + user.username + " on " + channel + "!");
+                                                      }, function (err) {
+                                                        console.log(err);
+                                                      });
+                                                      */
       }
 
       async function banUser(channel_id, login, reason) {
@@ -1715,7 +2103,8 @@
         request.data = [];
         request.data.push(data);
         //console.log("saveTTSConfig request data:", request);
-        var url = "https://api.securitylive.com/tts/" + channel + "/" + username;
+        var url =
+          "https://api.securitylive.com/tts/" + channel + "/" + username;
         await $.ajax({
           url: url,
           type: "PUT",
@@ -1754,8 +2143,10 @@
                 var lcvoice = voicesDesc.Voices[i].Id.toLowerCase();
                 var idvoice = voicesDesc.Voices[i].Id;
                 voices[lcvoice] = {};
-                voices[lcvoice].engine = voicesDesc.Voices[i].SupportedEngines[0];
-                voices[lcvoice].voiceOptions = voicesDesc.Voices[i].SupportedEngines;
+                voices[lcvoice].engine =
+                  voicesDesc.Voices[i].SupportedEngines[0];
+                voices[lcvoice].voiceOptions =
+                  voicesDesc.Voices[i].SupportedEngines;
                 voices[lcvoice].name = idvoice;
               }
               voicesDesc.Voices.sort(function (a, b) {
@@ -1773,20 +2164,23 @@
 
       function sendVoiceListToChat() {
         /*
-                                    var neuralVoices = '';
-                                    var standardVoices = '';
-                                    for (var i = 0; i < voicesDesc.Voices.length; i++) {
-                                      var voice = voicesDesc.Voices[i];
-                                      if (voice.SupportedEngines[0] == 'standard') {
-                                        standardVoices += i + ': ' + voice.Id + ' (' + voice.LanguageName + '), ';
-                                      } else if (voice.SupportedEngines[0] == 'neural') {
-                                        neuralVoices += i + ': ' + voice.Id + ' (' + voice.LanguageName + '), ';
-                                      }
-                                    }
-                                    window.client.action(con.channel, 'Neural Voices: ' + neuralVoices);
-                                    window.client.action(con.channel, 'Standard Voices: ' + standardVoices);
-                                    */
-        window.client.action(con.channel, "Configure your voice here: https://securitylive.com/tts-config.html");
+                                                      var neuralVoices = '';
+                                                      var standardVoices = '';
+                                                      for (var i = 0; i < voicesDesc.Voices.length; i++) {
+                                                        var voice = voicesDesc.Voices[i];
+                                                        if (voice.SupportedEngines[0] == 'standard') {
+                                                          standardVoices += i + ': ' + voice.Id + ' (' + voice.LanguageName + '), ';
+                                                        } else if (voice.SupportedEngines[0] == 'neural') {
+                                                          neuralVoices += i + ': ' + voice.Id + ' (' + voice.LanguageName + '), ';
+                                                        }
+                                                      }
+                                                      window.client.action(con.channel, 'Neural Voices: ' + neuralVoices);
+                                                      window.client.action(con.channel, 'Standard Voices: ' + standardVoices);
+                                                      */
+        window.client.action(
+          con.channel,
+          "Configure your voice here: https://securitylive.com/tts-config.html"
+        );
       }
 
       async function loadVoice(lvuserstate) {
@@ -1890,29 +2284,37 @@
             TargetLanguageCode: document.getElementById("chatLangSelect").value,
           };
 
-          window.translator.translateText(params, function onSendMessageTranslate(err, data) {
-            if (err) {
-              console.log("Error calling Translate. " + err.message + err.stack);
+          window.translator.translateText(
+            params,
+            function onSendMessageTranslate(err, data) {
+              if (err) {
+                console.log(
+                  "Error calling Translate. " + err.message + err.stack
+                );
+              }
+              if (data) {
+                //console.log("M: " + message);
+                //console.log("T: " + translatedMessage);
+                var translatedMessage = data.TranslatedText;
+
+                //Send message to chat
+                window.client.action(con.channel, translatedMessage);
+
+                //Clear send message UI
+                con.sendMessage.value = "";
+
+                //Print original message in Translated UI
+                con.liveChatUI.innerHTML +=
+                  "<strong> ME: </strong>: " + message + "<br>";
+                con.liveChatUI.innerHTML +=
+                  "<strong> ME: </strong>: " + translatedMessage + "<br>";
+
+                //Scroll chat and translated UI to bottom to keep focus on latest messages
+                con.liveChatUIContainer.scrollTop =
+                  con.liveChatUIContainer.scrollHeight;
+              }
             }
-            if (data) {
-              //console.log("M: " + message);
-              //console.log("T: " + translatedMessage);
-              var translatedMessage = data.TranslatedText;
-
-              //Send message to chat
-              window.client.action(con.channel, translatedMessage);
-
-              //Clear send message UI
-              con.sendMessage.value = "";
-
-              //Print original message in Translated UI
-              con.liveChatUI.innerHTML += "<strong> ME: </strong>: " + message + "<br>";
-              con.liveChatUI.innerHTML += "<strong> ME: </strong>: " + translatedMessage + "<br>";
-
-              //Scroll chat and translated UI to bottom to keep focus on latest messages
-              con.liveChatUIContainer.scrollTop = con.liveChatUIContainer.scrollHeight;
-            }
-          });
+          );
         }
       }
 
@@ -1921,13 +2323,16 @@
           window.client.action(con.channel, text);
 
           //Print original message in Translated UI
-          con.liveChatUI.innerHTML += "<strong> ME: </strong>: " + text + "<br>";
+          con.liveChatUI.innerHTML +=
+            "<strong> ME: </strong>: " + text + "<br>";
 
           //Print translated message in Chat UI
-          con.liveChatUI.innerHTML += "<strong> ME: </strong>: " + text + "<br>";
+          con.liveChatUI.innerHTML +=
+            "<strong> ME: </strong>: " + text + "<br>";
 
           //Scroll chat and translated UI to bottom to keep focus on latest messages
-          con.liveChatUIContainer.scrollTop = con.liveChatUIContainer.scrollHeight;
+          con.liveChatUIContainer.scrollTop =
+            con.liveChatUIContainer.scrollHeight;
         }
       }
 
@@ -1952,7 +2357,14 @@
         var speaker = {
           self: this,
           messageQueue: [],
-          Speak: async function (prefix, text, suffix, username, ssmlTextType, mID) {
+          Speak: async function (
+            prefix,
+            text,
+            suffix,
+            username,
+            ssmlTextType,
+            mID
+          ) {
             //console.log("Speaking: " + text + " -- with voice: " + voice);
             //If currently speaking a message, add new message to the messageQueue
             let message = {};
@@ -1967,7 +2379,9 @@
               lastQueuedMessage = message;
               this.messageQueue.push(message);
             } else {
-              speakMessage(message, false).then(speakNextMessage).catch(console.log);
+              speakMessage(message, false)
+                .then(speakNextMessage)
+                .catch(console.log);
             }
           },
           SpeakNow: async function (text, username, ssmlTextType, voice) {
@@ -1979,7 +2393,9 @@
             message.username = username;
             message.voice = voice;
             message.ssmlTextType = ssmlTextType;
-            await speakMessage(message, true).then(speakNextMessage).catch(console.log);
+            await speakMessage(message, true)
+              .then(speakNextMessage)
+              .catch(console.log);
           },
           SpeakNext: async function (text, username, ssmlTextType, voice, mID) {
             //console.log("Speaking: " + text + " -- with voice: " + voice);
@@ -1995,7 +2411,9 @@
               lastQueuedMessage = message;
               this.messageQueue.unshift(message);
             } else {
-              speakMessage(message, false).then(speakNextMessage).catch(console.log);
+              speakMessage(message, false)
+                .then(speakNextMessage)
+                .catch(console.log);
             }
           },
           Pause: async function () {
@@ -2065,7 +2483,12 @@
           BanConfirm: async function () {
             //console.log("BanConfirmed:", currentSpokenMessage, " channel:", con.channel);
             if (banMessage.banInitiated) {
-              console.log("BanConfirmed:", banMessage, " channel:", con.channel);
+              console.log(
+                "BanConfirmed:",
+                banMessage,
+                " channel:",
+                con.channel
+              );
               this.DumpByUser(banMessage.username);
               ttsBanByUser(con.channel, banMessage.username);
               window.audioPlayer.SpeakNow(
@@ -2101,7 +2524,12 @@
             //console.log("BanConfirmed:", currentSpokenMessage, " channel:", con.channel);
             if (banMessage.banInitiated) {
               isSpeaking = true;
-              console.log("BanConfirmed:", banMessage, " channel:", con.channel);
+              console.log(
+                "BanConfirmed:",
+                banMessage,
+                " channel:",
+                con.channel
+              );
               await this.DumpByUser(banMessage.username);
               await window.audioPlayer.SpeakNow(
                 //"<speak>" + getSpokenName(document.getElementById("twitch_username").value) + " says " + text + "</speak>",
@@ -2118,7 +2546,9 @@
               setTimeout(function () {
                 window.audioPlayer.SpeakNow(
                   //"<speak>" + getSpokenName(document.getElementById("twitch_username").value) + " says " + text + "</speak>",
-                  "<speak>Just kidding " + user + ", we love you get back in here.</speak>",
+                  "<speak>Just kidding " +
+                    user +
+                    ", we love you get back in here.</speak>",
                   "system",
                   "ssml"
                 );
@@ -2130,7 +2560,12 @@
               //
               banMessage = {};
             } else {
-              console.log("BanConfirmed: ban not initiated", currentSpokenMessage, " channel:", con.channel);
+              console.log(
+                "BanConfirmed: ban not initiated",
+                currentSpokenMessage,
+                " channel:",
+                con.channel
+              );
               //audioPlayer.play();
             }
           },
@@ -2150,7 +2585,9 @@
           let messageElement;
 
           if (message.messageID > 0) {
-            messageElement = document.getElementById("message-user-id" + message.messageID);
+            messageElement = document.getElementById(
+              "message-user-id" + message.messageID
+            );
             originalBackground = messageElement.style.backgroundColor;
             messageElement.style.backgroundColor = "green";
           }
@@ -2169,7 +2606,9 @@
 
           if (message.messageID > 0) {
             messageElement.style.backgroundColor = originalBackground;
-            messageElement = document.getElementById("message-message-id" + message.messageID);
+            messageElement = document.getElementById(
+              "message-message-id" + message.messageID
+            );
             originalBackground = messageElement.style.backgroundColor;
             messageElement.style.backgroundColor = "green";
           }
@@ -2254,9 +2693,13 @@
 
           if (message.messageID > 0) {
             messageElement.style.backgroundColor = originalBackground;
-            messageElement = document.getElementById("message-user-id" + message.messageID);
+            messageElement = document.getElementById(
+              "message-user-id" + message.messageID
+            );
             messageElement.style.backgroundColor = "black";
-            messageElement = document.getElementById("message-message-id" + message.messageID);
+            messageElement = document.getElementById(
+              "message-message-id" + message.messageID
+            );
             messageElement.style.backgroundColor = "black";
           }
 
@@ -2274,7 +2717,9 @@
             if (queue.length > 0) {
               var nextMessage = queue[0];
               queue.splice(0, 1);
-              speakMessage(nextMessage).then(speakNextMessage).catch(console.log);
+              speakMessage(nextMessage)
+                .then(speakNextMessage)
+                .catch(console.log);
             }
           }
         }
@@ -2288,7 +2733,10 @@
             var polly = new AWS.Polly();
 
             var voice = "ivy";
-            if (chatters[message.username] && chatters[message.username].hasOwnProperty("voice")) {
+            if (
+              chatters[message.username] &&
+              chatters[message.username].hasOwnProperty("voice")
+            ) {
               voice = chatters[message.username].voice;
             }
             //console.log('voice: ' + voice);
@@ -2298,7 +2746,10 @@
             //console.log(chatters);
             //console.log("Voices:");
             //console.log(voices);
-            if (chatters[message.username] && chatters[message.username].hasOwnProperty("voice_option")) {
+            if (
+              chatters[message.username] &&
+              chatters[message.username].hasOwnProperty("voice_option")
+            ) {
               engine = chatters[message.username].voice_option;
             } else {
               engine = voices[voice].voiceOptions[0];
@@ -2375,7 +2826,8 @@
             document.getElementById("cbPauseTTSOnSpeech").checked ||
             document.getElementById("cbSendTextToWebsocket").checked
           ) {
-            window.SpeechRecognition = window.SpeechRecognition || webkitSpeechRecognition;
+            window.SpeechRecognition =
+              window.SpeechRecognition || webkitSpeechRecognition;
 
             var recognition = new webkitSpeechRecognition();
             var speechStarted = Date.now();
@@ -2397,11 +2849,15 @@
               vr_function();
             };
 
-            var trans_sourcelang = document.getElementById("dstLangSelect").value;
-            var trans_destlang = document.getElementById("systemLangSelect").value;
+            var trans_sourcelang =
+              document.getElementById("dstLangSelect").value;
+            var trans_destlang =
+              document.getElementById("systemLangSelect").value;
 
-            var gas_key = "AKfycbwi_joFMoaC8-kiSnvNiIfUqABbVar5Mg0g2nxu2BxuPkQiHJ5WwzYAFg";
-            var TRANS_URL = "https://script.google.com/macros/s/" + gas_key + "/exec";
+            var gas_key =
+              "AKfycbwi_joFMoaC8-kiSnvNiIfUqABbVar5Mg0g2nxu2BxuPkQiHJ5WwzYAFg";
+            var TRANS_URL =
+              "https://script.google.com/macros/s/" + gas_key + "/exec";
             var query = "";
             var request = new XMLHttpRequest();
 
@@ -2426,15 +2882,30 @@
 
                   //console.log("final spoke for:", Date.now() - speechStarted);
                   //console.log("speechTimeQueue:", speechTimeQueue);
-                  sendTextToCustomWebsocket(text, true, speechStarted, Date.now(), confidence);
-                  sendTextToAWSWebsocket(text, true, speechStarted, Date.now(), confidence);
+                  sendTextToCustomWebsocket(
+                    text,
+                    true,
+                    speechStarted,
+                    Date.now(),
+                    confidence
+                  );
+                  sendTextToAWSWebsocket(
+                    text,
+                    true,
+                    speechStarted,
+                    Date.now(),
+                    confidence
+                  );
 
                   if (!document.getElementById("cbSTTS").checked) {
                     return;
                   }
                   // If source and dest lang match don't translate just speak
                   if (trans_sourcelang == trans_destlang) {
-                    if (document.getElementById("cbSendDictationTranslation").checked) {
+                    if (
+                      document.getElementById("cbSendDictationTranslation")
+                        .checked
+                    ) {
                       sendVoiceMessage(text);
                     }
                     addSystemBubble(text, ++messageID);
@@ -2460,15 +2931,35 @@
                       request.open("GET", query, true);
 
                       request.onreadystatechange = function () {
-                        if (request.readyState === 4 && request.status === 200) {
+                        if (
+                          request.readyState === 4 &&
+                          request.status === 200
+                        ) {
                           //document.getElementById('speech_text-imb').innerHTML = recog_text;
                           //document.getElementById('trans_text-imb').innerHTML = request.responseText;
                           //window.audioPlayer.Speak("<speak>" + getSpokenName(document.getElementById("twitch_username").value) + " says </speak>", 'system', 'ssml');
-                          if (document.getElementById("cbSendDictationTranslation").checked) {
-                            sendVoiceMessage(text + " ( " + request.responseText + " ) confidence: " + confidence);
+                          if (
+                            document.getElementById(
+                              "cbSendDictationTranslation"
+                            ).checked
+                          ) {
+                            sendVoiceMessage(
+                              text +
+                                " ( " +
+                                request.responseText +
+                                " ) confidence: " +
+                                confidence
+                            );
                           }
                           addSystemBubble(text, ++messageID);
-                          window.audioPlayer.Speak("", request.responseText, "", "system", "text", messageID);
+                          window.audioPlayer.Speak(
+                            "",
+                            request.responseText,
+                            "",
+                            "system",
+                            "text",
+                            messageID
+                          );
 
                           //window.audioPlayer.Speak(" translated from english.", 'system', 'text');
                         }
@@ -2484,7 +2975,12 @@
                   //console.log("interim now():", Date.now());
                   runImmediateVoiceCommand(text);
                   sendTextToCCTPopup(text, false);
-                  sendTextToCustomWebsocket(text, false, speechStarted, Date.now());
+                  sendTextToCustomWebsocket(
+                    text,
+                    false,
+                    speechStarted,
+                    Date.now()
+                  );
                   //sendTextToAWSWebsocket(text, false);
                 }
               }
@@ -2517,7 +3013,13 @@
           }
         }
 
-        function sendTextToAWSWebsocket(text, isFinal, speechStarted, speechEnded, confidence) {
+        function sendTextToAWSWebsocket(
+          text,
+          isFinal,
+          speechStarted,
+          speechEnded,
+          confidence
+        ) {
           if (
             document.getElementById("cbSendTextToAWSWebsocket").checked &&
             websocketProd &&
@@ -2538,7 +3040,13 @@
           }
         }
 
-        function sendTextToCustomWebsocket(text, isFinal, speechStarted, speechEnded, confidence) {
+        function sendTextToCustomWebsocket(
+          text,
+          isFinal,
+          speechStarted,
+          speechEnded,
+          confidence
+        ) {
           if (
             document.getElementById("cbSendTextToWebsocket").checked &&
             websocketCustom &&
@@ -2598,7 +3106,10 @@
             window.audioPlayer.BanCancel();
           } else if (text.toLowerCase().includes("tts continue")) {
             window.audioPlayer.Continue();
-          } else if (text.toLowerCase().includes("tts dump") || text.toLowerCase().includes("tds dump")) {
+          } else if (
+            text.toLowerCase().includes("tts dump") ||
+            text.toLowerCase().includes("tds dump")
+          ) {
             window.audioPlayer.Dump();
           }
         }
@@ -2617,10 +3128,12 @@
         function streamerSpeaking(speaking) {
           if (speaking) {
             streamerIsSpeaking = true;
-            document.getElementById("title").innerHTML = "Security Live TTS Translator (TTS Paused - Speaking)";
+            document.getElementById("title").innerHTML =
+              "Security Live TTS Translator (TTS Paused - Speaking)";
           } else {
             streamerIsSpeaking = false;
-            document.getElementById("title").innerHTML = "Security Live TTS Translator (TTS Enabled)";
+            document.getElementById("title").innerHTML =
+              "Security Live TTS Translator (TTS Enabled)";
           }
         }
 
@@ -2629,15 +3142,63 @@
       /**************************Audio player****************************/
 
       (async function () {
+        // Create a CognitoIdentity service object
+        const cognitoIdentity = new AWS.CognitoIdentity();
+
+        // Get a Cognito Identity ID
+        await cognitoIdentity.getId(
+          {
+            IdentityPoolId: "us-west-2:74292e8b-5888-4e9c-930d-a6379a9a4398",
+          },
+          async (err, data) => {
+            if (err) {
+              console.error("Error getting Cognito Identity ID", err);
+              return;
+            }
+
+            // Configure the Identity Pool ID and the Identity ID
+            AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+              IdentityPoolId: "us-west-2:74292e8b-5888-4e9c-930d-a6379a9a4398",
+              IdentityId: data.IdentityId,
+            });
+
+            // Get the temporary AWS credentials
+            await AWS.config.credentials.get((error) => {
+              if (error) {
+                console.error("Error getting credentials", error);
+              } else {
+                let ep = new AWS.Endpoint("translate.us-west-2.amazonaws.com");
+                window.translator = new AWS.Translate({
+                  endpoint: ep,
+                  region: AWS.config.region,
+                });
+
+                finishSetup();
+
+                console.log(
+                  "Successfully authenticated as an unauthenticated user with Cognito"
+                );
+              }
+            });
+          }
+        );
+      })();
+
+      async function finishSetup() {
         //console.log('final load function()');
         await buildVoiceLookup();
         loadAndSortLanguages();
 
-        Handlebars.registerHelper("contains", function (needle, haystack, options) {
-          //needle = Handlebars.escapeExpression(needle);
-          //haystack = Handlebars.escapeExpression(haystack);
-          return haystack.indexOf(needle) > -1 ? options.fn(this) : options.inverse(this);
-        });
+        Handlebars.registerHelper(
+          "contains",
+          function (needle, haystack, options) {
+            //needle = Handlebars.escapeExpression(needle);
+            //haystack = Handlebars.escapeExpression(haystack);
+            return haystack.indexOf(needle) > -1
+              ? options.fn(this)
+              : options.inverse(this);
+          }
+        );
 
         Handlebars.registerHelper("select", function (value, options) {
           var $el = $("<select />").html(options.fn(this));
@@ -2655,28 +3216,42 @@
 
         data.voices = voicesDesc;
 
-        var systemVoiceSource = document.getElementById("system-voice-template").innerHTML,
+        var systemVoiceSource = document.getElementById(
+            "system-voice-template"
+          ).innerHTML,
           systemVoiceTemplate = Handlebars.compile(systemVoiceSource),
-          systemVoicePlaceholder = document.getElementById("systemVoicePlaceholder");
+          systemVoicePlaceholder = document.getElementById(
+            "systemVoicePlaceholder"
+          );
 
         systemVoicePlaceholder.innerHTML = systemVoiceTemplate(data);
 
-        var systemVoiceOptionSource = document.getElementById("system-voice-option-template").innerHTML,
-          systemVoiceOptionTemplate = Handlebars.compile(systemVoiceOptionSource),
-          systemVoiceOptionPlaceholder = document.getElementById("systemVoiceOptionPlaceholder");
+        var systemVoiceOptionSource = document.getElementById(
+            "system-voice-option-template"
+          ).innerHTML,
+          systemVoiceOptionTemplate = Handlebars.compile(
+            systemVoiceOptionSource
+          ),
+          systemVoiceOptionPlaceholder = document.getElementById(
+            "systemVoiceOptionPlaceholder"
+          );
 
         var optionData = {};
 
         optionData.voiceOptions = voices[data.voice.toLowerCase()].voiceOptions;
-        optionData.voiceOption = voices[data.voice.toLowerCase()].voiceOptions[0];
+        optionData.voiceOption =
+          voices[data.voice.toLowerCase()].voiceOptions[0];
 
-        systemVoiceOptionPlaceholder.innerHTML = systemVoiceOptionTemplate(optionData);
+        systemVoiceOptionPlaceholder.innerHTML =
+          systemVoiceOptionTemplate(optionData);
 
         if (localStorage.getItem("systemVoice")) {
-          document.getElementById("systemVoice").value = localStorage.getItem("systemVoice");
+          document.getElementById("systemVoice").value =
+            localStorage.getItem("systemVoice");
         }
         if (localStorage.getItem("systemVoiceOption")) {
-          document.getElementById("systemVoiceOption").value = localStorage.getItem("systemVoiceOption");
+          document.getElementById("systemVoiceOption").value =
+            localStorage.getItem("systemVoiceOption");
         }
 
         var srcLangSource = document.getElementById("lang-template").innerHTML,
@@ -2684,7 +3259,8 @@
           srcLangPlaceholder = document.getElementById("srcLangPlaceholder");
 
         data = {};
-        data.name = "Source Language Selection: (Keep auto unless you only want to translate only from one language) ";
+        data.name =
+          "Source Language Selection: (Keep auto unless you only want to translate only from one language) ";
         data.elementId = "srcLangSelect";
         data.langs = sortedLanguages;
         srcLangPlaceholder.innerHTML = srcLangTemplate(data);
@@ -2705,30 +3281,37 @@
         data.elementId = "chatLangSelect";
         chatLangPlaceholder.innerHTML = chatLangTemplate(data);
 
-        var systemLangSource = document.getElementById("lang-template").innerHTML,
+        var systemLangSource =
+            document.getElementById("lang-template").innerHTML,
           systemLangTemplate = Handlebars.compile(systemLangSource),
-          systemLangPlaceholder = document.getElementById("systemLangPlaceholder");
+          systemLangPlaceholder = document.getElementById(
+            "systemLangPlaceholder"
+          );
 
         data.name = "System";
         data.elementId = "systemLangSelect";
         systemLangPlaceholder.innerHTML = systemLangTemplate(data);
 
         if (localStorage.getItem("srcLangSelect")) {
-          document.getElementById("srcLangSelect").value = localStorage.getItem("srcLangSelect");
+          document.getElementById("srcLangSelect").value =
+            localStorage.getItem("srcLangSelect");
         } else {
           document.getElementById("srcLangSelect").value = "auto";
         }
 
         if (localStorage.getItem("dstLangSelect")) {
-          document.getElementById("dstLangSelect").value = localStorage.getItem("dstLangSelect");
+          document.getElementById("dstLangSelect").value =
+            localStorage.getItem("dstLangSelect");
         } else {
           document.getElementById("dstLangSelect").value = "en";
         }
         if (localStorage.getItem("chatLangSelect")) {
-          document.getElementById("chatLangSelect").value = localStorage.getItem("chatLangSelect");
+          document.getElementById("chatLangSelect").value =
+            localStorage.getItem("chatLangSelect");
         }
         if (localStorage.getItem("systemLangSelect")) {
-          document.getElementById("systemLangSelect").value = localStorage.getItem("systemLangSelect");
+          document.getElementById("systemLangSelect").value =
+            localStorage.getItem("systemLangSelect");
         }
 
         if (access_token) {
@@ -2741,7 +3324,7 @@
         } else {
           showAuthButton();
         }
-      })();
+      }
     </script>
   </body>
 </html>
