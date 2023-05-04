@@ -302,20 +302,18 @@
         </div>
       </div>
 
-      <div id="chatContainer" class="row">
-        <div class="button-container" id="login"></div>
+      <div id="chatContainer" class="row overflow-hidden">
+        <div class="button-container col-12" id="login"></div>
 
         <!-- Chat Boxes -->
-        <div class="section-chat-boxes">
+        <div class="section-chat-boxes col-12 d-flex flex-column overflow-hidden">
           <!-- Live Chat -->
-          <div class="col-md-12">
-            <div class="panel panel-primary">
-              <div class="panel-heading panelHeading">Live Chat</div>
+          <div class="panel panel-primary row d-flex flex-column overflow-hidden flex-nowrap">
+            <div class="panel-heading panelHeading col-12">Live Chat</div>
 
-              <div class="live-chat-wrapper">
-                <div id="livechatc" class="panel-body panelBody">
-                  <div class="subscribe" id="livechat"></div>
-                </div>
+            <div class="live-chat-wrapper col-12 d-flex flex-column overflow-hidden flex-nowrap">
+              <div id="livechatc" class="panel-body panelBody">
+                <div class="subscribe" id="livechat"></div>
               </div>
             </div>
           </div>
@@ -505,7 +503,7 @@
           chatContainer.style.display = "none";
         } else {
           menu.style.display = "none";
-          chatContainer.style.display = "block";
+          chatContainer.style.display = "";
         }
       }
 
