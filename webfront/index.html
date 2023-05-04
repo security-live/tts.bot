@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="dark">
+
   <head>
     <title>TTS.bot by Security_Live</title>
     <meta charset="utf-8" />
@@ -18,6 +19,7 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="styles.css" />
   </head>
+
   <body>
     <div class="main-container container-fluid">
       <div class="topHeader row">
@@ -28,8 +30,8 @@
           <div class="col-8 text-center">
             <!-- Content for the center-aligned div -->
             <!-- Content for the center-aligned div -->
-            <label>Channel:</label>
-            <input type="text" id="channel" class="bg-dark text-white" value placeholder="Channel" />
+            <label for="channel">Channel:</label>
+            <input type="text" id="channel" name="channel" class="bg-dark text-white" value placeholder="Channel" />
             <button type="button" id="btn-go" class="btn btn-dark" onclick="connect()">Go</button>
             <button
               type="button"
@@ -1282,35 +1284,34 @@
                 makeButton("TTS Ban", "warning", "volume-xmark", username, messageID) +
                 makeButton("Ban", "danger", "gavel", username, messageID);
 
-              con.liveChatUI.innerHTML += `<div id="message-id${messageID}" class="chat-bubble">
-                              <div class="username-container" id="message-user-id${messageID}">
-                                <div class="speaker-info">
-                <span class="speaker-icon">${speakerIcon}</span>
-                <span id="message-system-voice-id${messageID}" class="voice-name">SYSTEM VOICE</span>
-              </div>
-                                <span class="username">
-                                <strong style='color:${color}'>
-                            ${chatters[username].display_name}:</strong><br>(${chatters[username].spoken_name.trim()})
+              con.liveChatUI.innerHTML +=
+                `<div id="message-id${messageID}" class="chat-bubble">
+                  <div class="username-container" id="message-user-id${messageID}">
+                    <div class="speaker-info">
+                      <span class="speaker-icon">${speakerIcon}</span>
+                      <span id="message-system-voice-id${messageID}" class="voice-name">SYSTEM VOICE</span>
+                    </div>
+                    <span class="username">
+                      <strong style='color:${color}'>${chatters[username].display_name}:</strong><br>
+                      (${chatters[username].spoken_name.trim()})
+                    </span>
+                  </div>
 
+                  <div class="message-container" id="message-message-id${messageID}">
+                    <div class="speaker-info">
+                      <span class="speaker-icon">${speakerIcon}</span>
+                      <span class="voice-name">${userVoice}</span>
+                    </div>
+                    <span class="message">
+                      ${message}<br>
+                      ${translatedMessageHTML}
+                    </span>
+                  </div>
 
-                            </span></div>
-
-                            <div class="message-container" id="message-message-id${messageID}">
-                              <div class="speaker-info">
-                <span class="speaker-icon">${speakerIcon}</span>
-                <span class="voice-name">${userVoice}</span>
-              </div>
-                              <span class="message">
-
-                              ${message}<br>
-
-                              ${translatedMessageHTML}
-
-                              </span></div>
-
-                            <div class="buttons-container" ><span class="btn-group">
-                            ${buttons}
-                    </span></div></div>`;
+                  <div class="buttons-container d-flex justify-content-center" >
+                    <div class="btn-group p-1">${buttons}</div>
+                  </div>
+                </div>`;
 
               //If speak translation in enabled, speak translated message
               if (con.cbSpeak.checked && allowTTS) {
@@ -1387,14 +1388,23 @@
           btnArgument = mID;
         }
 
-        return `<button id="messageButton-${messageButtonName}-id${mID}" class="btn btn-${btnClass}" title="${messageButtonName}" onclick='onButtonClick("${messageButtonName}", "${btnArgument}", event)'>
-              <div>
-                <i class="fa-solid fa-${btnIcon}"></i>
-              </div>
-              <div>
-                <span class="small">${btnName}</span>
-              </div>
-            </button>`;
+        let btnPadding = 'px-4';
+        switch (messageButtonName) {
+          case 'TTSBan': btnPadding = 'px-2'; break;
+          case 'TTSUnban': btnPadding = 'px-2'; break;
+        }
+
+        return `<button id="messageButton-${messageButtonName}-id${mID}"
+                        class="btn btn-sm btn-${btnClass} py-0 ${btnPadding}"
+                        title="${messageButtonName}"
+                        onclick='onButtonClick("${messageButtonName}", "${btnArgument}", event)'>
+                  <div>
+                    <i class="fa-solid fa-${btnIcon}"></i>
+                  </div>
+                  <div>
+                    <span class="small">${btnName}</span>
+                  </div>
+                </button>`;
       }
 
       function onButtonClick(button, argument, event) {
