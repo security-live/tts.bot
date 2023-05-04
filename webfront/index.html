@@ -61,7 +61,7 @@
             <div class="row" style="padding: 20px">
               <div class="col-md-6">
                 <div class="form-group">
-                  <dt>Token credentials:</dt>
+                  <dt><label for="twitch_username">Token credentials:</label></dt>
                   <dd class="clearfix">
                     <input
                       type="text"
@@ -78,205 +78,248 @@
 
                 <div id="dstLangPlaceholder" class="form-group"></div>
 
-                <div class="form-group">
-                  <input type="checkbox" id="cbSpeak" onchange="saveCheckbox(event)" value="Speak" checked />
-                  TTS Enabled
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="cbSpeak" onchange="saveCheckbox(event)" value="Speak" checked />
+                  <label class="form-check-label" for="cbSpeak">
+                    TTS Enabled
+                  </label>
                 </div>
 
-                <div class="form-group">
-                  <input type="checkbox" id="cbAutoTranslateChat" onchange="saveCheckbox(event)" />
-                  Auto translate chat and output to channel (Be aware this will send translations to any channel
-                  connected)
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="cbAutoTranslateChat" onchange="saveCheckbox(event)" />
+                  <label class="form-check-label" for="cbAutoTranslateChat">
+                    Auto translate chat and output to channel (Be aware this will send translations to any channel connected)
+                  </label>
                 </div>
 
-                <div class="form-group">
-                  <input type="checkbox" id="cbDeleteCommands" onchange="saveCheckbox(event)" />
-                  Delete all channel commands that start with !
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="cbDeleteCommands" onchange="saveCheckbox(event)" />
+                  <label class="form-check-label" for="cbDeleteCommands">
+                    Delete all channel commands that start with !
+                  </label>
                 </div>
 
-                <div class="form-group">
-                  <input type="checkbox" id="cbEveryoneTTS" onchange="saveCheckbox(event)" checked />
-                  Allow Everyone to use TTS
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="cbEveryoneTTS" onchange="saveCheckbox(event)" checked />
+                  <label class="form-check-label" for="cbEveryoneTTS">
+                    Allow Everyone to use TTS
+                  </label>
                 </div>
 
-                <div class="form-group">
-                  <input type="checkbox" id="cbModTTS" onchange="saveCheckbox(event)" checked />
-                  Allow Mods to use TTS
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="cbModTTS" onchange="saveCheckbox(event)" checked />
+                  <label class="form-check-label" for="cbModTTS">
+                    Allow Mods to use TTS
+                  </label>
                 </div>
 
-                <div class="form-group">
-                  <input type="checkbox" id="cbVipTTS" onchange="saveCheckbox(event)" checked />
-                  Allow Vips to use TTS
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="cbVipTTS" onchange="saveCheckbox(event)" checked />
+                  <label class="form-check-label" for="cbVipTTS">
+                    Allow Vips to use TTS
+                  </label>
                 </div>
 
-                <div class="form-group">
-                  <input type="checkbox" id="cbSubTTS" onchange="saveCheckbox(event)" checked />
-                  Allow Subs to use TTS
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="cbSubTTS" onchange="saveCheckbox(event)" checked />
+                  <label class="form-check-label" for="cbSubTTS">
+                    Allow Subs to use TTS
+                  </label>
                 </div>
 
-                <div class="form-group">
-                  <input type="checkbox" id="cbSpeakReplies" onchange="saveCheckbox(event)" />
-                  Speak replies and @name references at start of message.
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="cbSpeakReplies" onchange="saveCheckbox(event)" />
+                  <label class="form-check-label" for="cbSpeakReplies">
+                    Speak replies and @name references at start of message.
+                  </label>
                 </div>
 
-                <div class="form-group">
-                  <input type="checkbox" id="cbSpeakEmotesTTS" onchange="saveCheckbox(event)" checked />
-                  Speak emotes
-                  <input type="checkbox" id="cbDedupEmotesTTS" onchange="saveCheckbox(event)" checked />
-                  Dedup emotes
+                <div class="form-check d-inline-block">
+                  <input class="form-check-input" type="checkbox" id="cbSpeakEmotesTTS" onchange="saveCheckbox(event)" checked />
+                  <label class="form-check-label" for="cbSpeakEmotesTTS">
+                    Speak emotes
+                  </label>
+                </div>
+                <div class="form-check d-inline-block">
+                  <input class="form-check-input" type="checkbox" id="cbDedupEmotesTTS" onchange="saveCheckbox(event)" checked />
+                  <label class="form-check-label" for="cbDedupEmotesTTS">
+                    Dedup emotes
+                  </label>
                 </div>
 
-                <div class="form-group">
-                  <input type="checkbox" id="cbCleanupTranslation" onchange="saveCheckbox(event)" />
-                  If translation is identical to original message don't translate.
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="cbCleanupTranslation" onchange="saveCheckbox(event)" />
+                  <label class="form-check-label" for="cbCleanupTranslation">
+                    If translation is identical to original message don't translate.
+                  </label>
                 </div>
 
-                <div class="form-group">
-                  <input type="checkbox" id="cbUserLevDistance" onchange="saveCheckbox(event)" checked />
-                  Don't speak user message if they are a % similar to the last messages in the last X seconds.
-                  (Levenshtein distance)
-                  <br />
-                  <label for="txtUserLevPct"
-                    >Percent:
-                    <input
-                      style="display: inline-block; width: 75px"
-                      type="number"
-                      size="5"
-                      id="txtUserLevPct"
-                      class="form-control"
-                      value="90"
-                      placeholder="90"
-                      oninput="saveTextField(event)"
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="cbUserLevDistance" onchange="saveCheckbox(event)" checked />
+                  <label class="form-check-label" for="cbUserLevDistance">
+                    Don't speak user message if they are a % similar to the last messages in the last X seconds.
+                    (Levenshtein distance)
+                  </label>
+                </div>
+                <label for="txtUserLevPct"
+                >Percent:
+                  <input
+                    style="display: inline-block; width: 75px"
+                    type="number"
+                    size="5"
+                    id="txtUserLevPct"
+                    class="form-control"
+                    value="90"
+                    placeholder="90"
+                    oninput="saveTextField(event)"
                   /></label>
-                  <label for="txtUserLevTime">
-                    Time:
-                    <input
-                      style="display: inline-block; width: 75px"
-                      type="number"
-                      size="5"
-                      id="txtUserLevTime"
-                      class="form-control"
-                      value="300"
-                      placeholder="300"
-                      oninput="saveTextField(event)"
+                <label for="txtUserLevTime">
+                  Time:
+                  <input
+                    style="display: inline-block; width: 75px"
+                    type="number"
+                    size="5"
+                    id="txtUserLevTime"
+                    class="form-control"
+                    value="300"
+                    placeholder="300"
+                    oninput="saveTextField(event)"
                   /></label>
-                </div>
 
-                <div class="form-group">
-                  <input type="checkbox" id="cbChatLevDistance" onchange="saveCheckbox(event)" checked />
-                  Don't speak chat messages if they are a % similar to the last messages in the last X seconds.
-                  (Levenshtein distance)
-                  <br />
-                  <label for="txtChatLevPct"
-                    >Percent:
-                    <input
-                      style="display: inline-block; width: 75px"
-                      type="number"
-                      size="5"
-                      id="txtChatLevPct"
-                      class="form-control"
-                      value="90"
-                      placeholder="90"
-                      oninput="saveTextField(event)"
-                  /></label>
-                  <label for="txtChatLevTime">
-                    Time:
-                    <input
-                      style="display: inline-block; width: 75px"
-                      type="number"
-                      size="5"
-                      id="txtChatLevTime"
-                      class="form-control"
-                      value="300"
-                      placeholder="300"
-                      oninput="saveTextField(event)"
-                  /></label>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="cbChatLevDistance"
+                         onchange="saveCheckbox(event)" checked/>
+                  <label class="form-check-label" for="cbChatLevDistance">
+                    Don't speak chat messages if they are a % similar to the last messages in the last X seconds.
+                    (Levenshtein distance)
+                  </label>
                 </div>
+                <label for="txtChatLevPct"
+                >Percent:
+                  <input
+                    style="display: inline-block; width: 75px"
+                    type="number"
+                    size="5"
+                    id="txtChatLevPct"
+                    class="form-control"
+                    value="90"
+                    placeholder="90"
+                    oninput="saveTextField(event)"
+                  /></label>
+                <label for="txtChatLevTime">
+                  Time:
+                  <input
+                    style="display: inline-block; width: 75px"
+                    type="number"
+                    size="5"
+                    id="txtChatLevTime"
+                    class="form-control"
+                    value="300"
+                    placeholder="300"
+                    oninput="saveTextField(event)"
+                  /></label>
               </div>
 
               <div class="col-md-6">
                 <div class="form-group">
                   These options require microphone access:<br />
-                  <input type="checkbox" id="cbPauseTTSOnSpeech" onchange="saveCheckbox(event)" checked />
-                  Pause TTS when speaking. (Must allow mic access and choose correct mic input)
-                  <br />
-                  <div class="form-group">
-                    <input type="checkbox" id="cbPoofMessage" onchange="saveCheckbox(event)" />
-                    Say "poof" message to stop speaking a message and continue.<br />
-                    <input
-                      type="text"
-                      size="80"
-                      id="txtPoofRegex"
-                      class="form-control"
-                      value="(poof|proof|poop)"
-                      placeholder="example regex: (poof|proof|poop)"
-                      onchange="saveTextField(event)"
-                    />
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="cbPauseTTSOnSpeech" onchange="saveCheckbox(event)" checked />
+                    <label class="form-check-label" for="cbPauseTTSOnSpeech">
+                      Pause TTS when speaking. (Must allow mic access and choose correct mic input)
+                    </label>
                   </div>
-                  <div class="form-group">
-                    <input type="checkbox" id="cbBanHammer" onchange="saveCheckbox(event)" />
-                    Say "ban" message to stop speaking and speak "ban confirmation" message.
 
-                    <input
-                      type="text"
-                      size="80"
-                      id="txtBanRegex"
-                      class="form-control"
-                      value="(band hammer|ben hammer|ban hammer|banhammer|ben hammer|jan hammer)"
-                      placeholder="example regex: (ben hammer|ban hammer|banhammer|ben hammer|jan hammer)"
-                      oninput="saveTextField(event)"
-                    /><br />
-                    <input
-                      type="text"
-                      size="80"
-                      id="txtBanConfirmRegex"
-                      class="form-control"
-                      value="(affirmative)"
-                      placeholder="example regex: (affirmative)"
-                      oninput="saveTextField(event)"
-                    />
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="cbPoofMessage" onchange="saveCheckbox(event)" />
+                    <label class="form-check-label" for="cbPoofMessage">
+                      Say "poof" message to stop speaking a message and continue.
+                    </label>
                   </div>
-                  <br />
-                  <input type="checkbox" id="cbSTTS" onchange="saveCheckbox(event)" />
-                  Use Webkit Voice Recognition and speak result in system language and voice. (Must allow mic access and
-                  choose correct mic input)
-                  <br />
-                  <input type="checkbox" id="cbSendDictationTranslation" onchange="saveCheckbox(event)" />
-                  Send Dictation Text and Translation to Channel (Be aware this will send translations to any channel
-                  connected)
-                  <br />
+                  <label class="d-block mb-1"><input
+                    type="text"
+                    size="80"
+                    id="txtPoofRegex"
+                    class="form-control"
+                    value="(poof|proof|poop)"
+                    placeholder="example regex: (poof|proof|poop)"
+                    onchange="saveTextField(event)"
+                  /></label>
 
-                  <input
-                    type="checkbox"
-                    id="cbSendTextToWebsocket"
-                    onchange="saveCheckbox(event); enableCustomWebsocket(this.checked);"
-                  />
-                  Send spoken text to websocket for comannds.
-                  <br />
-                  <input
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="cbBanHammer" onchange="saveCheckbox(event)" />
+                    <label class="form-check-label" for="cbBanHammer">
+                      Say "ban" message to stop speaking and speak "ban confirmation" message.
+                    </label>
+                  </div>
+                  <label class="d-block mb-4"><input
+                    type="text"
+                    size="80"
+                    id="txtBanRegex"
+                    class="form-control"
+                    value="(band hammer|ben hammer|ban hammer|banhammer|ben hammer|jan hammer)"
+                    placeholder="example regex: (ben hammer|ban hammer|banhammer|ben hammer|jan hammer)"
+                    oninput="saveTextField(event)"
+                  /></label>
+                  <label class="d-block mb-4"><input
+                    type="text"
+                    size="80"
+                    id="txtBanConfirmRegex"
+                    class="form-control"
+                    value="(affirmative)"
+                    placeholder="example regex: (affirmative)"
+                    oninput="saveTextField(event)"
+                  /></label>
+
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="cbSTTS" onchange="saveCheckbox(event)" />
+                    <label class="form-check-label" for="cbSTTS">
+                      Use Webkit Voice Recognition and speak result in system language and voice. (Must allow mic access and
+                      choose correct mic input)
+                    </label>
+                  </div>
+
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="cbSendDictationTranslation" onchange="saveCheckbox(event)" />
+                    <label class="form-check-label" for="cbSendDictationTranslation">
+                      Send Dictation Text and Translation to Channel (Be aware this will send translations to any channel
+                      connected)
+                    </label>
+                  </div>
+
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="cbSendTextToWebsocket"
+                           onchange="saveCheckbox(event); enableCustomWebsocket(this.checked);"
+                    />
+                    <label class="form-check-label" for="cbSendTextToWebsocket">
+                      Send spoken text to websocket for comannds.
+                    </label>
+                  </div>
+                  <label class="d-block mb-4"><input
                     type="text"
                     id="txtWebsocketURL"
                     class="form-control"
                     value="ws://localhost:1880/stt"
                     placeholder="ws://localhost:1880/stt"
-                  />
-                  <br />
+                  /></label>
 
-                  <input
-                    type="checkbox"
-                    id="cbSendTextToAWSWebsocket"
-                    onchange="saveCheckbox(event); enableAWSWebsocket(this.checked);"
-                  />
-                  Send spoken text to AWS for end user clients.
-                  <br />
-                  <input
+                  <div class="form-check">
+                    <input class="form-check-input"
+                      type="checkbox"
+                      id="cbSendTextToAWSWebsocket"
+                      onchange="saveCheckbox(event); enableAWSWebsocket(this.checked);"
+                    />
+                    <label class="form-check-label" for="cbSendTextToAWSWebsocket">
+                      Send spoken text to AWS for end user clients.
+                    </label>
+                  </div>
+                  <label class="d-block mb-4"><input
                     type="text"
                     id="txtAWSWebsocketURL"
                     class="form-control"
                     value="wss://api.tts.bot"
                     placeholder="wss://api.tts.bot"
-                  />
-                  <br />
+                  /></label>
 
                   <a href="node-red-example-command-flow.json">Example Node-RED Command Flow</a>
                 </div>
@@ -284,15 +327,14 @@
                 <div id="systemLangPlaceholder"></div>
                 <div id="systemVoicePlaceholder"></div>
                 <br />
-                <input
+                <label class="d-block mb-4"><input
                   type="text"
                   id="txtCCTURL"
                   class="form-control"
                   value="https://securitylive.com/translator.html?popup=true&src=en&dst=de&webkit-text-stroke-color=red&outline-color=red&shadow-color=red&border-color=red"
                   placeholder="test"
-                />
+                /></label>
 
-                <br />
                 <input type="button" value="Open Dictation Window" onclick="OpenPopup()" />
               </div>
             </div>
