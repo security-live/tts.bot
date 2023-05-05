@@ -83,7 +83,6 @@ table td {
 }
 
 .panelBody {
-  min-height: 450px;
   overflow-y: scroll;
 }
 
@@ -111,10 +110,6 @@ table td {
 
 #livechatc {
   position: relative;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
   overflow-y: auto;
   overflow-x: hidden;
   padding-right: 20px; /* To prevent scroll bar overlap */
@@ -128,9 +123,6 @@ table td {
 
 #livechatc .message {
   border-radius: 5px;
-  padding-top: 15px;
-  padding-bottom: 10px;
-  width: 90%;
 }
 
 .settings-toggle {
@@ -165,7 +157,7 @@ table td {
   flex: 1 80px;
   display: flex;
   align-items: center;
-  padding-top: 15px;
+  padding: 8px 15px;
   flex-direction: column;
   justify-content: center;
   position: relative;
@@ -176,10 +168,10 @@ table td {
   line-height: 1.1em;
   flex: 5;
   display: flex;
-  align-items: center;
-  padding: 10px 0px 0px 0px;
+  align-items: flex-start;
+  padding: 8px 15px;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   position: relative;
 }
 
@@ -222,11 +214,8 @@ table td {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 8px;
-  position: absolute; /* Add position absolute */
-  top: 5px; /* Add a fixed distance from the top */
-  left: 0; /* Add left to 0 to horizontally center the element */
-  right: 0; /* Add right to 0 to horizontally center the element */
+  align-self: center;
+  margin-bottom: 5px;
 }
 
 #chatContainer {
