@@ -350,6 +350,18 @@
                       Pause TTS when speaking. (Must allow mic access and choose
                       correct mic input)
                     </label>
+                    <label for="txtChatLevTime">
+                      Time to wait before speaking:
+                      <input
+                        style="display: inline-block; width: 75px"
+                        type="number"
+                        size="5"
+                        id="txtChatLevTime"
+                        class="form-control"
+                        value="300"
+                        placeholder="300"
+                        oninput="saveOption(this)"
+                    /></label>
                   </div>
 
                   <div class="form-check">
@@ -921,7 +933,7 @@
       function saveOption(element) {
         if (element.type === "checkbox") {
           localStorage.setItem(element.id, element.checked);
-        } else if (element.type === "text") {
+        } else if (element.type === "number" || element.type === "text") {
           localStorage.setItem(element.id, element.value);
         }
       }
@@ -1623,7 +1635,8 @@
                         now - message.timestamp < maxTimeAgoMS
                       ) {
                         allowTTS = false;
-                        allowTTSmessage += "User Lev Distance - ";
+                        let percentage = Math.round(similarity) + "%";
+                        allowTTSmessage += `User Lev Distance ${percentage} - `;
                         break;
                       }
                     }
@@ -1659,7 +1672,8 @@
                       now - message.timestamp < maxTimeAgoMS
                     ) {
                       allowTTS = false;
-                      allowTTSmessage += "Chat Lev Distance - ";
+                      let percentage = Math.round(similarity) + "%";
+                      allowTTSmessage += `Chat Lev Distance ${percentage} - `;
                       break;
                     }
                   }
@@ -1678,7 +1692,7 @@
 
                 if (identicalTranslation) translatedMessageHTML = "";
 
-                let bubbleText = spokenText;
+                let bubbleText = message;
 
                 // Option to replace @usernames with spoken names.
                 if (document.getElementById("cbReplaceAtNames").checked) {
