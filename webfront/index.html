@@ -1678,14 +1678,11 @@
 
                 if (identicalTranslation) translatedMessageHTML = "";
 
-                //  let buttons = makeButton("Don't Speak", "secondary", "comment-slash", username, messageID) +
-                //makeButton("Speak Next", "success", "comment-medical", username, messageID) +
-                //console.log("User replacement start: " + spokenText);
+                let bubbleText = spokenText;
 
+                // Option to replace @usernames with spoken names.
                 if (document.getElementById("cbReplaceAtNames").checked) {
                   let userRegex = /@([A-Za-z0-9_]+)/g;
-
-                  let bubbleText = spokenText;
 
                   let userMatches = [...spokenText.matchAll(userRegex)]; // Convert the iterator to an array
 
@@ -1799,6 +1796,10 @@
             username,
             messageID
           ) + makeButton("Ban", "danger", "gavel", username, messageID);
+
+        //  let buttons = makeButton("Don't Speak", "secondary", "comment-slash", username, messageID) +
+        //makeButton("Speak Next", "success", "comment-medical", username, messageID) +
+        //console.log("User replacement start: " + spokenText);
 
         let color = "#FFFFFF";
         if (chatters[username].color) {
