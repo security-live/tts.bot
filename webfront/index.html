@@ -799,7 +799,9 @@
 
           if (localStorage.getItem("channel")) {
           let channel = localStorage.getItem("channel");
+          console.log('beforeSan:', channel);
           channel = sanitizeChanName(channel);
+          console.log('afterSan:', channel);
           document.getElementById("channel").value = channel;
         }
       },
