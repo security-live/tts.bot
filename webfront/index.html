@@ -1740,13 +1740,19 @@
                       let user = username.toLowerCase();
                       if (chatters[user]) {
                         let spokenName = chatters[user].spoken_name;
+                        if (chatters[user].color) {
+                          color = chatters[user].color;
+                        } else {
+                          color = GetColorForUsername(user);
+                        }
+
                         spokenText = spokenText.replaceAll(
                           "@" + username,
                           spokenName
                         );
                         bubbleText = bubbleText.replaceAll(
                           "@" + username,
-                          "@" + username + " (" + spokenName.trim() + ")"
+                          `<strong style='color:${color}'>@${username}:</strong><span class="message-at-reference">(${spokenName.trim()})</span>`
                         );
                       }
                     }
@@ -1828,23 +1834,24 @@
       ) {
         let buttons =
           makeButton(
+            "Don't Speak",
+            "secondary",
+            "comment-slash",
+            username,
+            messageID
+          ) +
+          makeButton(
             "TTS Ban",
             "warning",
             "volume-xmark",
             username,
             messageID
-          ) + makeButton("Ban", "danger", "gavel", username, messageID);
+          ) +
+          makeButton("Ban", "danger", "gavel", username, messageID);
 
         //  let buttons = makeButton("Don't Speak", "secondary", "comment-slash", username, messageID) +
         //makeButton("Speak Next", "success", "comment-medical", username, messageID) +
         //console.log("User replacement start: " + spokenText);
-
-        let color = "#FFFFFF";
-        if (chatters[username].color) {
-          color = chatters[username].color;
-        } else {
-          color = GetColorForUsername(username);
-        }
 
         let userVoice = `${chatters[username].voice} (${chatters[username].voice_option})`;
 
@@ -1852,6 +1859,13 @@
         if (!allowTTS) {
           userVoice = `(${allowTTSmessage.slice(0, -3)})`;
           speakerIcon = "🔇";
+        }
+
+        let color = "#FFFFFF";
+        if (chatters[username].color) {
+          color = chatters[username].color;
+        } else {
+          color = GetColorForUsername(username);
         }
 
         con.liveChatUI.innerHTML += `<div id="message-id${messageID}" class="chat-bubble">

@@ -224,4 +224,9 @@ table td {
   flex: 1;
 }
 
+.message-at-reference {
+  opacity: 0.5;
+  font-style: italic;
+}
+
 
