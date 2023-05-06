@@ -211,11 +211,12 @@
                   <input
                     class="form-check-input"
                     type="checkbox"
-                    id="cbSpeakReplies"
+                    id="cbReplaceAtNames"
                     onchange="saveOption(this)"
+                    checked
                   />
-                  <label class="form-check-label" for="cbSpeakReplies">
-                    Speak replies and @name references at start of message.
+                  <label class="form-check-label" for="cbReplaceAtNames">
+                    Replace @usernames with spoken names in all messages.
                   </label>
                 </div>
 
@@ -349,6 +350,18 @@
                       Pause TTS when speaking. (Must allow mic access and choose
                       correct mic input)
                     </label>
+                    <label for="txtChatLevTime">
+                      Time to wait before speaking:
+                      <input
+                        style="display: inline-block; width: 75px"
+                        type="number"
+                        size="5"
+                        id="txtChatLevTime"
+                        class="form-control"
+                        value="300"
+                        placeholder="300"
+                        oninput="saveOption(this)"
+                    /></label>
                   </div>
 
                   <div class="form-check">
@@ -477,8 +490,8 @@
                       type="text"
                       id="txtAWSWebsocketURL"
                       class="form-control"
-                      value="wss://api.tts.bot"
-                      placeholder="wss://api.tts.bot"
+                      value="wss://ws.tts.bot"
+                      placeholder="wss://ws.tts.bot"
                       oninput="saveOption(this)"
                   /></label>
 
@@ -535,12 +548,12 @@
         <!-- Live Chat -->
 
         <!-- Send Message -->
-        <div class="section-send-message row mt-auto p-4">
-          <div class="col-md-2">
+        <div class="section-send-message row mt-auto py-2">
+          <div class="col-3 col-md-2">
             <div id="chatLangPlaceholder" class="form-group"></div>
           </div>
 
-          <div class="col-md-8">
+          <div class="col-6 col-md-8">
             <input
               type="text"
               id="message"
@@ -549,7 +562,7 @@
             />
           </div>
 
-          <div class="col-md-2">
+          <div class="col-3 col-md-2">
             <button
               style="width: 100px"
               type="button"
@@ -728,7 +741,10 @@
         var twitchURL =
           '<a href="https://id.twitch.tv/oauth2/authorize?client_id=dan71ek0pct1u7b8ht5u4h55zlcxvq&redirect_uri=' +
           redirectURL +
-          '&response_type=token&scope=chat:read+chat:edit+channel:moderate+whispers:read+whispers:edit+channel_editor+moderator:manage:banned_users" class="btn btn-primary" > Authorize On Twitch</a >';
+          '&response_type=token&scope=chat:read+chat:edit" class="btn btn-primary" > Authorize On Twitch with minimal permissions</a >' +
+          '<a href="https://id.twitch.tv/oauth2/authorize?client_id=dan71ek0pct1u7b8ht5u4h55zlcxvq&redirect_uri=' +
+          redirectURL +
+          '&response_type=token&scope=chat:read+chat:edit+moderator:manage:banned_users" class="btn btn-primary" > Authorize On Twitch with ban permissions</a >';
 
         $("#login").html(twitchURL);
         $("#login").show();
@@ -736,6 +752,11 @@
         $("#loggedin").hide();
         $("#ttsinfo").show();
       }
+
+      function sanitizeChanName(channelName) {
+      const sanitizedChannelName = channelName.replace(/[^a-zA-Z0-9-_]/g, '');
+      return sanitizedChannelName;
+}
 
       var params = getHashParams();
       const url = new URL(window.location.href);
@@ -770,17 +791,19 @@
           "client-id": "dan71ek0pct1u7b8ht5u4h55zlcxvq",
           Authorization: "Bearer " + access_token,
         },
+        
         success: function (response) {
           var login = response.data[0].login;
           document.getElementById("twitch_username").value = login;
           var channel = login;
 
           if (localStorage.getItem("channel")) {
-            channel = localStorage.getItem("channel");
-          }
-
+          let channel = localStorage.getItem("channel");
+          channel = sanitizeChanName(channel);
           document.getElementById("channel").value = channel;
-        },
+        }
+      },
+
         error: function (response) {
           localStorage.removeItem("access_token");
           access_token = null;
@@ -917,7 +940,7 @@
       function saveOption(element) {
         if (element.type === "checkbox") {
           localStorage.setItem(element.id, element.checked);
-        } else if (element.type === "text") {
+        } else if (element.type === "number" || element.type === "text") {
           localStorage.setItem(element.id, element.value);
         }
       }
@@ -1077,7 +1100,7 @@
             username: document.getElementById("twitch_username").value,
             password: access_token,
           },
-          channels: [con.channel],
+          channels: [sanitizeChanName(con.channel)],
         };
 
         window.client = tmi.client(options);
@@ -1383,6 +1406,12 @@
         let allowTTS = false;
         let allowTTSmessage = "";
 
+        // TODO speak text up to comment delimiter
+        if (message.match("(^\s*-|^\s*#|^\s*<!--|^\s*;|^\s*\/\/)")) {
+          allowTTS = false;
+          allowTTSmessage = "Commentted out - ";
+        }
+
         if (document.getElementById("cbEveryoneTTS").checked) {
           //console.log("cbEveryone");
           allowTTS = true;
@@ -1613,7 +1642,8 @@
                         now - message.timestamp < maxTimeAgoMS
                       ) {
                         allowTTS = false;
-                        allowTTSmessage += "User Lev Distance - ";
+                        let percentage = Math.round(similarity) + "%";
+                        allowTTSmessage += `User Lev Distance ${percentage} - `;
                         break;
                       }
                     }
@@ -1649,7 +1679,8 @@
                       now - message.timestamp < maxTimeAgoMS
                     ) {
                       allowTTS = false;
-                      allowTTSmessage += "Chat Lev Distance - ";
+                      let percentage = Math.round(similarity) + "%";
+                      allowTTSmessage += `Chat Lev Distance ${percentage} - `;
                       break;
                     }
                   }
@@ -1668,18 +1699,46 @@
 
                 if (identicalTranslation) translatedMessageHTML = "";
 
-                //  let buttons = makeButton("Don't Speak", "secondary", "comment-slash", username, messageID) +
-                //makeButton("Speak Next", "success", "comment-medical", username, messageID) +
+                let bubbleText = message;
 
-                // TODO speak text up to comment delimiter
-                if (message.match("(^\s*-|^\s*#|^\s*<!--|^\s*;|^\s*\/\/)")) {
-                  allowTTS = false;
-                  allowTTSmessage = "Commentted out - ";
+                // Option to replace @usernames with spoken names.
+                if (document.getElementById("cbReplaceAtNames").checked) {
+                  let userRegex = /@([A-Za-z0-9_]+)/g;
+
+                  let userMatches = [...spokenText.matchAll(userRegex)]; // Convert the iterator to an array
+
+                  if (userMatches.length > 0) {
+                    // Check if there are any matches
+                    //console.log(userMatches);
+
+                    let usernames = new Set(); // Create a Set to store unique usernames
+
+                    for (const [, username] of userMatches) {
+                      // Destructure and iterate through the matches
+                      usernames.add(username); // Add the username (without '@') to the Set
+                    }
+
+                    for (let username of usernames) {
+                      // Iterate through unique usernames
+                      let user = username.toLowerCase();
+                      if (chatters[user]) {
+                        let spokenName = chatters[user].spoken_name;
+                        spokenText = spokenText.replaceAll(
+                          "@" + username,
+                          spokenName
+                        );
+                        bubbleText = bubbleText.replaceAll(
+                          "@" + username,
+                          "@" + username + " (" + spokenName.trim() + ")"
+                        );
+                      }
+                    }
+                  }
                 }
 
                 addMessageBubble(
                   username,
-                  message,
+                  bubbleText,
                   translatedMessageHTML,
                   allowTTS,
                   allowTTSmessage,
@@ -1696,7 +1755,7 @@
 
                   spokenText = spokenText.replace(regex, " ");
                   spokenText = spokenText.replace(linkex, " (Web link) ");
-                  spokenText = spokenText.replace(longnumex, " (Long number) ");
+                  //spokenText = spokenText.replace(longnumex, " (Long number) ");
                   //spokenText = spokenText.replace(longex, ' (long word) ');
 
                   var prefix = "";
@@ -1758,6 +1817,10 @@
             username,
             messageID
           ) + makeButton("Ban", "danger", "gavel", username, messageID);
+
+        //  let buttons = makeButton("Don't Speak", "secondary", "comment-slash", username, messageID) +
+        //makeButton("Speak Next", "success", "comment-medical", username, messageID) +
+        //console.log("User replacement start: " + spokenText);
 
         let color = "#FFFFFF";
         if (chatters[username].color) {
@@ -2166,8 +2229,7 @@
         request.data = [];
         request.data.push(data);
         //console.log("saveTTSConfig request data:", request);
-        var url =
-          "https://api.securitylive.com/tts/" + channel + "/" + username;
+        var url = "https://api.tts.bot/tts/" + channel + "/" + username;
         await $.ajax({
           url: url,
           type: "PUT",
@@ -2252,7 +2314,7 @@
         var channel = document.getElementById("channel").value;
         var hasLocalChannelConfig = false;
         await $.ajax({
-          url: "https://api.securitylive.com/tts/" + channel + "/" + username,
+          url: "https://api.tts.bot/tts/" + channel + "/" + username,
           success: function (response) {
             //console.log("Data for " + channel + ":", response);
             if (response.hasOwnProperty("Item")) {
@@ -2279,7 +2341,7 @@
         if (!hasLocalChannelConfig) {
           //console.log("Does not have local config.");
           await $.ajax({
-            url: "https://api.securitylive.com/tts/all/" + username,
+            url: "https://api.tts.bot/tts/all/" + username,
             success: function (response) {
               //console.log("Data from all for:", response);
               if (response.hasOwnProperty("Item")) {
