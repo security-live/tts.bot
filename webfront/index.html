@@ -60,6 +60,14 @@
           >
             Stop
           </button>
+          <button
+            type="button"
+            id="btn-pause"
+            class="btn btn-dark"
+            onclick="pause()"
+          >
+            <i class="fa fa-pause" aria-hidden="true"></i>
+          </button>
           <!--
           <button
             type="button"
@@ -351,15 +359,15 @@
                       correct mic input)
                     </label>
                     <label for="txtChatLevTime">
-                      Time to wait before speaking:
+                      Time to wait after speaking to continue TTS:
                       <input
                         style="display: inline-block; width: 75px"
                         type="number"
                         size="5"
-                        id="txtChatLevTime"
+                        id="txtTTSWaitTime"
                         class="form-control"
-                        value="300"
-                        placeholder="300"
+                        value="2"
+                        placeholder="2"
                         oninput="saveOption(this)"
                     /></label>
                   </div>
@@ -644,6 +652,8 @@
     <script>
       // GLOBALS YAY
       var streamerIsSpeaking = false;
+      var waitingAMoment = false;
+      var waitingIntervalID = 0;
       var streamerLastSpoke = 0;
       var chatters = {};
       var localChattersData = {};
@@ -1008,38 +1018,38 @@
 
       function onCheer() {
         /*
-        let arguments = {
-          0: "#security_live",
-          1: {
-            "badge-info": null,
-            badges: {
-              moderator: "1",
-              glitchcon2020: "1",
-            },
-            bits: "5",
-            color: "#B573B6",
-            "display-name": "MojoJojo671",
-            emotes: null,
-            "first-msg": false,
-            flags: null,
-            id: "b8ee5ce1-09e0-4945-9916-99d3f4f821b9",
-            mod: true,
-            "returning-chatter": false,
-            "room-id": "473060639",
-            subscriber: false,
-            "tmi-sent-ts": "1683212368956",
-            turbo: false,
-            "user-id": "531867432",
-            "user-type": "mod",
-            "emotes-raw": null,
-            "badge-info-raw": null,
-            "badges-raw": "moderator/1,glitchcon2020/1",
-            username: "mojojojo671",
-            "message-type": "chat",
-          },
-          2: "Cheer5",
-        };
-*/
+              let arguments = {
+                0: "#security_live",
+                1: {
+                  "badge-info": null,
+                  badges: {
+                    moderator: "1",
+                    glitchcon2020: "1",
+                  },
+                  bits: "5",
+                  color: "#B573B6",
+                  "display-name": "MojoJojo671",
+                  emotes: null,
+                  "first-msg": false,
+                  flags: null,
+                  id: "b8ee5ce1-09e0-4945-9916-99d3f4f821b9",
+                  mod: true,
+                  "returning-chatter": false,
+                  "room-id": "473060639",
+                  subscriber: false,
+                  "tmi-sent-ts": "1683212368956",
+                  turbo: false,
+                  "user-id": "531867432",
+                  "user-type": "mod",
+                  "emotes-raw": null,
+                  "badge-info-raw": null,
+                  "badges-raw": "moderator/1,glitchcon2020/1",
+                  username: "mojojojo671",
+                  "message-type": "chat",
+                },
+                2: "Cheer5",
+              };
+      */
         console.log("onCheer:");
         console.log(arguments);
         let username = arguments[1].username;
@@ -1129,6 +1139,20 @@
         }
         if (document.getElementById("cbSendTextToAWSWebsocket").checked) {
           websocketAWSConnect();
+        }
+      }
+
+      function pause() {
+        let btn = document.getElementById("btn-pause");
+        console.log("Paused: " + window.audioPlayer.isPaused());
+        if (window.audioPlayer.isPaused()) {
+          document.getElementById("title").innerHTML = "🔊TTS Enabled";
+          btn.innerHTML = `<i class="fa fa-pause" aria-hidden="true"></i>`;
+          window.audioPlayer.Continue();
+        } else {
+          document.getElementById("title").innerHTML = "🔇TTS Paused";
+          btn.innerHTML = `<i class="fa fa-play" aria-hidden="true"></i>`;
+          window.audioPlayer.Pause();
         }
       }
 
@@ -1473,10 +1497,10 @@
 
           var time_diff = window.performance.now() - emoteParsingStart;
           /*console.log(
-                                                    "processed emotes in:",
-                                                    parseFloat(time_diff).toFixed(2),
-                                                    "ms"
-                                                  );*/
+                                                          "processed emotes in:",
+                                                          parseFloat(time_diff).toFixed(2),
+                                                          "ms"
+                                                        );*/
         }
 
         if (
@@ -1831,60 +1855,60 @@
         }
 
         con.liveChatUI.innerHTML += `<div id="message-id${messageID}" class="chat-bubble">
-                                    <div class="username-container" id="message-user-id${messageID}">
-                                      <div class="speaker-info">
-                                        <span class="speaker-icon">${speakerIcon}</span>
-                                        <span id="message-system-voice-id${messageID}" class="voice-name">SYSTEM VOICE</span>
-                                      </div>
-                                      <span class="username">
-                                        <strong style='color:${color}'>${
+                                          <div class="username-container" id="message-user-id${messageID}">
+                                            <div class="speaker-info">
+                                              <span class="speaker-icon">${speakerIcon}</span>
+                                              <span id="message-system-voice-id${messageID}" class="voice-name">SYSTEM VOICE</span>
+                                            </div>
+                                            <span class="username">
+                                              <strong style='color:${color}'>${
           chatters[username].display_name
         }:</strong><br>
-                                        (${chatters[
-                                          username
-                                        ].spoken_name.trim()})
-                                      </span>
-                                    </div>
+                                              (${chatters[
+                                                username
+                                              ].spoken_name.trim()})
+                                            </span>
+                                          </div>
 
-                                    <div class="message-container" id="message-message-id${messageID}">
-                                      <div class="speaker-info">
-                                        <span class="speaker-icon">${speakerIcon}</span>
-                                        <span class="voice-name">${userVoice}</span>
-                                      </div>
-                                      <span class="message">
-                                        ${message}<br>
-                                        ${translatedMessageHTML}
-                                      </span>
-                                    </div>
+                                          <div class="message-container" id="message-message-id${messageID}">
+                                            <div class="speaker-info">
+                                              <span class="speaker-icon">${speakerIcon}</span>
+                                              <span class="voice-name">${userVoice}</span>
+                                            </div>
+                                            <span class="message">
+                                              ${message}<br>
+                                              ${translatedMessageHTML}
+                                            </span>
+                                          </div>
 
-                                    <div class="buttons-container d-flex justify-content-center" >
-                                      <div class="btn-group p-1">${buttons}</div>
-                                    </div>
-                                  </div>`;
+                                          <div class="buttons-container d-flex justify-content-center" >
+                                            <div class="btn-group p-1">${buttons}</div>
+                                          </div>
+                                        </div>`;
       }
 
       function addSystemBubble(message, messageID) {
         con.liveChatUI.innerHTML += `<div id="message-id${messageID}" class="chat-bubble">
-                    <div class="username-container" id="message-user-id${messageID}">
-                      <div class="speaker-info">
-                        <span class="speaker-icon">🔊</span>
-                        <span id="message-system-voice-id${messageID}" class="voice-name">SYSTEM VOICE</span>
-                      </div>
-                      <span class="username">
-                        <strong style="color:${GetColorForUsername(
-                          "System"
-                        )}">System</strong>
-                       </span>
-                    </div>
+                          <div class="username-container" id="message-user-id${messageID}">
+                            <div class="speaker-info">
+                              <span class="speaker-icon">🔊</span>
+                              <span id="message-system-voice-id${messageID}" class="voice-name">SYSTEM VOICE</span>
+                            </div>
+                            <span class="username">
+                              <strong style="color:${GetColorForUsername(
+                                "System"
+                              )}">System</strong>
+                             </span>
+                          </div>
 
-                    <div class="message-container" id="message-message-id${messageID}">
-                      <span class="message">
-                        ${message}
-                      </span>
-                    </div>
-                    <div class="buttons-container"><span class="btn-group"></span></div>
-                  </div>
-                  `;
+                          <div class="message-container" id="message-message-id${messageID}">
+                            <span class="message">
+                              ${message}
+                            </span>
+                          </div>
+                          <div class="buttons-container"><span class="btn-group"></span></div>
+                        </div>
+                        `;
       }
 
       function makeButton(btnName, btnClass, btnIcon, btnArgument, mID) {
@@ -1908,16 +1932,16 @@
         }
 
         return `<button id="messageButton-${messageButtonName}-id${mID}"
-                                          class="btn btn-sm btn-${btnClass} py-0 ${btnPadding}"
-                                          title="${messageButtonName}"
-                                          onclick='onButtonClick("${messageButtonName}", "${btnArgument}", event)'>
-                                    <div>
-                                      <i class="fa-solid fa-${btnIcon}"></i>
-                                    </div>
-                                    <div>
-                                      <span class="small">${btnName}</span>
-                                    </div>
-                                  </button>`;
+                                                class="btn btn-sm btn-${btnClass} py-0 ${btnPadding}"
+                                                title="${messageButtonName}"
+                                                onclick='onButtonClick("${messageButtonName}", "${btnArgument}", event)'>
+                                          <div>
+                                            <i class="fa-solid fa-${btnIcon}"></i>
+                                          </div>
+                                          <div>
+                                            <span class="small">${btnName}</span>
+                                          </div>
+                                        </button>`;
       }
 
       function onButtonClick(button, argument, event) {
@@ -2086,10 +2110,10 @@
         banUser(twitch_id, user);
 
         /*client.ban(channel, user).then(function () {
-                                                        console.log("Successfully banned " + user.username + " on " + channel + "!");
-                                                      }, function (err) {
-                                                        console.log(err);
-                                                      });*/
+                                                              console.log("Successfully banned " + user.username + " on " + channel + "!");
+                                                            }, function (err) {
+                                                              console.log(err);
+                                                            });*/
       }
 
       function ttsUnbanByUser(channel, user) {
@@ -2098,12 +2122,12 @@
         saveTTSConfig(channel, user);
         unbanUser(twitch_id, user);
         /*
-                                                      client.unban(channel, user).then(function () {
-                                                        console.log("Successfully unbanned " + user.username + " on " + channel + "!");
-                                                      }, function (err) {
-                                                        console.log(err);
-                                                      });
-                                                      */
+                                                            client.unban(channel, user).then(function () {
+                                                              console.log("Successfully unbanned " + user.username + " on " + channel + "!");
+                                                            }, function (err) {
+                                                              console.log(err);
+                                                            });
+                                                            */
       }
 
       async function banUser(channel_id, login, reason) {
@@ -2282,19 +2306,19 @@
 
       function sendVoiceListToChat() {
         /*
-                                                      var neuralVoices = '';
-                                                      var standardVoices = '';
-                                                      for (var i = 0; i < voicesDesc.Voices.length; i++) {
-                                                        var voice = voicesDesc.Voices[i];
-                                                        if (voice.SupportedEngines[0] == 'standard') {
-                                                          standardVoices += i + ': ' + voice.Id + ' (' + voice.LanguageName + '), ';
-                                                        } else if (voice.SupportedEngines[0] == 'neural') {
-                                                          neuralVoices += i + ': ' + voice.Id + ' (' + voice.LanguageName + '), ';
-                                                        }
-                                                      }
-                                                      window.client.action(con.channel, 'Neural Voices: ' + neuralVoices);
-                                                      window.client.action(con.channel, 'Standard Voices: ' + standardVoices);
-                                                      */
+                                                            var neuralVoices = '';
+                                                            var standardVoices = '';
+                                                            for (var i = 0; i < voicesDesc.Voices.length; i++) {
+                                                              var voice = voicesDesc.Voices[i];
+                                                              if (voice.SupportedEngines[0] == 'standard') {
+                                                                standardVoices += i + ': ' + voice.Id + ' (' + voice.LanguageName + '), ';
+                                                              } else if (voice.SupportedEngines[0] == 'neural') {
+                                                                neuralVoices += i + ': ' + voice.Id + ' (' + voice.LanguageName + '), ';
+                                                              }
+                                                            }
+                                                            window.client.action(con.channel, 'Neural Voices: ' + neuralVoices);
+                                                            window.client.action(con.channel, 'Standard Voices: ' + standardVoices);
+                                                            */
         window.client.action(
           con.channel,
           "Configure your voice here: https://securitylive.com/tts-config.html"
@@ -2466,7 +2490,7 @@
         document.body.appendChild(audioPlayer);
 
         var isSpeaking = false;
-        var isPaused = false;
+        this.isPaused = false;
         var banRequested = false;
         var currentSpokenMessage = {};
         var banMessage = {};
@@ -2475,6 +2499,9 @@
         var speaker = {
           self: this,
           messageQueue: [],
+          isPaused: function () {
+            return isPaused;
+          },
           Speak: async function (
             prefix,
             text,
@@ -2959,10 +2986,7 @@
 
             recognition.onend = function () {
               //console.log("recognition.onend()");
-              setTimeout(function () {
-                justWaitAMoment();
-              }, 2000);
-
+              justWaitAMoment();
               streamerLastSpoke = Date.now();
               vr_function();
             };
@@ -3104,9 +3128,7 @@
               }
 
               //console.log("processed results, wait to enable tts again");
-              setTimeout(function () {
-                justWaitAMoment();
-              }, 3000);
+              justWaitAMoment();
 
               streamerLastSpoke = Date.now();
 
@@ -3233,25 +3255,38 @@
         }
 
         function justWaitAMoment() {
+          if (!waitingAMoment) {
+            waitingAMoment = true;
+            waitingIntervalID = setInterval(function () {
+              justWaitAMoment();
+            }, 500);
+            console.log("waitingIntervalID=", waitingIntervalID);
+          }
+
+          let waitTimeMS =
+            document.getElementById("txtTTSWaitTime").value * 1000;
           var lastSpokeDiff = Date.now() - streamerLastSpoke;
           //console.log("Last spoke diff: " + lastSpokeDiff);
-          if (lastSpokeDiff >= 3000) {
+          //console.log("moments to wait: " + waitTimeMS);
+          if (lastSpokeDiff >= waitTimeMS) {
+            clearInterval(waitingIntervalID);
+            waitingAMoment = false;
             streamerSpeaking(false);
             //console.log("RELEASE THE KRAKEN!!!!!");
             speakNextMessage();
-            //streamerLastSpoke = Date.now();
+            return;
           }
         }
 
         function streamerSpeaking(speaking) {
           if (speaking) {
             streamerIsSpeaking = true;
-            document.getElementById("title").innerHTML =
-              "Security Live TTS Translator (TTS Paused - Speaking)";
+            if (!window.audioPlayer.isPaused())
+              document.getElementById("title").innerHTML = "🔇TTS Waiting";
           } else {
             streamerIsSpeaking = false;
-            document.getElementById("title").innerHTML =
-              "Security Live TTS Translator (TTS Enabled)";
+            if (!window.audioPlayer.isPaused())
+              document.getElementById("title").innerHTML = "🔊TTS Enabled";
           }
         }
 

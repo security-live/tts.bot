@@ -1,0 +1,955 @@
+[
+  {
+    "abbreviation": "AFAIK",
+    "meaning": "As Far As I Know",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "AMA",
+    "meaning": "Ask Me Anything",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "ASAP",
+    "meaning": "As Soon As Possible",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": true
+    }
+  },
+  {
+    "abbreviation": "ATM",
+    "meaning": "At The Moment",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "AWOL",
+    "meaning": "Absent Without Leave",
+    "pronunciation": {
+      "letters": false,
+      "word": true,
+      "meaning": true
+    }
+  },
+  {
+    "abbreviation": "B/C",
+    "meaning": "Because",
+    "pronunciation": {
+      "letters": false,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "B4",
+    "meaning": "Before",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "BAC",
+    "meaning": "Blood Alcohol Content",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "BBL",
+    "meaning": "Be Back Later",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "BCNU",
+    "meaning": "Be Seeing You",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "BFF",
+    "meaning": "Best Friends Forever",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "BRB",
+    "meaning": "Be Right Back",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "BTW",
+    "meaning": "By The Way",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "BYOB",
+    "meaning": "Bring Your Own Beer/Bottle",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "C/O",
+    "meaning": "Care Of",
+    "pronunciation": {
+      "letters": false,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "DM",
+    "meaning": "Direct Message",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "ETA",
+    "meaning": "Estimated Time Of Arrival",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "FAQ",
+    "meaning": "Frequently Asked Questions",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "FB",
+    "meaning": "Facebook",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "FFS",
+    "meaning": "For F***'s Sake",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": true
+    }
+  },
+  {
+    "abbreviation": "FML",
+    "meaning": "F*** My Life",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": true
+    }
+  },
+  {
+    "abbreviation": "FTFY",
+    "meaning": "Fixed That For You",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "FTW",
+    "meaning": "For The Win",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "FWIW",
+    "meaning": "For What It's Worth",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "FYI",
+    "meaning": "For Your Information",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "GG",
+    "meaning": "Good Game",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "GL",
+    "meaning": "Good Luck",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "GLHF",
+    "meaning": "Good Luck Have Fun",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "GMT",
+    "meaning": "Greenwich Mean Time",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "GTFO",
+    "meaning": "Get The F*** Out",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": true
+    }
+  },
+  {
+    "abbreviation": "GXPN",
+    "meaning": "GIAC Exploit Researcher and Advanced Penetration Tester",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": true
+    }
+  },
+  {
+    "abbreviation": "HBD",
+    "meaning": "Happy Birthday",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "HMB",
+    "meaning": "Hit Me Back",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "HMU",
+    "meaning": "Hit Me Up",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "HTH",
+    "meaning": "Hope That Helps",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "IDK",
+    "meaning": "I Don't Know",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "IKR",
+    "meaning": "I Know, Right?",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "ILY",
+    "meaning": "I Love You",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "IMHO",
+    "meaning": "In My Humble Opinion",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "IMO",
+    "meaning": "In My Opinion",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "IRL",
+    "meaning": "In Real Life",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "ISO",
+    "meaning": "In Search Of",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "ITT",
+    "meaning": "In This Thread",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "JK",
+    "meaning": "Just Kidding",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": true
+    }
+  },
+  {
+    "abbreviation": "K8S",
+    "meaning": "Kubernetes",
+    "pronunciation": {
+      "letters": false,
+      "word": false,
+      "meaning": true
+    }
+  },
+  {
+    "abbreviation": "LMAO",
+    "meaning": "Laughing My Ass Off",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": true
+    }
+  },
+  {
+    "abbreviation": "LLM",
+    "meaning": "Large Language Model",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": true
+    }
+  },
+  {
+    "abbreviation": "LLMS",
+    "meaning": "Large Language Models",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": true
+    }
+  },
+  {
+    "abbreviation": "LOL",
+    "meaning": "Laugh Out Loud",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "MIA",
+    "meaning": "Missing In Action",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "MKAY",
+    "meaning": "Okay",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "MOM",
+    "meaning": "Mildly Amusing",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "MRW",
+    "meaning": "My Reaction When",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "MTF",
+    "meaning": "More To Follow",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "N/A",
+    "meaning": "Not Applicable",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "NBD",
+    "meaning": "No Big Deal",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "NGL",
+    "meaning": "Not Gonna Lie",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "NVM",
+    "meaning": "Nevermind",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "OFC",
+    "meaning": "Of Course",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "OMG",
+    "meaning": "Oh My God",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": true
+    }
+  },
+  {
+    "abbreviation": "OMW",
+    "meaning": "On My Way",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "OP",
+    "meaning": "Original Poster",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "OT",
+    "meaning": "Off-Topic",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "OTOH",
+    "meaning": "On The Other Hand",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "OTP",
+    "meaning": "One True Pairing",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "PITA",
+    "meaning": "Pain In The Ass",
+    "pronunciation": {
+      "letters": false,
+      "word": false,
+      "meaning": true
+    }
+  },
+  {
+    "abbreviation": "PLS",
+    "meaning": "Please",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "PM",
+    "meaning": "Private Message",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "POTUS",
+    "meaning": "President Of The United States",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "PPL",
+    "meaning": "People",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "PROB",
+    "meaning": "Probably",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "PSA",
+    "meaning": "Public Service Announcement",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "PTFO",
+    "meaning": "Pass The F*** Out",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": true
+    }
+  },
+  {
+    "abbreviation": "QOTD",
+    "meaning": "Quote Of The Day",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "RAK",
+    "meaning": "Random Acts Of Kindness",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "ROFL",
+    "meaning": "Rolling On The Floor Laughing",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": true
+    }
+  },
+  {
+    "abbreviation": "RT",
+    "meaning": "Retweet",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "RTFM",
+    "meaning": "Read The F***ing Manual",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": true
+    }
+  },
+  {
+    "abbreviation": "SMH",
+    "meaning": "Shaking My Head",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": true
+    }
+  },
+  {
+    "abbreviation": "SNAFU",
+    "meaning": "Situation Normal: All F***ed Up",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": true
+    }
+  },
+  {
+    "abbreviation": "SO",
+    "meaning": "Significant Other",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "SOS",
+    "meaning": "Same Old Shit",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": true
+    }
+  },
+  {
+    "abbreviation": "SRY",
+    "meaning": "Sorry",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "STFW",
+    "meaning": "Search The F***ing Web",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": true
+    }
+  },
+  {
+    "abbreviation": "SWAG",
+    "meaning": "Stuff We All Get",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": true
+    }
+  },
+  {
+    "abbreviation": "TBA",
+    "meaning": "To Be Announced",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "TBH",
+    "meaning": "To Be Honest",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "TBT",
+    "meaning": "Throwback Thursday",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "TFW",
+    "meaning": "That Feeling When",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "TIL",
+    "meaning": "Today I Learned",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "TMI",
+    "meaning": "Too Much Information",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": true
+    }
+  },
+  {
+    "abbreviation": "TTYL",
+    "meaning": "Talk To You Later",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "TY",
+    "meaning": "Thank You",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "TYVM",
+    "meaning": "Thank You Very Much",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "U",
+    "meaning": "You",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "WB",
+    "meaning": "Welcome Back",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "WCW",
+    "meaning": "Woman Crush Wednesday",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "WDYMBT",
+    "meaning": "What Do You Mean By That",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "WIP",
+    "meaning": "Work In Progress",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "meaning": "What The F***",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": true
+    }
+  },
+  {
+    "abbreviation": "WYD",
+    "meaning": "What You Doing",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "WYG",
+    "meaning": "Will You Go",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "WYWH",
+    "meaning": "Wish You Were Here",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "YOLO",
+    "meaning": "You Only Live Once",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": true
+    }
+  },
+  {
+    "abbreviation": "YW",
+    "meaning": "You're Welcome",
+    "pronunciation": {
+      "letters": true,
+      "word": false,
+      "meaning": false
+    }
+  },
+  {
+    "abbreviation": "ZZZ",
+    "meaning": "Sleeping, Bored, Tired",
+    "pronunciation": {
+      "letters": true,
+      "word": true,
+      "meaning": true
+    }
+  }
+]
