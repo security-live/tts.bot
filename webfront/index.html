@@ -211,11 +211,12 @@
                   <input
                     class="form-check-input"
                     type="checkbox"
-                    id="cbSpeakReplies"
+                    id="cbReplaceAtNames"
                     onchange="saveOption(this)"
+                    checked
                   />
-                  <label class="form-check-label" for="cbSpeakReplies">
-                    Speak replies and @name references at start of message.
+                  <label class="form-check-label" for="cbReplaceAtNames">
+                    Replace @usernames with spoken names in all messages.
                   </label>
                 </div>
 
@@ -1681,36 +1682,38 @@
                 //makeButton("Speak Next", "success", "comment-medical", username, messageID) +
                 //console.log("User replacement start: " + spokenText);
 
-                let userRegex = /@([A-Za-z0-9_]+)/g;
+                if (document.getElementById("cbReplaceAtNames").checked) {
+                  let userRegex = /@([A-Za-z0-9_]+)/g;
 
-                let bubbleText = spokenText;
+                  let bubbleText = spokenText;
 
-                let userMatches = [...spokenText.matchAll(userRegex)]; // Convert the iterator to an array
+                  let userMatches = [...spokenText.matchAll(userRegex)]; // Convert the iterator to an array
 
-                if (userMatches.length > 0) {
-                  // Check if there are any matches
-                  //console.log(userMatches);
+                  if (userMatches.length > 0) {
+                    // Check if there are any matches
+                    //console.log(userMatches);
 
-                  let usernames = new Set(); // Create a Set to store unique usernames
+                    let usernames = new Set(); // Create a Set to store unique usernames
 
-                  for (const [, username] of userMatches) {
-                    // Destructure and iterate through the matches
-                    usernames.add(username); // Add the username (without '@') to the Set
-                  }
+                    for (const [, username] of userMatches) {
+                      // Destructure and iterate through the matches
+                      usernames.add(username); // Add the username (without '@') to the Set
+                    }
 
-                  for (let username of usernames) {
-                    // Iterate through unique usernames
-                    let user = username.toLowerCase();
-                    if (chatters[user]) {
-                      let spokenName = chatters[user].spoken_name;
-                      spokenText = spokenText.replaceAll(
-                        "@" + username,
-                        spokenName
-                      );
-                      bubbleText = bubbleText.replaceAll(
-                        "@" + username,
-                        "@" + username + " (" + spokenName.trim() + ")"
-                      );
+                    for (let username of usernames) {
+                      // Iterate through unique usernames
+                      let user = username.toLowerCase();
+                      if (chatters[user]) {
+                        let spokenName = chatters[user].spoken_name;
+                        spokenText = spokenText.replaceAll(
+                          "@" + username,
+                          spokenName
+                        );
+                        bubbleText = bubbleText.replaceAll(
+                          "@" + username,
+                          "@" + username + " (" + spokenName.trim() + ")"
+                        );
+                      }
                     }
                   }
                 }
