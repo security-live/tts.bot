@@ -763,6 +763,11 @@
         $("#ttsinfo").show();
       }
 
+      function sanitizeChanName(channelName) {
+      const sanitizedChannelName = channelName.replace(/[^a-zA-Z0-9-_]/g, '');
+      return sanitizedChannelName;
+}
+
       var params = getHashParams();
       const url = new URL(window.location.href);
       access_token = params.access_token;
@@ -796,17 +801,21 @@
           "client-id": "dan71ek0pct1u7b8ht5u4h55zlcxvq",
           Authorization: "Bearer " + access_token,
         },
+        
         success: function (response) {
           var login = response.data[0].login;
           document.getElementById("twitch_username").value = login;
           var channel = login;
 
           if (localStorage.getItem("channel")) {
-            channel = localStorage.getItem("channel");
-          }
-
+          let channel = localStorage.getItem("channel");
+          console.log('beforeSan:', channel);
+          channel = sanitizeChanName(channel);
+          console.log('afterSan:', channel);
           document.getElementById("channel").value = channel;
-        },
+        }
+      },
+
         error: function (response) {
           localStorage.removeItem("access_token");
           access_token = null;
@@ -1103,7 +1112,7 @@
             username: document.getElementById("twitch_username").value,
             password: access_token,
           },
-          channels: [con.channel],
+          channels: [sanitizeChanName(con.channel)],
         };
 
         window.client = tmi.client(options);
