@@ -43,14 +43,10 @@ const DEFAULT_COLORS = [
 ];
 
 const HashCode = (str) =>
-  str
-    .split("")
-    .reduce((s, c) => (Math.imul(31, s) + c.charCodeAt(0)) | 0, 0);
+  str.split("").reduce((s, c) => (Math.imul(31, s) + c.charCodeAt(0)) | 0, 0);
 
 const GetColorForUsername = (userName) =>
-  DEFAULT_COLORS[
-  Math.abs(HashCode(userName)) % (DEFAULT_COLORS.length - 1)
-    ];
+  DEFAULT_COLORS[Math.abs(HashCode(userName)) % (DEFAULT_COLORS.length - 1)];
 
 const defaultOutput = [{ label: "Default", deviceId: "default" }];
 
@@ -175,16 +171,9 @@ function OpenPopup() {
   var popupURL = document.getElementById("txtCCTURL").value;
   if (hostname.includes("localhost")) {
     console.log("popup replace");
-    popupURL = popupURL.replace(
-      /securitylive\.com/g,
-      "localhost/VeryNiceTTS"
-    );
+    popupURL = popupURL.replace(/securitylive\.com/g, "localhost/VeryNiceTTS");
   }
-  cctPopup = window.open(
-    popupURL,
-    "Translator Window",
-    "width=800,height=600"
-  );
+  cctPopup = window.open(popupURL, "Translator Window", "width=800,height=600");
 }
 
 if (localStorage.getItem("twitch_username")) {
@@ -281,11 +270,7 @@ async function loadBTTVEmotes() {
 
 async function loadBTTVGlobalEmotes() {
   var request = new XMLHttpRequest();
-  request.open(
-    "GET",
-    "https://api.betterttv.net/3/cached/emotes/global",
-    true
-  );
+  request.open("GET", "https://api.betterttv.net/3/cached/emotes/global", true);
   request.onreadystatechange = function () {
     if (request.readyState === 4 && request.status === 200) {
       var responseJSON = JSON.parse(request.responseText);
@@ -324,9 +309,7 @@ function onConnecting(address, port) {
 function onConnected(address, port) {
   document.getElementById("status").innerHTML = " [ Connected ]";
   let message =
-    "<speak>Connected to channel " +
-    getSpokenName(con.channel) +
-    ".</speak>";
+    "<speak>Connected to channel " + getSpokenName(con.channel) + ".</speak>";
   addSystemBubble(message, ++messageID);
   window.audioPlayer.Speak("", message, "", "system", "ssml", messageID);
 
@@ -366,8 +349,8 @@ function onBan(channel, username, reason) {
   //ttsBanByUser(channel.substring(1), username);
   window.audioPlayer.SpeakNow(
     "<speak>Hey chat, " +
-    username +
-    " was banned, thought you should know.</speak>",
+      username +
+      " was banned, thought you should know.</speak>",
     "system",
     "ssml"
   );
@@ -419,14 +402,7 @@ function onCheer() {
 
   let prefix = "<speak>" + getSpokenName(username) + " says </speak>";
 
-  audioPlayer.Speak(
-    prefix,
-    arguments[2],
-    "",
-    username,
-    "text",
-    messageID
-  );
+  audioPlayer.Speak(prefix, arguments[2], "", username, "text", messageID);
 }
 
 function onSub() {
@@ -592,12 +568,9 @@ function websocketAWSConnect() {
     "setting up AWS websocket",
     document.getElementById("cbSendTextToAWSWebsocket").value
   );
-  var AWSWebsocketURL =
-    document.getElementById("txtAWSWebsocketURL").value;
+  var AWSWebsocketURL = document.getElementById("txtAWSWebsocketURL").value;
 
-  websocketProd = new WebSocket(
-    AWSWebsocketURL + "/?channel=" + con.channel
-  );
+  websocketProd = new WebSocket(AWSWebsocketURL + "/?channel=" + con.channel);
 
   websocketProd.onopen = function () {
     console.log("Connected to AWS websocket backend.");
@@ -709,10 +682,7 @@ function voiceOptionSelected(voiceOption) {
 
 function saveLocalStorageLang(elementId) {
   console.log("elementId:", elementId);
-  localStorage.setItem(
-    elementId,
-    document.getElementById(elementId).value
-  );
+  localStorage.setItem(elementId, document.getElementById(elementId).value);
 }
 
 /**************************Init and Connect to Chat****************************/
@@ -751,10 +721,7 @@ async function onChat(channel, userstate, message, self) {
   //console.log("message", message);
   //console.log("chatters:", chatters);
 
-  if (
-    userstate["custom-reward-id"] ==
-    "9914796b-d33c-4317-bb9e-e66b5d372ac2"
-  ) {
+  if (userstate["custom-reward-id"] == "9914796b-d33c-4317-bb9e-e66b5d372ac2") {
     console.log("inject script redeem");
     deleteTwitchChatMessage(twitch_id, userstate.id);
     return;
@@ -775,19 +742,10 @@ async function onChat(channel, userstate, message, self) {
   let allowTTS = false;
   let allowTTSmessage = "";
 
-  // TODO speak text up to comment delimiter
-  if (message.match("(^\s*-|^\s*#|^\s*<!--|^\s*;|^\s*\/\/)")) {
-    allowTTS = false;
-    allowTTSmessage = "Commentted out - ";
-  }
-
   if (document.getElementById("cbEveryoneTTS").checked) {
     //console.log("cbEveryone");
     allowTTS = true;
-  } else if (
-    document.getElementById("cbModTTS").checked &&
-    userstate.mod
-  ) {
+  } else if (document.getElementById("cbModTTS").checked && userstate.mod) {
     //console.log("cbMod");
     allowTTS = true;
   } else if (
@@ -892,7 +850,7 @@ async function onChat(channel, userstate, message, self) {
   }
 
   if (message) {
-    if (message.match("(^\s*!)")) {
+    if (message.match("(^s*!)")) {
       runChatCommand(channel, username, message, userstate.mod);
 
       if (document.getElementById("cbDeleteCommands").checked) {
@@ -923,9 +881,7 @@ async function onChat(channel, userstate, message, self) {
         }
 
         if (err) {
-          console.log(
-            "Error calling Translate. " + err.message + err.stack
-          );
+          console.log("Error calling Translate. " + err.message + err.stack);
         }
         if (data) {
           let spokenText = translatedMessage;
@@ -959,18 +915,15 @@ async function onChat(channel, userstate, message, self) {
                 supportedLanguages.en[data.SourceLanguageCode];
             }
 
-            if (
-              con.cbAutoTranslateChat.checked &&
-              !identicalTranslation
-            ) {
+            if (con.cbAutoTranslateChat.checked && !identicalTranslation) {
               window.client.action(
                 con.channel,
                 chatters[username].display_name +
-                ": " +
-                translatedMessage +
-                " (Translated from " +
-                supportedLanguages.en[data.SourceLanguageCode] +
-                ")"
+                  ": " +
+                  translatedMessage +
+                  " (Translated from " +
+                  supportedLanguages.en[data.SourceLanguageCode] +
+                  ")"
               );
             }
           }
@@ -985,18 +938,13 @@ async function onChat(channel, userstate, message, self) {
               document.getElementById("txtUserLevPct").value
             );
             maxTimeAgoMS =
-              parseInt(document.getElementById("txtUserLevTime").value) *
-              1000;
+              parseInt(document.getElementById("txtUserLevTime").value) * 1000;
             if (
               localChattersData[username] &&
               localChattersData[username].hasOwnProperty("lastMessages")
             ) {
-              for (const message of localChattersData[username]
-                .lastMessages) {
-                similarity = similarityPercentage(
-                  spokenText,
-                  message.message
-                );
+              for (const message of localChattersData[username].lastMessages) {
+                similarity = similarityPercentage(spokenText, message.message);
 
                 if (
                   similarity > minSimilarity &&
@@ -1014,9 +962,7 @@ async function onChat(channel, userstate, message, self) {
                 localChattersData[username].lastMessages.length - 20
               );
               localChattersData[username].lastMessages =
-                localChattersData[username].lastMessages.slice(
-                  startIndex
-                );
+                localChattersData[username].lastMessages.slice(startIndex);
             }
           }
 
@@ -1024,16 +970,12 @@ async function onChat(channel, userstate, message, self) {
 
           if (document.getElementById("cbChatLevDistance").checked) {
             maxTimeAgoMS =
-              parseInt(document.getElementById("txtChatLevTime").value) *
-              1000;
+              parseInt(document.getElementById("txtChatLevTime").value) * 1000;
             minSimilarity = parseInt(
               document.getElementById("txtChatLevPct").value
             );
             for (const message of lastMessages) {
-              similarity = similarityPercentage(
-                spokenText,
-                message.message
-              );
+              similarity = similarityPercentage(spokenText, message.message);
 
               if (
                 similarity > minSimilarity &&
@@ -1103,6 +1045,12 @@ async function onChat(channel, userstate, message, self) {
             }
           }
 
+          // TODO speak text up to comment delimiter
+          if (message.match("(^s*-|^s*#|^s*<!--|^s*;|^s*//)")) {
+            allowTTS = false;
+            allowTTSmessage = "Commentted out - ";
+          }
+
           addMessageBubble(
             username,
             bubbleText,
@@ -1127,8 +1075,7 @@ async function onChat(channel, userstate, message, self) {
 
             var prefix = "";
             if (last_speaker != username) {
-              prefix =
-                "<speak>" + getSpokenName(username) + " says </speak>";
+              prefix = "<speak>" + getSpokenName(username) + " says </speak>";
             }
             audioPlayer.Speak(
               prefix,
@@ -1184,13 +1131,7 @@ function addMessageBubble(
       username,
       messageID
     ) +
-    makeButton(
-      "TTS Ban",
-      "warning",
-      "volume-xmark",
-      username,
-      messageID
-    ) +
+    makeButton("TTS Ban", "warning", "volume-xmark", username, messageID) +
     makeButton("Ban", "danger", "gavel", username, messageID);
 
   //  let buttons = makeButton("Don't Speak", "secondary", "comment-slash", username, messageID) +
@@ -1223,8 +1164,8 @@ function addMessageBubble(
     chatters[username].display_name
   }:</strong><br>
                                               (${chatters[
-    username
-    ].spoken_name.trim()})
+                                                username
+                                              ].spoken_name.trim()})
                                             </span>
                                           </div>
 
@@ -1254,8 +1195,8 @@ function addSystemBubble(message, messageID) {
                             </div>
                             <span class="username">
                               <strong style="color:${GetColorForUsername(
-    "System"
-  )}">System</strong>
+                                "System"
+                              )}">System</strong>
                              </span>
                           </div>
 
@@ -1338,11 +1279,11 @@ function levenshteinDistance(s1, s2) {
       } else {
         distances_.push(
           1 +
-          Math.min(
-            distances[i1],
-            distances[i1 + 1],
-            distances_[distances_.length - 1]
-          )
+            Math.min(
+              distances[i1],
+              distances[i1 + 1],
+              distances_[distances_.length - 1]
+            )
         );
       }
     }
@@ -1422,10 +1363,7 @@ function runChatCommand(channel, username, message, mod) {
     message.startsWith("!pop")
   ) {
     window.audioPlayer.PopLastMessage(username);
-  } else if (
-    message.startsWith("!ttsdump") ||
-    message.startsWith("!dump")
-  ) {
+  } else if (message.startsWith("!ttsdump") || message.startsWith("!dump")) {
     parts = message.split(" ");
     if (parts.length < 2 && (mod || channel == username)) {
       window.audioPlayer.Dump();
@@ -1435,15 +1373,9 @@ function runChatCommand(channel, username, message, mod) {
     } else {
       window.audioPlayer.DumpByUser(username);
     }
-  } else if (
-    message.startsWith("!ttsban") &&
-    (mod || channel == username)
-  ) {
+  } else if (message.startsWith("!ttsban") && (mod || channel == username)) {
     ttsBan(channel, message, true);
-  } else if (
-    message.startsWith("!ttsunban") &&
-    (mod || channel == username)
-  ) {
+  } else if (message.startsWith("!ttsunban") && (mod || channel == username)) {
     ttsBan(channel, message, false);
   }
 }
@@ -1669,10 +1601,8 @@ async function buildVoiceLookup() {
           var lcvoice = voicesDesc.Voices[i].Id.toLowerCase();
           var idvoice = voicesDesc.Voices[i].Id;
           voices[lcvoice] = {};
-          voices[lcvoice].engine =
-            voicesDesc.Voices[i].SupportedEngines[0];
-          voices[lcvoice].voiceOptions =
-            voicesDesc.Voices[i].SupportedEngines;
+          voices[lcvoice].engine = voicesDesc.Voices[i].SupportedEngines[0];
+          voices[lcvoice].voiceOptions = voicesDesc.Voices[i].SupportedEngines;
           voices[lcvoice].name = idvoice;
         }
         voicesDesc.Voices.sort(function (a, b) {
@@ -1814,9 +1744,7 @@ function sendMessage() {
       params,
       function onSendMessageTranslate(err, data) {
         if (err) {
-          console.log(
-            "Error calling Translate. " + err.message + err.stack
-          );
+          console.log("Error calling Translate. " + err.message + err.stack);
         }
         if (data) {
           //console.log("M: " + message);
@@ -1849,16 +1777,13 @@ function sendVoiceMessage(text) {
     window.client.action(con.channel, text);
 
     //Print original message in Translated UI
-    con.liveChatUI.innerHTML +=
-      "<strong> ME: </strong>: " + text + "<br>";
+    con.liveChatUI.innerHTML += "<strong> ME: </strong>: " + text + "<br>";
 
     //Print translated message in Chat UI
-    con.liveChatUI.innerHTML +=
-      "<strong> ME: </strong>: " + text + "<br>";
+    con.liveChatUI.innerHTML += "<strong> ME: </strong>: " + text + "<br>";
 
     //Scroll chat and translated UI to bottom to keep focus on latest messages
-    con.liveChatUIContainer.scrollTop =
-      con.liveChatUIContainer.scrollHeight;
+    con.liveChatUIContainer.scrollTop = con.liveChatUIContainer.scrollHeight;
   }
 }
 
@@ -1886,14 +1811,7 @@ function AudioPlayer() {
     isPaused: function () {
       return isPaused;
     },
-    Speak: async function (
-      prefix,
-      text,
-      suffix,
-      username,
-      ssmlTextType,
-      mID
-    ) {
+    Speak: async function (prefix, text, suffix, username, ssmlTextType, mID) {
       //console.log("Speaking: " + text + " -- with voice: " + voice);
       //If currently speaking a message, add new message to the messageQueue
       let message = {};
@@ -1908,9 +1826,7 @@ function AudioPlayer() {
         lastQueuedMessage = message;
         this.messageQueue.push(message);
       } else {
-        speakMessage(message, false)
-          .then(speakNextMessage)
-          .catch(console.log);
+        speakMessage(message, false).then(speakNextMessage).catch(console.log);
       }
     },
     SpeakNow: async function (text, username, ssmlTextType, voice) {
@@ -1940,9 +1856,7 @@ function AudioPlayer() {
         lastQueuedMessage = message;
         this.messageQueue.unshift(message);
       } else {
-        speakMessage(message, false)
-          .then(speakNextMessage)
-          .catch(console.log);
+        speakMessage(message, false).then(speakNextMessage).catch(console.log);
       }
     },
     Pause: async function () {
@@ -2012,12 +1926,7 @@ function AudioPlayer() {
     BanConfirm: async function () {
       //console.log("BanConfirmed:", currentSpokenMessage, " channel:", con.channel);
       if (banMessage.banInitiated) {
-        console.log(
-          "BanConfirmed:",
-          banMessage,
-          " channel:",
-          con.channel
-        );
+        console.log("BanConfirmed:", banMessage, " channel:", con.channel);
         this.DumpByUser(banMessage.username);
         ttsBanByUser(con.channel, banMessage.username);
         window.audioPlayer.SpeakNow(
@@ -2053,18 +1962,13 @@ function AudioPlayer() {
       //console.log("BanConfirmed:", currentSpokenMessage, " channel:", con.channel);
       if (banMessage.banInitiated) {
         isSpeaking = true;
-        console.log(
-          "BanConfirmed:",
-          banMessage,
-          " channel:",
-          con.channel
-        );
+        console.log("BanConfirmed:", banMessage, " channel:", con.channel);
         await this.DumpByUser(banMessage.username);
         await window.audioPlayer.SpeakNow(
           //"<speak>" + getSpokenName(document.getElementById("twitch_username").value) + " says " + text + "</speak>",
           '<speak>Get the <say-as interpret-as="expletive">fudge</say-as> out of here ' +
-          banMessage.username +
-          "</speak>",
+            banMessage.username +
+            "</speak>",
           "system",
           "ssml"
         );
@@ -2076,8 +1980,8 @@ function AudioPlayer() {
           window.audioPlayer.SpeakNow(
             //"<speak>" + getSpokenName(document.getElementById("twitch_username").value) + " says " + text + "</speak>",
             "<speak>Just kidding " +
-            user +
-            ", we love you get back in here.</speak>",
+              user +
+              ", we love you get back in here.</speak>",
             "system",
             "ssml"
           );
@@ -2246,9 +2150,7 @@ function AudioPlayer() {
       if (queue.length > 0) {
         var nextMessage = queue[0];
         queue.splice(0, 1);
-        speakMessage(nextMessage)
-          .then(speakNextMessage)
-          .catch(console.log);
+        speakMessage(nextMessage).then(speakNextMessage).catch(console.log);
       }
     }
   }
@@ -2375,15 +2277,12 @@ function AudioPlayer() {
         vr_function();
       };
 
-      var trans_sourcelang =
-        document.getElementById("dstLangSelect").value;
-      var trans_destlang =
-        document.getElementById("systemLangSelect").value;
+      var trans_sourcelang = document.getElementById("dstLangSelect").value;
+      var trans_destlang = document.getElementById("systemLangSelect").value;
 
       var gas_key =
         "AKfycbwi_joFMoaC8-kiSnvNiIfUqABbVar5Mg0g2nxu2BxuPkQiHJ5WwzYAFg";
-      var TRANS_URL =
-        "https://script.google.com/macros/s/" + gas_key + "/exec";
+      var TRANS_URL = "https://script.google.com/macros/s/" + gas_key + "/exec";
       var query = "";
       var request = new XMLHttpRequest();
 
@@ -2429,8 +2328,7 @@ function AudioPlayer() {
             // If source and dest lang match don't translate just speak
             if (trans_sourcelang == trans_destlang) {
               if (
-                document.getElementById("cbSendDictationTranslation")
-                  .checked
+                document.getElementById("cbSendDictationTranslation").checked
               ) {
                 sendVoiceMessage(text);
               }
@@ -2457,24 +2355,20 @@ function AudioPlayer() {
                 request.open("GET", query, true);
 
                 request.onreadystatechange = function () {
-                  if (
-                    request.readyState === 4 &&
-                    request.status === 200
-                  ) {
+                  if (request.readyState === 4 && request.status === 200) {
                     //document.getElementById('speech_text-imb').innerHTML = recog_text;
                     //document.getElementById('trans_text-imb').innerHTML = request.responseText;
                     //window.audioPlayer.Speak("<speak>" + getSpokenName(document.getElementById("twitch_username").value) + " says </speak>", 'system', 'ssml');
                     if (
-                      document.getElementById(
-                        "cbSendDictationTranslation"
-                      ).checked
+                      document.getElementById("cbSendDictationTranslation")
+                        .checked
                     ) {
                       sendVoiceMessage(
                         text +
-                        " ( " +
-                        request.responseText +
-                        " ) confidence: " +
-                        confidence
+                          " ( " +
+                          request.responseText +
+                          " ) confidence: " +
+                          confidence
                       );
                     }
                     addSystemBubble(text, ++messageID);
@@ -2501,12 +2395,7 @@ function AudioPlayer() {
             //console.log("interim now():", Date.now());
             runImmediateVoiceCommand(text);
             sendTextToCCTPopup(text, false);
-            sendTextToCustomWebsocket(
-              text,
-              false,
-              speechStarted,
-              Date.now()
-            );
+            sendTextToCustomWebsocket(text, false, speechStarted, Date.now());
             //sendTextToAWSWebsocket(text, false);
           }
         }
@@ -2647,8 +2536,7 @@ function AudioPlayer() {
       console.log("waitingIntervalID=", waitingIntervalID);
     }
 
-    let waitTimeMS =
-      document.getElementById("txtTTSWaitTime").value * 1000;
+    let waitTimeMS = document.getElementById("txtTTSWaitTime").value * 1000;
     var lastSpokeDiff = Date.now() - streamerLastSpoke;
     //console.log("Last spoke diff: " + lastSpokeDiff);
     //console.log("moments to wait: " + waitTimeMS);
@@ -2726,16 +2614,13 @@ async function finishSetup() {
   await buildVoiceLookup();
   loadAndSortLanguages();
 
-  Handlebars.registerHelper(
-    "contains",
-    function (needle, haystack, options) {
-      //needle = Handlebars.escapeExpression(needle);
-      //haystack = Handlebars.escapeExpression(haystack);
-      return haystack.indexOf(needle) > -1
-        ? options.fn(this)
-        : options.inverse(this);
-    }
-  );
+  Handlebars.registerHelper("contains", function (needle, haystack, options) {
+    //needle = Handlebars.escapeExpression(needle);
+    //haystack = Handlebars.escapeExpression(haystack);
+    return haystack.indexOf(needle) > -1
+      ? options.fn(this)
+      : options.inverse(this);
+  });
 
   Handlebars.registerHelper("select", function (value, options) {
     var $el = $("<select />").html(options.fn(this));
@@ -2757,18 +2642,14 @@ async function finishSetup() {
       "system-voice-template"
     ).innerHTML,
     systemVoiceTemplate = Handlebars.compile(systemVoiceSource),
-    systemVoicePlaceholder = document.getElementById(
-      "systemVoicePlaceholder"
-    );
+    systemVoicePlaceholder = document.getElementById("systemVoicePlaceholder");
 
   systemVoicePlaceholder.innerHTML = systemVoiceTemplate(data);
 
   var systemVoiceOptionSource = document.getElementById(
       "system-voice-option-template"
     ).innerHTML,
-    systemVoiceOptionTemplate = Handlebars.compile(
-      systemVoiceOptionSource
-    ),
+    systemVoiceOptionTemplate = Handlebars.compile(systemVoiceOptionSource),
     systemVoiceOptionPlaceholder = document.getElementById(
       "systemVoiceOptionPlaceholder"
     );
@@ -2776,8 +2657,7 @@ async function finishSetup() {
   var optionData = {};
 
   optionData.voiceOptions = voices[data.voice.toLowerCase()].voiceOptions;
-  optionData.voiceOption =
-    voices[data.voice.toLowerCase()].voiceOptions[0];
+  optionData.voiceOption = voices[data.voice.toLowerCase()].voiceOptions[0];
 
   systemVoiceOptionPlaceholder.innerHTML =
     systemVoiceOptionTemplate(optionData);
@@ -2818,12 +2698,9 @@ async function finishSetup() {
   data.elementId = "chatLangSelect";
   chatLangPlaceholder.innerHTML = chatLangTemplate(data);
 
-  var systemLangSource =
-      document.getElementById("lang-template").innerHTML,
+  var systemLangSource = document.getElementById("lang-template").innerHTML,
     systemLangTemplate = Handlebars.compile(systemLangSource),
-    systemLangPlaceholder = document.getElementById(
-      "systemLangPlaceholder"
-    );
+    systemLangPlaceholder = document.getElementById("systemLangPlaceholder");
 
   data.name = "System";
   data.elementId = "systemLangSelect";
