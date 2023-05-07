@@ -754,7 +754,7 @@
           '&response_type=token&scope=chat:read+chat:edit" class="btn btn-primary" > Authorize On Twitch with minimal permissions</a >' +
           '<a href="https://id.twitch.tv/oauth2/authorize?client_id=dan71ek0pct1u7b8ht5u4h55zlcxvq&redirect_uri=' +
           redirectURL +
-          '&response_type=token&scope=chat:read+chat:edit+moderator:manage:banned_users" class="btn btn-primary" > Authorize On Twitch with ban permissions</a >';
+          '&response_type=token&scope=chat:read+chat:edit+moderator:manage:banned_users+moderator:manage:chat_messages" class="btn btn-primary" > Authorize On Twitch with ban and chat delete permissions</a >';
 
         $("#login").html(twitchURL);
         $("#login").show();
@@ -764,9 +764,9 @@
       }
 
       function sanitizeChanName(channelName) {
-      const sanitizedChannelName = channelName.replace(/[^a-zA-Z0-9-_]/g, '');
-      return sanitizedChannelName;
-}
+        const sanitizedChannelName = channelName.replace(/[^a-zA-Z0-9-_]/g, "");
+        return sanitizedChannelName;
+      }
 
       var params = getHashParams();
       const url = new URL(window.location.href);
@@ -801,20 +801,20 @@
           "client-id": "dan71ek0pct1u7b8ht5u4h55zlcxvq",
           Authorization: "Bearer " + access_token,
         },
-        
+
         success: function (response) {
           var login = response.data[0].login;
           document.getElementById("twitch_username").value = login;
           var channel = login;
 
           if (localStorage.getItem("channel")) {
-          let channel = localStorage.getItem("channel");
-          console.log('beforeSan:', channel);
-          channel = sanitizeChanName(channel);
-          console.log('afterSan:', channel);
-          document.getElementById("channel").value = channel;
-        }
-      },
+            let channel = localStorage.getItem("channel");
+            console.log("beforeSan:", channel);
+            channel = sanitizeChanName(channel);
+            console.log("afterSan:", channel);
+            document.getElementById("channel").value = channel;
+          }
+        },
 
         error: function (response) {
           localStorage.removeItem("access_token");
@@ -1407,14 +1407,8 @@
           userstate["custom-reward-id"] ==
           "9914796b-d33c-4317-bb9e-e66b5d372ac2"
         ) {
-          client
-            .deletemessage(channel, userstate.id)
-            .then((data) => {
-              console.log("Injection deleted", userstate);
-            })
-            .catch((err) => {
-              console.log("Failed to delete injection", userstate);
-            });
+          console.log("inject script redeem");
+          deleteTwitchChatMessage(twitch_id, userstate.id);
           return;
         }
         // TODO delete messages with injection stuffs
@@ -1426,6 +1420,7 @@
         var username = userstate["username"];
 
         if (message.match(/^(oneword|one word|!oneword)/i)) {
+          addSystemBubble(message, ++messageID);
           return;
         }
 
@@ -1496,7 +1491,6 @@
           matchedEmotes = matchedEmotes.filter(function (element) {
             return element != null;
           });
-
           if (speakEmotes && dedupEmotes) {
             for (const emote of matchedEmotes) {
               message += " " + emote[0];
@@ -1551,18 +1545,11 @@
 
         if (message) {
           if (message.match("(^\s*!)")) {
-            //last_speaker = username;
             runChatCommand(channel, username, message, userstate.mod);
 
-            if (document.getElementById("cbDeleteCommands").checked)
-              client
-                .deletemessage(channel, userstate.id)
-                .then((data) => {
-                  console.log("Message deleted", userstate);
-                })
-                .catch((err) => {
-                  console.log("Failed to delete message", userstate);
-                });
+            if (document.getElementById("cbDeleteCommands").checked) {
+              deleteTwitchChatMessage(twitch_id, userstate.id);
+            }
             return;
           }
 
@@ -2151,6 +2138,32 @@
                                                               console.log(err);
                                                             });
                                                             */
+      }
+
+      async function deleteTwitchChatMessage(channel_id, message_id) {
+        (async () => {
+          try {
+            const response = await fetch(
+              `https://api.twitch.tv/helix/moderation/chat?broadcaster_id=${channel_id}&moderator_id=${channel_id}&message_id=${message_id}`,
+              {
+                method: "DELETE",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Client-ID": "dan71ek0pct1u7b8ht5u4h55zlcxvq",
+                  Authorization: `Bearer ${access_token}`,
+                },
+              }
+            );
+
+            if (response.ok) {
+              console.log("Message deleted successfully.");
+            } else {
+              console.error("Error deleting message:", response);
+            }
+          } catch (error) {
+            console.error("Error deleting message 2:", error);
+          }
+        })();
       }
 
       async function banUser(channel_id, login, reason) {
