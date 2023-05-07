@@ -123,6 +123,7 @@ table td {
 
 #livechatc .message {
   border-radius: 5px;
+  overflow-wrap: anywhere;
 }
 
 .settings-toggle {
