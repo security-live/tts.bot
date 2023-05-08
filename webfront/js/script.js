@@ -18,7 +18,6 @@ var last_speaker = "system";
 var last_speaker_time = Date.now();
 var websocketCustom;
 var websocketProd;
-var cctPopup;
 var hostname = location.hostname;
 var autoconnect = "true";
 var messageID = 1;
@@ -128,6 +127,46 @@ function toggleSettingsMenu() {
   }
 }
 
+function toggleCCTPopup() {
+  if (!window.cctPopup || window.cctPopup.closed) {
+    window.cctPopup = window.open(
+      document.getElementById("txtCCTURL").value,
+      "Closed Captioning and Translation Popup",
+      "width=800,height=600"
+    );
+  } else {
+    window.cctPopup.focus();
+  }
+}
+
+async function copyCCTPopupURL() {
+  try {
+    await navigator.clipboard.writeText(
+      document.getElementById("txtCCTURL").value
+    );
+  } catch (err) {
+    console.error("Failed to copy text:", err);
+  }
+}
+
+async function sendEventToCCT(event) {
+  if (window.cctPopup && !window.cctPopup.closed) {
+    if (typeof window.cctPopup.processResults === "function") {
+      window.cctPopup.processResults(event);
+      //obj = JSON.parse(JSON.stringify(event));
+      //await window.cctPopup.postMessage(
+      //  JSON.stringify(event),
+      //  "http://localhost:8080"
+      //);
+    } else {
+      console.log(window.cctPopup.document.getElementById("text_result"));
+      console.log("Custom function not found in the child window.");
+    }
+  } else {
+    console.log("Child window is not open.");
+  }
+}
+
 if (url.searchParams.has("autoconnect")) {
   autoconnect = url.searchParams.get("autoconnect");
 }
@@ -167,15 +206,6 @@ $.ajax({
   },
 });
 
-function OpenPopup() {
-  var popupURL = document.getElementById("txtCCTURL").value;
-  if (hostname.includes("localhost")) {
-    console.log("popup replace");
-    popupURL = popupURL.replace(/securitylive\.com/g, "localhost/VeryNiceTTS");
-  }
-  cctPopup = window.open(popupURL, "Translator Window", "width=800,height=600");
-}
-
 if (localStorage.getItem("twitch_username")) {
   document.getElementById("twitch_username").value =
     localStorage.getItem("twitch_username");
@@ -201,7 +231,14 @@ if (localStorage.getItem("AWSwebsocketURL")) {
   document.getElementById("cbSendTextToAWSWebsocket").checked = true;
 }
 
-loadOptions();
+(async () => {
+  try {
+    await loadOptions();
+    await updatePreview();
+  } catch (err) {
+    console.error("Error calling async function:", err);
+  }
+})();
 
 if (chatters == undefined) {
   chatters = {};
@@ -282,23 +319,238 @@ async function loadBTTVGlobalEmotes() {
   await request.send(null);
 }
 
+function rgba(color, opacity) {
+  return `rgba(${parseInt(color.slice(1, 3), 16)}, ${parseInt(
+    color.slice(3, 5),
+    16
+  )}, ${parseInt(color.slice(5, 7), 16)}, ${opacity})`;
+}
+
+function rgbaToHex(rgbaString) {
+  const rgba = rgbaString.match(
+    /^rgba?\((\d+),\s*(\d+),\s*(\d+),?\s*(\d*\.?\d+)?\)$/i
+  );
+  if (!rgba) {
+    return null;
+  }
+
+  const hex = (color) => {
+    const hexColor = parseInt(color, 10).toString(16);
+    return hexColor.length === 1 ? "0" + hexColor : hexColor;
+  };
+
+  const r = hex(rgba[1]);
+  const g = hex(rgba[2]);
+  const b = hex(rgba[3]);
+  const a = rgba[4] ? parseFloat(rgba[4]) : 1;
+
+  return `#${r}${g}${b}`;
+}
+
 function saveOption(element) {
   if (element.type === "checkbox") {
     localStorage.setItem(element.id, element.checked);
-  } else if (element.type === "number" || element.type === "text") {
+  } else if (
+    element.type === "number" ||
+    element.type === "text" ||
+    element.type === "range"
+  ) {
     localStorage.setItem(element.id, element.value);
+  } else if (element.type === "color") {
+    let ele = element.id.slice(2);
+    ele = ele.charAt(0).toLowerCase() + ele.slice(1);
+    let opacityRange = document.getElementById(ele + "Opacity");
+    if (opacityRange) {
+      localStorage.setItem(element.id, rgba(element.value, opacityRange.value));
+    } else {
+      localStorage.setItem(element.id, rgba(element.value, 1));
+    }
+  } else {
+    console.log("Unknown element type:" + element.type);
   }
 }
 
-function loadOptions() {
+async function loadOptions() {
   const entries = Object.entries(localStorage);
   entries.forEach(([key, value]) => {
     if (key.startsWith("cb")) {
       document.getElementById(key).checked = JSON.parse(value);
     } else if (key.startsWith("txt")) {
       document.getElementById(key).value = value;
+    } else {
+      console.log("key not found:", key, "value:", value);
+
+      //let element = document.getElementById(key);
+      //if (element) element.value = value;
     }
   });
+  await getColorStyles();
+}
+
+async function getColorStyles() {
+  const webkitTextStrokeColor = localStorage.getItem("cpWebkitTextStrokeColor");
+  const borderColor = localStorage.getItem("cpBorderColor");
+  const shadowColor = localStorage.getItem("cpShadowColor");
+  const fontColor = localStorage.getItem("cpFontColor");
+  const outlineColor = localStorage.getItem("cpOutlineColor");
+  const bubbleBackgroundColor = localStorage.getItem("cpBubbleBackgroundColor");
+  const hrColor = localStorage.getItem("cpHrColor");
+
+  const setColor = (elementId, hexString) => {
+    const element = document.getElementById(elementId);
+    if (element) {
+      element.value = hexString;
+    }
+  };
+
+  setColor("cpWebkitTextStrokeColor", rgbaToHex(webkitTextStrokeColor));
+  setColor("cpBorderColor", rgbaToHex(borderColor));
+  setColor("cpShadowColor", rgbaToHex(shadowColor));
+  setColor("cpFontColor", rgbaToHex(fontColor));
+  setColor("cpOutlineColor", rgbaToHex(outlineColor));
+  setColor("cpBubbleBackgroundColor", rgbaToHex(bubbleBackgroundColor));
+  setColor("cpHrColor", rgbaToHex(hrColor));
+
+  if (window.cctPopup) {
+    if (webkitTextStrokeColor) {
+      window.cctPopup.document.documentElement.style.setProperty(
+        "--webkit-text-stroke-color",
+        webkitTextStrokeColor
+      );
+    }
+    if (borderColor) {
+      window.cctPopup.document.documentElement.style.setProperty(
+        "--border-color",
+        borderColor
+      );
+    }
+    if (shadowColor) {
+      window.cctPopup.document.documentElement.style.setProperty(
+        "--shadow-color",
+        shadowColor
+      );
+    }
+    if (fontColor) {
+      window.cctPopup.document.documentElement.style.setProperty(
+        "--font-color",
+        fontColor
+      );
+    }
+    if (outlineColor) {
+      window.cctPopup.document.documentElement.style.setProperty(
+        "--outline-color",
+        outlineColor
+      );
+    }
+    if (bubbleBackgroundColor) {
+      window.cctPopup.document.documentElement.style.setProperty(
+        "--bubble-background-color",
+        bubbleBackgroundColor
+      );
+    }
+    if (hrColor) {
+      window.cctPopup.document.documentElement.style.setProperty(
+        "--hr-color",
+        hrColor
+      );
+    }
+  }
+}
+
+async function updatePreview() {
+  //console.log("updatePreview()");
+  let popupUrl = "https://securitylive.com/tts/translator.html?popup=aws&";
+
+  if (location.hostname.includes("localhost")) {
+    popupUrl =
+      "http://localhost:8080/tts.bot/webfront/translator.html?popup=aws&";
+  } else if (location.hostname.includes("dev.tts.bot")) {
+    popupUrl = "https://dev.tts.bot/translator.html?popup=aws&";
+  } else if (location.hostname.includes("tts.bot")) {
+    popupUrl = "https://tts.bot/translator.html?popup=aws&";
+  }
+
+  const setVar = (varName, varValue) => {
+    if (window.cctPopup) {
+      window.cctPopup.document.documentElement.style.setProperty(
+        "--" + varName,
+        varValue
+      );
+    }
+    popupUrl += `${varName}=${varValue}&`;
+  };
+
+  const fontFamily = document.getElementById("fontFamily").value;
+  const fontWeight = document.getElementById("fontWeight").value;
+  const fontColor = document.getElementById("cpFontColor").value;
+  const fontColorOpacity = document.getElementById("fontColorOpacity").value;
+  const fontSize = document.getElementById("fontSize").value;
+  const webkitTextStrokeSize = document.getElementById(
+    "webkitTextStrokeSize"
+  ).value;
+  const webkitTextStrokeColor = document.getElementById(
+    "cpWebkitTextStrokeColor"
+  ).value;
+  const webkitTextStrokeColorOpacity = document.getElementById(
+    "webkitTextStrokeColorOpacity"
+  ).value;
+  const bubbleBackgroundColor = document.getElementById(
+    "cpBubbleBackgroundColor"
+  ).value;
+  const bubbleBackgroundOpacity = document.getElementById(
+    "bubbleBackgroundOpacity"
+  ).value;
+  const borderColor = document.getElementById("cpBorderColor").value;
+  const borderColorOpacity =
+    document.getElementById("borderColorOpacity").value;
+  const borderWidth = document.getElementById("borderWidth").value;
+  const borderLineStyle = document.getElementById("borderLineStyle").value;
+  const borderRadius = document.getElementById("borderRadius").value;
+  const hrColor = document.getElementById("cpHrColor").value;
+  const hrColorOpacity = document.getElementById("hrColorOpacity").value;
+  const outlineColor = document.getElementById("cpOutlineColor").value;
+  const outlineColorOpacity = document.getElementById(
+    "outlineColorOpacity"
+  ).value;
+  const outlineOffset = document.getElementById("outlineOffset").value;
+  const shadowColor = document.getElementById("cpShadowColor").value;
+  const shadowColorOpacity =
+    document.getElementById("shadowColorOpacity").value;
+  const shadowOffsetHorizontal = document.getElementById(
+    "shadowOffsetHorizontal"
+  ).value;
+  const shadowOffsetVertical = document.getElementById(
+    "shadowOffsetVertical"
+  ).value;
+  const shadowBlur = document.getElementById("shadowBlur").value;
+
+  setVar("font-family", fontFamily);
+  setVar("font-weight", fontWeight);
+  setVar("font-color", rgba(fontColor, fontColorOpacity));
+  setVar("font-size", `${fontSize}px`);
+  setVar("webkit-text-stroke-size", `${webkitTextStrokeSize}px`);
+  setVar(
+    "webkit-text-stroke-color",
+    rgba(webkitTextStrokeColor, webkitTextStrokeColorOpacity)
+  );
+  setVar(
+    "bubble-background-color",
+    rgba(bubbleBackgroundColor, bubbleBackgroundOpacity)
+  );
+  setVar("border-color", rgba(borderColor, borderColorOpacity));
+  setVar("border-width", `${borderWidth}px`);
+  setVar("border-line-style", borderLineStyle);
+  setVar("border-radius", `${borderRadius}px`);
+  setVar("hr-color", rgba(hrColor, hrColorOpacity));
+  setVar("outline-color", rgba(outlineColor, outlineColorOpacity));
+  setVar("outline-offset", `${outlineOffset}px`);
+  setVar("shadow-color", rgba(shadowColor, shadowColorOpacity));
+  setVar("shadow-offset-horizontal", `${shadowOffsetHorizontal}px`);
+  setVar("shadow-offset-vertical", `${shadowOffsetVertical}px`);
+  setVar("shadow-blur", `${shadowBlur}px`);
+
+  document.getElementById("txtCCTURL").value = popupUrl;
+  console.log("popup url:", popupUrl);
 }
 
 /**************************Client Connecting****************************/
@@ -721,11 +973,16 @@ async function onChat(channel, userstate, message, self) {
   //console.log("message", message);
   //console.log("chatters:", chatters);
 
+  if (userstate["custom-reward-id"]) {
+    console.log(userstate);
+  }
+
   if (userstate["custom-reward-id"] == "9914796b-d33c-4317-bb9e-e66b5d372ac2") {
     console.log("inject script redeem");
     deleteTwitchChatMessage(twitch_id, userstate.id);
     return;
   }
+
   // TODO delete messages with injection stuffs
   // || message.match('(?!<\w+>.*</\w+>)')
 
@@ -1124,13 +1381,6 @@ function addMessageBubble(
   messageID
 ) {
   let buttons =
-    makeButton(
-      "Don't Speak",
-      "secondary",
-      "comment-slash",
-      username,
-      messageID
-    ) +
     makeButton("TTS Ban", "warning", "volume-xmark", username, messageID) +
     makeButton("Ban", "danger", "gavel", username, messageID);
 
@@ -1377,6 +1627,18 @@ function runChatCommand(channel, username, message, mod) {
     ttsBan(channel, message, true);
   } else if (message.startsWith("!ttsunban") && (mod || channel == username)) {
     ttsBan(channel, message, false);
+  } else if (
+    (message.startsWith("!tts-pause") || message.startsWith("!ttspause")) &&
+    (mod || channel == username) &&
+    !window.audioPlayer.isPaused()
+  ) {
+    pause();
+  } else if (
+    (message.startsWith("!tts-unpause") || message.startsWith("!ttsunpause")) &&
+    (mod || channel == username) &&
+    window.audioPlayer.isPaused()
+  ) {
+    pause();
   }
 }
 
@@ -2286,7 +2548,7 @@ function AudioPlayer() {
       var query = "";
       var request = new XMLHttpRequest();
 
-      recognition.onresult = function (event) {
+      recognition.onresult = async function (event) {
         if (
           !document.getElementById("cbSTTS").checked &&
           !document.getElementById("cbSendTextToWebsocket").checked
@@ -2297,24 +2559,27 @@ function AudioPlayer() {
         var results = event.results;
         var speechProcessingStart = window.performance.now();
 
+        //sendEventToCCT(event);
+
         for (var i = event.resultIndex; i < results.length; i++) {
           var text = results[i][0].transcript.trim();
           var confidence = results[i][0].confidence;
+
+          sendTextToAWSWebsocket(
+            text,
+            results[i].isFinal,
+            speechStarted,
+            Date.now(),
+            confidence
+          );
+
           if (results[i].isFinal) {
             //console.log("onresult isFinal:", text);
             runVoiceCommand(text);
-            sendTextToCCTPopup(text, true);
 
             //console.log("final spoke for:", Date.now() - speechStarted);
             //console.log("speechTimeQueue:", speechTimeQueue);
             sendTextToCustomWebsocket(
-              text,
-              true,
-              speechStarted,
-              Date.now(),
-              confidence
-            );
-            sendTextToAWSWebsocket(
               text,
               true,
               speechStarted,
@@ -2394,9 +2659,8 @@ function AudioPlayer() {
 
             //console.log("interim now():", Date.now());
             runImmediateVoiceCommand(text);
-            sendTextToCCTPopup(text, false);
+
             sendTextToCustomWebsocket(text, false, speechStarted, Date.now());
-            //sendTextToAWSWebsocket(text, false);
           }
         }
 
@@ -2417,12 +2681,12 @@ function AudioPlayer() {
   }
 
   function sendTextToCCTPopup(text, isFinal) {
-    if (cctPopup != null && !cctPopup.closed) {
+    if (window.cctPopup != null && !window.cctPopup.closed) {
       //var lblFirstName = cctPopup.document.getElementById("lblFirstName");
       //var lblLastName = cctPopup.document.getElementById("lblLastName");
       //lblFirstName.innerHTML = document.getElementById("txtFirstName").value;
       //lblLastName.innerHTML = document.getElementById("txtLastName").value;
-      cctPopup.focus();
+      window.cctPopup.focus();
     }
   }
 
@@ -2533,7 +2797,7 @@ function AudioPlayer() {
       waitingIntervalID = setInterval(function () {
         justWaitAMoment();
       }, 500);
-      console.log("waitingIntervalID=", waitingIntervalID);
+      //console.log("waitingIntervalID=", waitingIntervalID);
     }
 
     let waitTimeMS = document.getElementById("txtTTSWaitTime").value * 1000;

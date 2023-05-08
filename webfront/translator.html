@@ -6,17 +6,22 @@
 
     <link href="fonts.css" rel="stylesheet" />
     <link href="styles.css" rel="stylesheet" />
-    <title>Security Live Translator</title>
+    <title>tts.bot Closed Captioning and Translation</title>
   </head>
 
   <body class="translatorText">
     <div class="big" id="result_text">
-      <div class="text_div" style="position: absolute; bottom: 5%; left: 30%; right: 30%">
+      <div
+        class="text_div"
+        style="position: absolute; bottom: 5%; left: 1%; right: 1%"
+      >
         <table id="text_table" class="center border" style="bottom: 33px">
           <tbody>
             <tr>
               <td id="tbl_td" align="center" valign="bottom">
-                <div class="outline shadow" id="speech_text-imb">Security Live Translator</div>
+                <div class="outline shadow" id="speech_text-imb">
+                  tts.bot Closed Captioning and Translation
+                </div>
                 <hr />
                 <div class="outline shadow" id="trans_text-imb"></div>
               </td>
@@ -27,68 +32,101 @@
     </div>
 
     <script type="text/javascript">
-      var flag_speech = 0;
       var streamerLastSpoke = Date.now();
       var bubble_timer = 10000;
       var norikittea = false;
+      var popup = null;
+      var recog_text = "";
+      var trans_text = "";
+      var arg_recog = null;
+      var arg_trans = null;
 
-      var webSocket = new WebSocket("wss://api.tts.bot");
+      var trans_sourcelang = "en";
+      var trans_destlang = "ja";
 
+      var gas_key =
+        "AKfycbwi_joFMoaC8-kiSnvNiIfUqABbVar5Mg0g2nxu2BxuPkQiHJ5WwzYAFg";
+
+      var TRANS_URL = "https://script.google.com/macros/s/" + gas_key + "/exec";
+      var query = "";
+
+      var webSocket = new WebSocket("wss://ws.tts.bot/?channel=security_live");
       webSocket.onopen = function () {
         console.log("Connected to websocket backend.");
+        var wsObject = {
+          action: "start",
+          channel: "security_live",
+        };
+        webSocket.send(JSON.stringify(wsObject));
       };
 
-      window.onload = function () {
-        vr_function();
+      webSocket.onmessage = function (event) {
+        //console.log("event:", event);
+        var wsObject = JSON.parse(event.data);
+        recog_text = wsObject.message;
+        if (wsObject.isFinal) {
+          var request = new XMLHttpRequest();
+          document.getElementById("speech_text-imb").innerHTML = recog_text;
 
-        if (norikittea) {
-          console.log("for kittea");
-          document.documentElement.style.setProperty("--border-color", "#FF00FF");
-          document.documentElement.style.setProperty("--webkit-text-stroke-color", "#FF00FF");
-          document.documentElement.style.setProperty("--border-radius", "45px");
-          document.getElementById("speech_text-imb").innerHTML = "Norikittea Translator";
-          document.title = "Norikittea Translator";
+          if (gas_key != null && trans_sourcelang != trans_destlang) {
+            query =
+              TRANS_URL +
+              "?message=" +
+              recog_text +
+              "&srcLang=" +
+              trans_sourcelang +
+              "&dstLang=" +
+              trans_destlang;
+            request.open("GET", query, true);
+            console.log("google translate url:", query);
+            request.onreadystatechange = function () {
+              if (request.readyState === 4 && request.status === 200) {
+                //window.audioPlayer.Speak(request.responseText);
+                document.getElementById("result_text").style.visibility =
+                  "visible";
+                if (recog_text)
+                  document.getElementById("speech_text-imb").innerHTML =
+                    recog_text;
+                document.getElementById("trans_text-imb").innerHTML =
+                  request.responseText;
+                setTimeout(function () {
+                  justWaitAMoment();
+                }, bubble_timer);
+                //console.log("recognition.onend() after setTimeout");
+                streamerLastSpoke = Date.now();
+              }
+            };
+            request.send(null);
+          } else if (recog_text) {
+            setTimeout(function () {
+              window.audioPlayer.Speak(recog_text);
+            }, parseInt(document.getElementById("delay").value));
+            document.getElementById("speech_text-imb").innerHTML = recog_text;
+          }
+        } else {
+          document.getElementById("result_text").style.visibility = "visible";
+          document.getElementById("speech_text-imb").innerHTML =
+            "<< " + recog_text + " >>";
+          streamerLastSpoke = Date.now();
         }
       };
 
-      function vr_function() {
-        window.SpeechRecognition = window.SpeechRecognition || webkitSpeechRecognition;
+      window.onload = function () {
+        if (getParam("popup") == "local") {
+          popup = "local";
+        } else if (getParam("popup") == "aws") {
+          popup = "aws";
+        }
 
-        var recognition = new webkitSpeechRecognition();
-        recognition.lang = "en";
-        recognition.interimResults = true;
-        recognition.continuous = true;
-        var recog_text = "";
-        var trans_text = "";
-        var arg_recog = null;
-        var arg_trans = null;
+        window.addEventListener("message", (event) => {
+          if (event.origin !== "http://localhost:8080") {
+            console.log("invalid origin");
+            return;
+          }
+          console.log(event);
 
-        var trans_sourcelang = "en";
-        var trans_destlang = "ja";
-
-        var gas_key = "AKfycbwi_joFMoaC8-kiSnvNiIfUqABbVar5Mg0g2nxu2BxuPkQiHJ5WwzYAFg";
-
-        var TRANS_URL = "https://script.google.com/macros/s/" + gas_key + "/exec";
-        var query = "";
-
-        recognition.onerror = function () {
-          vr_function();
-        };
-
-        recognition.onspeechstart = function () {
-          streamerLastSpoke = Date.now();
-          document.getElementById("result_text").style.visibility = "visible";
-        };
-
-        recognition.onsoundend = function () {
-          recognition.stop();
-          vr_function();
-        };
-
-        recognition.onspeechend = function () {
-          recognition.stop();
-          vr_function();
-        };
+          //processResults(event.data);
+        });
 
         if (getParam("recog") != null) {
           arg_recog = getParam("recog");
@@ -129,58 +167,123 @@
 
         if (trans_sourcelang == trans_destlang) {
           alert(
-            "ERROR! Please set different language between recog and trans!\nYou set both [" + trans_sourcelang + "]!"
+            "ERROR! Please set different language between recog and trans!\nYou set both [" +
+              trans_sourcelang +
+              "]!"
           );
         }
 
-        var request = new XMLHttpRequest();
+        if (!popup) {
+          vr_function();
+        }
+
+        if (norikittea) {
+          console.log("for kittea");
+          document.documentElement.style.setProperty(
+            "--border-color",
+            "#FF00FF"
+          );
+          document.documentElement.style.setProperty(
+            "--webkit-text-stroke-color",
+            "#FF00FF"
+          );
+          document.documentElement.style.setProperty("--border-radius", "45px");
+          document.getElementById("speech_text-imb").innerHTML =
+            "Norikittea Translator";
+          document.title = "Norikittea Translator";
+        }
+      };
+
+      function vr_function() {
+        console.log("Start local Voice Recognition");
+        window.SpeechRecognition =
+          window.SpeechRecognition || webkitSpeechRecognition;
+
+        var recognition = new webkitSpeechRecognition();
+        recognition.lang = "en";
+        recognition.interimResults = true;
+        recognition.continuous = true;
+
+        recognition.onerror = function () {
+          vr_function();
+        };
+
+        recognition.onspeechstart = function () {
+          streamerLastSpoke = Date.now();
+          document.getElementById("result_text").style.visibility = "visible";
+        };
+
+        recognition.onsoundend = function () {
+          recognition.stop();
+          vr_function();
+        };
+
+        recognition.onspeechend = function () {
+          recognition.stop();
+          vr_function();
+        };
 
         recognition.onresult = function (event) {
-          var results = event.results;
-          for (var i = event.resultIndex; i < results.length; i++) {
-            if (results[i].isFinal) {
-              recog_text = results[i][0].transcript;
-              var wsObject = {
-                action: "textToAll",
-                text: recog_text,
-                time: Date.now(),
-              };
-              webSocket.send(JSON.stringify(wsObject));
+          processResults(event);
+          recognition.start();
+        };
+      }
 
-              document.getElementById("speech_text-imb").innerHTML = recog_text;
+      function processResults(event) {
+        var results = event.results;
+        for (var i = event.resultIndex; i < results.length; i++) {
+          if (results[i].isFinal) {
+            recog_text = results[i][0].transcript;
 
-              if (gas_key != null) {
-                query =
-                  TRANS_URL + "?message=" + recog_text + "&srcLang=" + trans_sourcelang + "&dstLang=" + trans_destlang;
-                request.open("GET", query, true);
+            var wsObject = {
+              action: "textToAll",
+              text: recog_text,
+              time: Date.now(),
+            };
+            //webSocket.send(JSON.stringify(wsObject));
 
-                request.onreadystatechange = function () {
-                  if (request.readyState === 4 && request.status === 200) {
-                    document.getElementById("speech_text-imb").innerHTML = recog_text;
-                    document.getElementById("trans_text-imb").innerHTML = request.responseText;
-                    setTimeout(function () {
-                      justWaitAMoment();
-                    }, bubble_timer);
-                    //console.log("recognition.onend() after setTimeout");
-                    streamerLastSpoke = Date.now();
-                  }
+            document.getElementById("speech_text-imb").innerHTML = recog_text;
+
+            if (gas_key != null) {
+              query =
+                TRANS_URL +
+                "?message=" +
+                recog_text +
+                "&srcLang=" +
+                trans_sourcelang +
+                "&dstLang=" +
+                trans_destlang;
+              request.open("GET", query, true);
+
+              request.onreadystatechange = function () {
+                if (request.readyState === 4 && request.status === 200) {
+                  document.getElementById("speech_text-imb").innerHTML =
+                    recog_text;
+                  document.getElementById("trans_text-imb").innerHTML =
+                    request.responseText;
+                  setTimeout(function () {
+                    justWaitAMoment();
+                  }, bubble_timer);
+                  //console.log("recognition.onend() after setTimeout");
+                  streamerLastSpoke = Date.now();
+                }
+                if (!popup) {
                   vr_function();
-                };
-                request.send(null);
-              } else {
-                document.getElementById("speech_text-imb").innerHTML = recog_text;
+                }
+              };
+              request.send(null);
+            } else {
+              document.getElementById("speech_text-imb").innerHTML = recog_text;
+              if (!popup) {
                 vr_function();
               }
-            } else {
-              document.getElementById("speech_text-imb").innerHTML = "<< " + results[i][0].transcript + " >>";
-              streamerLastSpoke = Date.now();
-              flag_speech = 1;
             }
+          } else {
+            document.getElementById("speech_text-imb").innerHTML =
+              "<< " + results[i][0].transcript + " >>";
+            streamerLastSpoke = Date.now();
           }
-        };
-        flag_speech = 0;
-
-        recognition.start();
+        }
       }
 
       function justWaitAMoment() {
@@ -197,7 +300,10 @@
       console.log("query string params:");
       params.forEach(function (value) {
         console.log(value[1] + "=" + getParam(value[1]));
-        document.documentElement.style.setProperty("--" + value[1], getParam(value[1]));
+        document.documentElement.style.setProperty(
+          "--" + value[1],
+          getParam(value[1])
+        );
       });
 
       function getParam(name, url) {

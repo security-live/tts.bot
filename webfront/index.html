@@ -81,8 +81,27 @@
         </div>
         <div class="col-md-2 text-right">
           <!-- Content for the right-aligned div -->
-          <span id="status">Disconnected</span
-          ><button
+          <span id="status">Disconnected</span>
+          <!--
+          <button
+            type="button"
+            id="user-settings-gear"
+            class="btn btn-default"
+            onclick="toggleUserSettingsMenu()"
+          >
+            <i class="fas fa-user-cog"></i>
+          </button>
+-->
+          <button
+            type="button"
+            id="cct-popup"
+            class="btn btn-default"
+            onclick="toggleCCTPopup()"
+          >
+            <i class="fa-regular fa-message"></i>
+          </button>
+
+          <button
             type="button"
             id="settings-gear"
             class="btn btn-default"
@@ -358,7 +377,7 @@
                       Pause TTS when speaking. (Must allow mic access and choose
                       correct mic input)
                     </label>
-                    <label for="txtChatLevTime">
+                    <label for="txtTTSWaitTime">
                       Time to wait after speaking to continue TTS:
                       <input
                         style="display: inline-block; width: 75px"
@@ -490,7 +509,8 @@
                       class="form-check-label"
                       for="cbSendTextToAWSWebsocket"
                     >
-                      Send spoken text to AWS for end user clients.
+                      Send spoken text to AWS for CCT and end user clients. Must
+                      have this enabled right now for CCT.
                     </label>
                   </div>
                   <label class="d-block mb-4"
@@ -516,14 +536,344 @@
                     type="text"
                     id="txtCCTURL"
                     class="form-control"
-                    value="https://securitylive.com/translator.html?popup=true&src=en&dst=de&webkit-text-stroke-color=red&outline-color=red&shadow-color=red&border-color=red"
+                    value="http://localhost:8080/tts.bot/webfront/translator.html?popup=true&src=en&dst=de&webkit-text-stroke-color=red&outline-color=red&shadow-color=red&border-color=red"
                     placeholder="test"
+                    oninput="saveOption(this)"
                 /></label>
 
+                <label>
+                  Font Family:
+                  <select
+                    id="fontFamily"
+                    oninput="updatePreview(); saveOption(this);"
+                  >
+                    <option value="Arial, Helvetica, sans-serif">
+                      Arial, Helvetica
+                    </option>
+                    <option value="Verdana, Geneva, sans-serif">
+                      Verdana, Geneva
+                    </option>
+                    <option value="Georgia, serif">Georgia</option>
+                    <option value="Times New Roman, Times, serif">
+                      Times New Roman, Times
+                    </option>
+                    <option value="Courier New, Courier, monospace">
+                      Courier New, Courier
+                    </option>
+                    <option value="Lucida Console, Monaco, monospace">
+                      Lucida Console, Monaco
+                    </option>
+                    <option value="Tahoma, Geneva, sans-serif">
+                      Tahoma, Geneva
+                    </option>
+                    <option value="Trebuchet MS, Helvetica, sans-serif">
+                      Trebuchet MS, Helvetica
+                    </option>
+                    <option
+                      value="Palatino Linotype, Book Antiqua, Palatino, serif"
+                    >
+                      Palatino Linotype, Book Antiqua, Palatino
+                    </option>
+                    <option value="Garamond, serif">Garamond</option>
+                    <option value="Comic Sans MS, cursive">
+                      Comic Sans MS
+                    </option>
+                    <option value="Impact, Charcoal, sans-serif">
+                      Impact, Charcoal
+                    </option>
+                    <option value="Arial Black, Gadget, sans-serif">
+                      Arial Black, Gadget
+                    </option>
+                    <option
+                      value="Lucida Sans Unicode, Lucida Grande, sans-serif"
+                    >
+                      Lucida Sans Unicode, Lucida Grande
+                    </option>
+                    <option value="MS Sans Serif, Geneva, sans-serif">
+                      MS Sans Serif, Geneva
+                    </option>
+                    <option value="MS Serif, New York, serif">
+                      MS Serif, New York
+                    </option>
+                  </select>
+                </label>
+                <br />
+                <label>
+                  Font Size:
+                  <input
+                    type="number"
+                    id="fontSize"
+                    value="30"
+                    oninput="updatePreview(); saveOption(this);"
+                  />
+                </label>
+                <label>
+                  Font Color:
+                  <input
+                    type="color"
+                    id="cpFontColor"
+                    value="#000000"
+                    oninput="updatePreview(); saveOption(this);"
+                  />
+                </label>
+                <br />
+                <label>
+                  Font Weight:
+                  <input
+                    type="number"
+                    min="0"
+                    max="1000"
+                    id="fontWeight"
+                    value="900"
+                    oninput="updatePreview(); saveOption(this);"
+                  />
+                </label>
+                <br />
+                <label>
+                  Font Color Opacity:
+                  <input
+                    type="range"
+                    id="fontColorOpacity"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value="1"
+                    oninput="updatePreview(); saveOption(this);"
+                  />
+                </label>
+                <br />
+                <label>
+                  Webkit Text Stroke Size:
+                  <input
+                    type="number"
+                    id="webkitTextStrokeSize"
+                    value="0.5"
+                    oninput="updatePreview(); saveOption(this);"
+                  />
+                </label>
+                <br />
+                <label>
+                  Webkit Text Stroke Color:
+                  <input
+                    type="color"
+                    id="cpWebkitTextStrokeColor"
+                    value="#8A2BE2"
+                    oninput="updatePreview(); saveOption(this);"
+                  />
+                </label>
+                <label>
+                  Webkit Text Stroke Color Opacity:
+                  <input
+                    type="range"
+                    id="webkitTextStrokeColorOpacity"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value="1"
+                    oninput="updatePreview(); saveOption(this);"
+                  />
+                </label>
+                <br />
+                <label>
+                  Bubble Background Color:
+                  <input
+                    type="color"
+                    id="cpBubbleBackgroundColor"
+                    value="#636363"
+                    oninput="updatePreview(); saveOption(this);"
+                  />
+                </label>
+                <label>
+                  Bubble Background Opacity:
+                  <input
+                    type="range"
+                    id="bubbleBackgroundOpacity"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value="0.5"
+                    oninput="updatePreview(); saveOption(this);"
+                  />
+                </label>
+                <br />
+                <label>
+                  Border Color:
+                  <input
+                    type="color"
+                    id="cpBorderColor"
+                    value="#8A2BE2"
+                    oninput="updatePreview(); saveOption(this);"
+                  />
+                </label>
+                <label>
+                  Border Color Opacity:
+                  <input
+                    type="range"
+                    id="borderColorOpacity"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value="1"
+                    oninput="updatePreview(); saveOption(this);"
+                  />
+                </label>
+                <br />
+                <label>
+                  Border Width:
+                  <input
+                    type="number"
+                    id="borderWidth"
+                    value="5"
+                    oninput="updatePreview(); saveOption(this);"
+                  />
+                </label>
+                <br />
+                <label>
+                  Border Line Style:
+                  <select
+                    id="borderLineStyle"
+                    oninput="updatePreview(); saveOption(this);"
+                  >
+                    <option value="solid">Solid</option>
+                    <option value="dashed">Dashed</option>
+                    <option value="dotted">Dotted</option>
+                    <option value="double">Double</option>
+                    <option value="groove">Groove</option>
+                    <option value="ridge">Ridge</option>
+                    <option value="inset">Inset</option>
+                    <option value="outset">Outset</option>
+                  </select>
+                </label>
+                <br />
+
+                <br />
+                <label>
+                  Border Radius:
+                  <input
+                    type="number"
+                    id="borderRadius"
+                    value="25"
+                    oninput="updatePreview(); saveOption(this);"
+                  />
+                </label>
+                <br />
+                <label>
+                  HR Color:
+                  <input
+                    type="color"
+                    id="cpHrColor"
+                    value="#FC0000"
+                    oninput="updatePreview(); saveOption(this);"
+                  />
+                </label>
+                <label>
+                  HR Color Opacity:
+                  <input
+                    type="range"
+                    id="hrColorOpacity"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value="1"
+                    oninput="updatePreview(); saveOption(this);"
+                  />
+                </label>
+                <br />
+                <label>
+                  Outline Color:
+                  <input
+                    type="color"
+                    id="cpOutlineColor"
+                    value="#8A2BE2"
+                    oninput="updatePreview(); saveOption(this);"
+                  />
+                </label>
+                <label>
+                  Outline Color Opacity:
+                  <input
+                    type="range"
+                    id="outlineColorOpacity"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value="1"
+                    oninput="updatePreview(); saveOption(this);"
+                  />
+                </label>
+                <br />
+                <label>
+                  Outline Offset:
+                  <input
+                    type="number"
+                    id="outlineOffset"
+                    value="1"
+                    oninput="updatePreview(); saveOption(this);"
+                  />
+                </label>
+                <br />
+                <label>
+                  Shadow Color:
+                  <input
+                    type="color"
+                    id="cpShadowColor"
+                    value="#8A2BE2"
+                    oninput="updatePreview(); saveOption(this);"
+                  />
+                </label>
+                <label>
+                  Shadow Color Opacity:
+                  <input
+                    type="range"
+                    id="shadowColorOpacity"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value="1"
+                    oninput="updatePreview(); saveOption(this);"
+                  />
+                </label>
+                <br />
+                <label>
+                  Shadow Offset Horizontal:
+                  <input
+                    type="number"
+                    id="shadowOffsetHorizontal"
+                    value="0"
+                    oninput="updatePreview(); saveOption(this);"
+                  />
+                </label>
+                <br />
+                <label>
+                  Shadow Offset Vertical:
+                  <input
+                    type="number"
+                    id="shadowOffsetVertical"
+                    value="0"
+                    oninput="updatePreview(); saveOption(this);"
+                  />
+                </label>
+                <br />
+                <label>
+                  Shadow Blur:
+                  <input
+                    type="number"
+                    id="shadowBlur"
+                    value="0"
+                    oninput="updatePreview(); saveOption(this);"
+                  />
+                </label>
+                <br />
+                <br />
                 <input
                   type="button"
-                  value="Open Dictation Window"
-                  onclick="OpenPopup()"
+                  value="Open Closed Captioning and Translation (CCT)  Window"
+                  onclick="toggleCCTPopup()"
+                />
+                <br />
+                <input
+                  type="button"
+                  value="Copy CCT URL For OBS"
+                  onclick="copyCCTPopupURL()"
                 />
               </div>
             </div>
