@@ -327,6 +327,10 @@ function rgba(color, opacity) {
 }
 
 function rgbaToHex(rgbaString) {
+  if (!rgbaString) {
+    return null;
+  }
+
   const rgba = rgbaString.match(
     /^rgba?\((\d+),\s*(\d+),\s*(\d+),?\s*(\d*\.?\d+)?\)$/i
   );
@@ -378,7 +382,7 @@ async function loadOptions() {
     } else if (key.startsWith("txt")) {
       document.getElementById(key).value = value;
     } else {
-      console.log("key not found:", key, "value:", value);
+      console.log("key not found:", key);
 
       //let element = document.getElementById(key);
       //if (element) element.value = value;
