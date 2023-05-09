@@ -78,7 +78,7 @@
               "&dstLang=" +
               trans_destlang;
             request.open("GET", query, true);
-            console.log("google translate url:", query);
+            //console.log("google translate url:", query);
             request.onreadystatechange = function () {
               if (request.readyState === 4 && request.status === 200) {
                 //window.audioPlayer.Speak(request.responseText);

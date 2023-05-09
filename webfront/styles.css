@@ -20,6 +20,14 @@ html, body, * {
   flex: 1;
 }
 
+#speech_text-imb {
+  padding-bottom: 10px;
+}
+
+#trans_text-imb {
+  padding-top: 10px;
+}
+
 hr {
   border-color: var(--hr-color,BlueViolet);
 }
@@ -32,7 +40,7 @@ table {
   border: var(--border-width, 5px) var(--border-line-style, solid)
     var(--border-color, BlueViolet);
   border-radius: var(--border-radius, 25px);
-  padding: var(--padding, 10px);
+  padding: var(--padding, 50px);
   margin: var(--margin, 5px);
 }
 

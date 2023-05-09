@@ -862,6 +862,29 @@
                     oninput="updatePreview(); saveOption(this);"
                   />
                 </label>
+                <label class="d-block mb-4">
+                  Padding:
+                  <input
+                    type="number"
+                    id="padding"
+                    class="form-control"
+                    value="10"
+                    min="0"
+                    oninput="saveOption(this); updatePreview();"
+                  />
+                </label>
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="cbUseFinalResultsOnly"
+                    onchange="saveOption(this);"
+                    checked
+                  />
+                  <label class="form-check-label" for="cbUseFinalResultsOnly">
+                    Only send Webkit Voice Recognition final results.
+                  </label>
+                </div>
                 <br />
                 <br />
                 <input

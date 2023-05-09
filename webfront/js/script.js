@@ -382,8 +382,7 @@ async function loadOptions() {
     } else if (key.startsWith("txt")) {
       document.getElementById(key).value = value;
     } else {
-      console.log("key not found:", key);
-
+      //console.log("key not found:", key);
       //let element = document.getElementById(key);
       //if (element) element.value = value;
     }
@@ -554,7 +553,7 @@ async function updatePreview() {
   setVar("shadow-blur", `${shadowBlur}px`);
 
   document.getElementById("txtCCTURL").value = popupUrl;
-  console.log("popup url:", popupUrl);
+  //console.log("popup url:", popupUrl);
 }
 
 /**************************Client Connecting****************************/
@@ -2569,21 +2568,20 @@ function AudioPlayer() {
           var text = results[i][0].transcript.trim();
           var confidence = results[i][0].confidence;
 
-          sendTextToAWSWebsocket(
-            text,
-            results[i].isFinal,
-            speechStarted,
-            Date.now(),
-            confidence
-          );
-
           if (results[i].isFinal) {
-            //console.log("onresult isFinal:", text);
             runVoiceCommand(text);
 
             //console.log("final spoke for:", Date.now() - speechStarted);
             //console.log("speechTimeQueue:", speechTimeQueue);
             sendTextToCustomWebsocket(
+              text,
+              true,
+              speechStarted,
+              Date.now(),
+              confidence
+            );
+
+            sendTextToAWSWebsocket(
               text,
               true,
               speechStarted,
@@ -2663,6 +2661,16 @@ function AudioPlayer() {
 
             //console.log("interim now():", Date.now());
             runImmediateVoiceCommand(text);
+
+            if (!document.getElementById("cbUseFinalResultsOnly").checked) {
+              sendTextToAWSWebsocket(
+                text,
+                false,
+                speechStarted,
+                Date.now(),
+                confidence
+              );
+            }
 
             sendTextToCustomWebsocket(text, false, speechStarted, Date.now());
           }
