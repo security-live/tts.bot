@@ -14,14 +14,18 @@
         let redirectURL =
           "https://securitylive.com/tts/index.html?autoconnect=false";
 
-        if (location.hostname.includes("localhost")) {
+        if (location.hostname.includes("10.1.10.76")) {
           redirectURL =
-            "http://localhost:8080/tts.bot/webfront/index.html?autoconnect=false";
+            "https://10.1.10.76/tts.bot/webfront/index.html?autoconnect=false";
+        } else if (location.hostname.includes("localhost")) {
+          redirectURL =
+            "https://localhost/tts.bot/webfront/index.html?autoconnect=false";
         } else if (location.hostname.includes("dev.tts.bot")) {
           redirectURL = "https://dev.tts.bot/index.html?autoconnect=false";
         } else if (location.hostname.includes("tts.bot")) {
           redirectURL = "https://tts.bot/index.html?autoconnect=false";
         }
+
         /*
               // API call to send Twitch token, get back encrypted token. Get back AWS API keys.
               var data = {};

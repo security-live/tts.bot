@@ -22,6 +22,7 @@ var hostname = location.hostname;
 var autoconnect = "true";
 var messageID = 1;
 var currentSpeakingMessageID = 0;
+var testAP = new Audio();
 
 const DEFAULT_COLORS = [
   "#b52d2d",
@@ -80,9 +81,12 @@ function showAuthButton() {
   var redirectURL =
     "https://securitylive.com/tts/safetokenXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.html";
 
-  if (hostname.includes("localhost")) {
+  if (hostname.includes("10.1.10.76")) {
     redirectURL =
-      "http://localhost:8080/tts.bot/webfront/safetokenXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.html";
+      "https://10.1.10.76/tts.bot/webfront/safetokenXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.html";
+  } else if (hostname.includes("localhost")) {
+    redirectURL =
+      "https://localhost/tts.bot/webfront/safetokenXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.html";
   } else if (hostname.includes("dev.tts.bot")) {
     redirectURL =
       "https://dev.tts.bot/safetokenXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.html";
@@ -465,8 +469,7 @@ async function updatePreview() {
   let popupUrl = "https://securitylive.com/tts/translator.html?popup=aws&";
 
   if (location.hostname.includes("localhost")) {
-    popupUrl =
-      "http://localhost:8080/tts.bot/webfront/translator.html?popup=aws&";
+    popupUrl = "https://localhost/tts.bot/webfront/translator.html?popup=aws&";
   } else if (location.hostname.includes("dev.tts.bot")) {
     popupUrl = "https://dev.tts.bot/translator.html?popup=aws&";
   } else if (location.hostname.includes("tts.bot")) {
@@ -676,6 +679,16 @@ function onRaid() {
 /**************************Init and Connect to Chat****************************/
 async function connect() {
   init();
+
+  const goListener = function (event) {
+    testAP.play();
+    document.removeEventListener("click", goListener);
+  };
+
+  // Add the event listener
+  document.addEventListener("click", goListener);
+
+  // Remove the event listener
 
   //Twitch Client
   var options = {
@@ -2491,25 +2504,29 @@ function AudioPlayer() {
       //console.log(audioStream);
       //var uInt8Array = new Uint8Array(audioStream);
       var arrayBuffer = audioStream.buffer;
-      var blob = new Blob([arrayBuffer]);
+      var blob = new Blob([arrayBuffer], { type: "audio/mpeg" });
       var url = URL.createObjectURL(blob);
-      audioPlayer.src = url;
+      //audioPlayer.src = url;
+      testAP.src = url;
+      //testAP = new Audio(url);
 
-      audioPlayer.addEventListener("ended", onEnded);
-      audioPlayer.addEventListener("skip", onEnded);
+      testAP.addEventListener("ended", onEnded);
+      testAP.addEventListener("skip", onEnded);
+      //audioPlayer.addEventListener("ended", onEnded);
+      //audioPlayer.addEventListener("skip", onEnded);
 
       function onEnded() {
         //("onEnded:", arguments);
-        audioPlayer.pause();
-        audioPlayer.removeEventListener("ended", onEnded);
-        audioPlayer.removeEventListener("skip", onEnded);
+        testAP.pause();
+        testAP.removeEventListener("ended", onEnded);
+        testAP.removeEventListener("skip", onEnded);
 
         // STOP MIDI FX
 
         resolve();
       }
 
-      audioPlayer.play().catch(function (error) {
+      testAP.play().catch(function (error) {
         console.log("audioPlayer error: " + JSON.stringify(error));
         reject(error);
       });
