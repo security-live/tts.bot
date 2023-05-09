@@ -154,7 +154,6 @@ table td {
 }
 
 .chat-bubble {
-  display: flex;
   justify-content: space-between;
   align-items: stretch;
   padding: 0px;
@@ -166,6 +165,13 @@ table td {
   border: solid;
   background-color: #3d3d3d;
 }
+
+@media (min-width: 600px) {
+  .chat-bubble {
+    display: flex;
+  }
+}
+
 
 .username-container {
   background-color: #505050;
