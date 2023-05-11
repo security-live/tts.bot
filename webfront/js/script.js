@@ -283,22 +283,33 @@ async function loadBTTVGlobalEmotes() {
 }
 
 function saveOption(element) {
-  if (element.type === "checkbox") {
-    localStorage.setItem(element.id, element.checked);
-  } else if (element.type === "number" || element.type === "text") {
-    localStorage.setItem(element.id, element.value);
+  try {
+    if (element.type === "checkbox") {
+      localStorage.setItem(element.id, element.checked);
+    } else if (element.type === "number" || element.type === "text") {
+      localStorage.setItem(element.id, element.value);
+    }
+  } catch (e) {
+    console.log("Error Loading Options loadOptions():");
+    console.log(e);
   }
 }
 
 function loadOptions() {
   const entries = Object.entries(localStorage);
-  entries.forEach(([key, value]) => {
-    if (key.startsWith("cb")) {
-      document.getElementById(key).checked = JSON.parse(value);
-    } else if (key.startsWith("txt")) {
-      document.getElementById(key).value = value;
-    }
-  });
+  try {
+    entries.forEach(([key, value]) => {
+      if (key.startsWith("cb")) {
+        let ele = document.getElementById(key);
+        document.getElementById(key).checked = JSON.parse(value);
+      } else if (key.startsWith("txt")) {
+        document.getElementById(key).value = value;
+      }
+    });
+  } catch (e) {
+    console.log("Error Loading Options loadOptions():");
+    console.log(e);
+  }
 }
 
 /**************************Client Connecting****************************/

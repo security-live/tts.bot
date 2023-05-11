@@ -3,3 +3,11 @@
 .idea
 backend/tts-bot.js
 webfront/.dccache
+window1.html
+webfront/child.html
+webfront/obs_source.html
+.gitignore
+webfront/parent.html
+webfront/parent.js
+webfront/test1.html
+webfront/webrtc.js
