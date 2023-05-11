@@ -2497,8 +2497,18 @@ function AudioPlayer() {
     });
   }
 
+  const testAP2 = new AudioPlayer2();
   // Play audio stream
   function playAudioStream(audioStream) {
+    return new Promise((resolve, reject) => {
+      testAP2.play(audioStream).then(resolve).catch((error) => {
+        console.log("audioPlayer error: " + JSON.stringify(error));
+        reject(error);
+      });
+    });
+
+
+
     //isSpeaking = true;
     return new Promise(function (resolve, reject) {
       //console.log(audioStream);
@@ -3030,5 +3040,65 @@ async function finishSetup() {
     }
   } else {
     showAuthButton();
+  }
+}
+
+class AudioPlayer2 {
+  static context = new AudioContext();
+
+  get context() {
+    return this.constructor.context;
+  }
+
+  showInfo() {
+    const div = document.createElement('div');
+    div.setAttribute('style', 'position: fixed; top: 0; right: 0; bottom: 0; left: 0; background-color: rgba(0,0,0,.5)');
+    div.innerHTML = `
+    <div class="modal" tabindex="-1" style="display: block;">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Couldn't start playback</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>You need to interact with the website, to enable the audio playback.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary">OK</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    `;
+    div.addEventListener('click', () => {
+      div.remove();
+    }, {once: true});
+    document.body.append(div);
+  }
+
+  play(audioStream) {
+    return new Promise(async (resolve) => {
+      if (this.context.state === 'suspended') {
+        window.addEventListener('click', () => {
+          this.context.resume();
+        }, {once: true});
+
+        this.showInfo();
+
+        await this.context.resume();
+      }
+
+      const bufferSource = this.context.createBufferSource();
+      bufferSource.buffer = await this.context.decodeAudioData(Uint8Array.from(audioStream).buffer);
+      bufferSource.connect(this.context.destination);
+      bufferSource.start();
+      bufferSource.addEventListener('ended', () => {
+        bufferSource.disconnect();
+        bufferSource.buffer = null;
+
+        resolve();
+      });
+    });
   }
 }
