@@ -30,7 +30,7 @@
       <div class="topHeader row">
         <div class="col-md-2 text-left">
           <!-- Content for the left-aligned div -->
-          <div id="title">TTS.bot</div>
+          <div id="title">tts.bot</div>
         </div>
         <div class="col-8 text-center">
           <!-- Content for the center-aligned div -->
@@ -68,20 +68,20 @@
           >
             <i class="fa fa-pause" aria-hidden="true"></i>
           </button>
-          <!--
+
           <button
             type="button"
-            id="btn-go"
+            id="btn-vr-go"
             class="btn btn-dark"
-            onclick="test()"
+            onclick="window.audioPlayer.StartVoiceRecognition()"
           >
-            Test Button
+            Start Voice Recognition
           </button>
-          -->
         </div>
         <div class="col-md-2 text-right">
           <!-- Content for the right-aligned div -->
-          <span id="status">Disconnected</span>
+          <span id="status">Disconnected</span><br />
+          <span id="queueCount">Messages Queued(0)</span>
           <!--
           <button
             type="button"
@@ -244,6 +244,18 @@
                   />
                   <label class="form-check-label" for="cbReplaceAtNames">
                     Replace @usernames with spoken names in all messages.
+                  </label>
+                </div>
+
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="cbSpeakOtherAtNames"
+                    onchange="saveOption(this)"
+                  />
+                  <label class="form-check-label" for="cbSpeakOtherAtNames">
+                    Speak @username messages referencing others.
                   </label>
                 </div>
 
@@ -487,16 +499,31 @@
                     <label class="form-check-label" for="cbSendTextToWebsocket">
                       Send spoken text to websocket for comannds.
                     </label>
+
+                    <label class="d-block mb-4"
+                      ><input
+                        type="text"
+                        id="txtWebsocketURL"
+                        class="form-control"
+                        value="ws://localhost:1880/stt"
+                        placeholder="ws://localhost:1880/stt"
+                        oninput="saveOption(this)"
+                    /></label>
+
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="cbRouteChatThroughWebsocket"
+                      onchange="saveOption(this);"
+                    />
+                    <label
+                      class="form-check-label"
+                      for="cbRouteChatThroughWebsocket"
+                    >
+                      Route all chat through custom websocket. (Node-RED GPT
+                      analysis)
+                    </label>
                   </div>
-                  <label class="d-block mb-4"
-                    ><input
-                      type="text"
-                      id="txtWebsocketURL"
-                      class="form-control"
-                      value="ws://localhost:1880/stt"
-                      placeholder="ws://localhost:1880/stt"
-                      oninput="saveOption(this)"
-                  /></label>
 
                   <div class="form-check">
                     <input
@@ -513,6 +540,7 @@
                       have this enabled right now for CCT.
                     </label>
                   </div>
+
                   <label class="d-block mb-4"
                     ><input
                       type="text"
@@ -890,13 +918,14 @@
                 <input
                   style="margin-bottom: 5px"
                   type="button"
-                  value="Open Closed Captioning and Translation (CCT)  Window"
+                  value="Open Closed Captioning and Translation (CCT) Window (drag into OBS)"
                   onclick="toggleCCTPopup()"
+                  draggable="true"
                 />
 
                 <input
                   type="button"
-                  value="Copy CCT URL For OBS"
+                  value="Copy CCT URL to clipboard"
                   onclick="copyCCTPopupURL()"
                 />
               </div>
@@ -971,6 +1000,7 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>
     <script src="https://code.jquery.com/jquery-1.10.1.min.js"></script>
     <script src="awsTranslateSupportedLanguages.js"></script>
+    <script src="tld-list-basic.js"></script>
 
     <script id="system-voice-template" type="text/x-handlebars-template">
       <dt>System Voice Selection: </dt>
