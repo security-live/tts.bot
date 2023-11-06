@@ -1,5 +1,6 @@
 "use strict";
 
+
 // GLOBALS YAY
 var streamerIsSpeaking = false;
 var waitingAMoment = false;
