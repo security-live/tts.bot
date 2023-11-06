@@ -32,6 +32,7 @@
     </div>
 
     <script type="text/javascript">
+      var recognition = new webkitSpeechRecognition();
       var streamerLastSpoke = Date.now();
       var bubble_timer = 10000;
       var norikittea = false;
@@ -51,6 +52,53 @@
       var query = "";
 
       var webSocket = new WebSocket("wss://ws.tts.bot/?channel=security_live");
+
+      if (getParam("recog") != null) {
+          arg_recog = getParam("recog");
+        }
+        if (getParam("trans") != null) {
+          arg_trans = getParam("trans");
+        }
+        if (getParam("src") != null) {
+          arg_recog = getParam("src");
+        }
+        if (getParam("dst") != null) {
+          arg_trans = getParam("dst");
+        }
+        if (getParam("dest") != null) {
+          arg_trans = getParam("dest");
+        }
+        if (getParam("source") != null) {
+          arg_recog = getParam("source");
+        }
+        if (getParam("destination") != null) {
+          arg_trans = getParam("destination");
+        }
+        if (getParam("norikittea") != null) {
+          norikittea = true;
+        }
+
+        if (getParam("bubble-timer") != null) {
+          bubble_timer = parseInt(getParam("bubble-timer"));
+        }
+
+        if (arg_recog != null) {
+          recognition.lang = arg_recog;
+          trans_sourcelang = recognition.lang;
+        }
+        if (arg_trans != null) {
+          trans_destlang = arg_trans;
+        }
+
+        if (trans_sourcelang == trans_destlang) {
+          alert(
+            "ERROR! Please set different language between recog and trans!\nYou set both [" +
+              trans_sourcelang +
+              "]!"
+          );
+        }
+        
+        
       webSocket.onopen = function () {
         console.log("Connected to websocket backend.");
         var wsObject = {
@@ -128,50 +176,6 @@
           //processResults(event.data);
         });
 
-        if (getParam("recog") != null) {
-          arg_recog = getParam("recog");
-        }
-        if (getParam("trans") != null) {
-          arg_trans = getParam("trans");
-        }
-        if (getParam("src") != null) {
-          arg_recog = getParam("src");
-        }
-        if (getParam("dst") != null) {
-          arg_trans = getParam("dst");
-        }
-        if (getParam("dest") != null) {
-          arg_trans = getParam("dest");
-        }
-        if (getParam("source") != null) {
-          arg_recog = getParam("source");
-        }
-        if (getParam("destination") != null) {
-          arg_trans = getParam("destination");
-        }
-        if (getParam("norikittea") != null) {
-          norikittea = true;
-        }
-
-        if (getParam("bubble-timer") != null) {
-          bubble_timer = parseInt(getParam("bubble-timer"));
-        }
-
-        if (arg_recog != null) {
-          recognition.lang = arg_recog;
-          trans_sourcelang = recognition.lang;
-        }
-        if (arg_trans != null) {
-          trans_destlang = arg_trans;
-        }
-
-        if (trans_sourcelang == trans_destlang) {
-          alert(
-            "ERROR! Please set different language between recog and trans!\nYou set both [" +
-              trans_sourcelang +
-              "]!"
-          );
-        }
 
         if (!popup) {
           vr_function();
@@ -199,7 +203,7 @@
         window.SpeechRecognition =
           window.SpeechRecognition || webkitSpeechRecognition;
 
-        var recognition = new webkitSpeechRecognition();
+        recognition = new webkitSpeechRecognition();
         recognition.lang = "en";
         recognition.interimResults = true;
         recognition.continuous = true;
