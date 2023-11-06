@@ -1,3 +1,5 @@
+"use strict";
+
 // GLOBALS YAY
 var streamerIsSpeaking = false;
 var waitingAMoment = false;
@@ -6,9 +8,13 @@ var streamerLastSpoke = 0;
 var chatters = {};
 var localChattersData = {};
 var lastMessages = [];
+
 var voices = {};
 var voicesDesc = {};
 var sortedLanguages = [];
+var TLDs = [];
+var TLDsRegex = "";
+
 var ssmlTextType = "text";
 var bttvEmotes = [];
 var ffzEmotes = [];
@@ -18,11 +24,13 @@ var last_speaker = "system";
 var last_speaker_time = Date.now();
 var websocketCustom;
 var websocketProd;
-var cctPopup;
 var hostname = location.hostname;
 var autoconnect = "true";
 var messageID = 1;
 var currentSpeakingMessageID = 0;
+var audioPlayerNew = new Audio();
+var con = {};
+var backendEnabled = true;
 
 const DEFAULT_COLORS = [
   "#b52d2d",
@@ -50,12 +58,6 @@ const GetColorForUsername = (userName) =>
 
 const defaultOutput = [{ label: "Default", deviceId: "default" }];
 
-cred = {
-  awsAccessKeyId: "",
-  awsSecretAccessKey: "",
-  sessionToken: "",
-};
-
 AWS.config.region = "us-west-2";
 
 var hash = window.location.hash;
@@ -78,18 +80,28 @@ function getHashParams() {
 }
 
 function showAuthButton() {
-  var redirectURL =
+  let redirectURL =
     "https://securitylive.com/tts/safetokenXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.html";
+  let subdomain = null;
 
-  if (hostname.includes("localhost")) {
-    redirectURL =
-      "http://localhost:8080/tts.bot/webfront/safetokenXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.html";
+  if (hostname.includes("local.tts.bot")) {
+    subdomain = "local.";
   } else if (hostname.includes("dev.tts.bot")) {
-    redirectURL =
-      "https://dev.tts.bot/safetokenXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.html";
+    subdomain = "dev.";
+  } else if (hostname.includes("uat.tts.bot")) {
+    subdomain = "uat.";
   } else if (hostname.includes("tts.bot")) {
+    subdomain = "root";
+  }
+
+  if (subdomain) {
+    if (subdomain === "root") {
+      subdomain = "";
+    }
     redirectURL =
-      "https://tts.bot/safetokenXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.html";
+      "https://" +
+      subdomain +
+      "tts.bot/safetokenXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.html";
   }
 
   var twitchURL =
@@ -98,7 +110,7 @@ function showAuthButton() {
     '&response_type=token&scope=chat:read+chat:edit" class="btn btn-primary" > Authorize On Twitch with minimal permissions</a >' +
     '<a href="https://id.twitch.tv/oauth2/authorize?client_id=dan71ek0pct1u7b8ht5u4h55zlcxvq&redirect_uri=' +
     redirectURL +
-    '&response_type=token&scope=chat:read+chat:edit+moderator:manage:banned_users+moderator:manage:chat_messages" class="btn btn-primary" > Authorize On Twitch with ban and chat delete permissions</a >';
+    '&response_type=token&scope=chat:read+chat:edit+moderator:manage:banned_users+moderator:manage:chat_messages+channel:manage:moderators" class="btn btn-primary" > Authorize On Twitch with ban and chat delete permissions</a >';
 
   $("#login").html(twitchURL);
   $("#login").show();
@@ -107,9 +119,8 @@ function showAuthButton() {
   $("#ttsinfo").show();
 }
 
-function sanitizeChanName(channelName) {
-  const sanitizedChannelName = channelName.replace(/[^a-zA-Z0-9-_]/g, "");
-  return sanitizedChannelName;
+function sanitize(input) {
+  return input.replace(/[^a-zA-Z0-9-_]/g, "");
 }
 
 var params = getHashParams();
@@ -125,6 +136,46 @@ function toggleSettingsMenu() {
   } else {
     menu.style.display = "none";
     chatContainer.style.display = "";
+  }
+}
+
+function toggleCCTPopup() {
+  if (!window.cctPopup || window.cctPopup.closed) {
+    window.cctPopup = window.open(
+      document.getElementById("txtCCTURL").value,
+      "Closed Captioning and Translation Popup",
+      "width=800,height=600"
+    );
+  } else {
+    window.cctPopup.focus();
+  }
+}
+
+async function copyCCTPopupURL() {
+  try {
+    await navigator.clipboard.writeText(
+      document.getElementById("txtCCTURL").value
+    );
+  } catch (err) {
+    console.error("Failed to copy text:", err);
+  }
+}
+
+async function sendEventToCCT(event) {
+  if (window.cctPopup && !window.cctPopup.closed) {
+    if (typeof window.cctPopup.processResults === "function") {
+      window.cctPopup.processResults(event);
+      //obj = JSON.parse(JSON.stringify(event));
+      //await window.cctPopup.postMessage(
+      //  JSON.stringify(event),
+      //  "http://localhost:8080"
+      //);
+    } else {
+      console.log(window.cctPopup.document.getElementById("text_result"));
+      console.log("Custom function not found in the child window.");
+    }
+  } else {
+    console.log("Child window is not open.");
   }
 }
 
@@ -154,7 +205,7 @@ $.ajax({
     if (localStorage.getItem("channel")) {
       let channel = localStorage.getItem("channel");
       console.log("beforeSan:", channel);
-      channel = sanitizeChanName(channel);
+      channel = sanitize(channel);
       console.log("afterSan:", channel);
       document.getElementById("channel").value = channel;
     }
@@ -166,15 +217,6 @@ $.ajax({
     showAuthButton();
   },
 });
-
-function OpenPopup() {
-  var popupURL = document.getElementById("txtCCTURL").value;
-  if (hostname.includes("localhost")) {
-    console.log("popup replace");
-    popupURL = popupURL.replace(/securitylive\.com/g, "localhost/VeryNiceTTS");
-  }
-  cctPopup = window.open(popupURL, "Translator Window", "width=800,height=600");
-}
 
 if (localStorage.getItem("twitch_username")) {
   document.getElementById("twitch_username").value =
@@ -201,15 +243,30 @@ if (localStorage.getItem("AWSwebsocketURL")) {
   document.getElementById("cbSendTextToAWSWebsocket").checked = true;
 }
 
-loadOptions();
+(async () => {
+  try {
+    await loadOptions();
+    await updatePreview();
+  } catch (err) {
+    console.error("Error calling async function:", err);
+  }
+})();
 
 if (chatters == undefined) {
   chatters = {};
 }
 
 chatters["system"] = {};
-chatters["system"].voice = "justin";
+chatters["system"].voice = "brian";
 chatters["system"].voice_option = "neural";
+chatters["system"].display_name = "System";
+chatters["system"].spoken_name = "System";
+
+chatters["gpt"] = {};
+chatters["gpt"].voice = "matthew";
+chatters["gpt"].voice_option = "neural";
+chatters["gpt"].display_name = "GPT";
+chatters["gpt"].spoken_name = "GPT";
 
 async function loadFFZEmotes() {
   var request = new XMLHttpRequest();
@@ -282,34 +339,253 @@ async function loadBTTVGlobalEmotes() {
   await request.send(null);
 }
 
+function rgba(color, opacity) {
+  return `rgba(${parseInt(color.slice(1, 3), 16)}, ${parseInt(
+    color.slice(3, 5),
+    16
+  )}, ${parseInt(color.slice(5, 7), 16)}, ${opacity})`;
+}
+
+function rgbaToHex(rgbaString) {
+  if (!rgbaString) {
+    return null;
+  }
+
+  const rgba = rgbaString.match(
+    /^rgba?\((\d+),\s*(\d+),\s*(\d+),?\s*(\d*\.?\d+)?\)$/i
+  );
+  if (!rgba) {
+    return null;
+  }
+
+  const hex = (color) => {
+    const hexColor = parseInt(color, 10).toString(16);
+    return hexColor.length === 1 ? "0" + hexColor : hexColor;
+  };
+
+  const r = hex(rgba[1]);
+  const g = hex(rgba[2]);
+  const b = hex(rgba[3]);
+  const a = rgba[4] ? parseFloat(rgba[4]) : 1;
+
+  return `#${r}${g}${b}`;
+}
+
 function saveOption(element) {
-  try {
-    if (element.type === "checkbox") {
-      localStorage.setItem(element.id, element.checked);
-    } else if (element.type === "number" || element.type === "text") {
-      localStorage.setItem(element.id, element.value);
+  if (element.type === "checkbox") {
+    localStorage.setItem(element.id, element.checked);
+  } else if (
+    element.type === "number" ||
+    element.type === "text" ||
+    element.type === "range"
+  ) {
+    localStorage.setItem(element.id, element.value);
+  } else if (element.type === "color") {
+    let ele = element.id.slice(2);
+    ele = ele.charAt(0).toLowerCase() + ele.slice(1);
+    let opacityRange = document.getElementById(ele + "Opacity");
+    if (opacityRange) {
+      localStorage.setItem(element.id, rgba(element.value, opacityRange.value));
+    } else {
+      localStorage.setItem(element.id, rgba(element.value, 1));
     }
-  } catch (e) {
-    console.log("Error Loading Options loadOptions():");
-    console.log(e);
+  } else {
+    console.log("Unknown element type:" + element.type);
   }
 }
 
-function loadOptions() {
+async function loadOptions() {
   const entries = Object.entries(localStorage);
-  try {
-    entries.forEach(([key, value]) => {
-      if (key.startsWith("cb")) {
-        let ele = document.getElementById(key);
-        document.getElementById(key).checked = JSON.parse(value);
-      } else if (key.startsWith("txt")) {
-        document.getElementById(key).value = value;
-      }
-    });
-  } catch (e) {
-    console.log("Error Loading Options loadOptions():");
-    console.log(e);
+  entries.forEach(([key, value]) => {
+    if (key.startsWith("cb")) {
+      document.getElementById(key).checked = JSON.parse(value);
+    } else if (key.startsWith("txt")) {
+      document.getElementById(key).value = value;
+    } else {
+      //console.log("key not found:", key);
+      //let element = document.getElementById(key);
+      //if (element) element.value = value;
+    }
+  });
+  await getColorStyles();
+}
+
+async function getColorStyles() {
+  const webkitTextStrokeColor = localStorage.getItem("cpWebkitTextStrokeColor");
+  const borderColor = localStorage.getItem("cpBorderColor");
+  const shadowColor = localStorage.getItem("cpShadowColor");
+  const fontColor = localStorage.getItem("cpFontColor");
+  const outlineColor = localStorage.getItem("cpOutlineColor");
+  const bubbleBackgroundColor = localStorage.getItem("cpBubbleBackgroundColor");
+  const hrColor = localStorage.getItem("cpHrColor");
+
+  const setColor = (elementId, hexString) => {
+    const element = document.getElementById(elementId);
+    if (element) {
+      element.value = hexString;
+    }
+  };
+
+  setColor("cpWebkitTextStrokeColor", rgbaToHex(webkitTextStrokeColor));
+  setColor("cpBorderColor", rgbaToHex(borderColor));
+  setColor("cpShadowColor", rgbaToHex(shadowColor));
+  setColor("cpFontColor", rgbaToHex(fontColor));
+  setColor("cpOutlineColor", rgbaToHex(outlineColor));
+  setColor("cpBubbleBackgroundColor", rgbaToHex(bubbleBackgroundColor));
+  setColor("cpHrColor", rgbaToHex(hrColor));
+
+  if (window.cctPopup) {
+    if (webkitTextStrokeColor) {
+      window.cctPopup.document.documentElement.style.setProperty(
+        "--webkit-text-stroke-color",
+        webkitTextStrokeColor
+      );
+    }
+    if (borderColor) {
+      window.cctPopup.document.documentElement.style.setProperty(
+        "--border-color",
+        borderColor
+      );
+    }
+    if (shadowColor) {
+      window.cctPopup.document.documentElement.style.setProperty(
+        "--shadow-color",
+        shadowColor
+      );
+    }
+    if (fontColor) {
+      window.cctPopup.document.documentElement.style.setProperty(
+        "--font-color",
+        fontColor
+      );
+    }
+    if (outlineColor) {
+      window.cctPopup.document.documentElement.style.setProperty(
+        "--outline-color",
+        outlineColor
+      );
+    }
+    if (bubbleBackgroundColor) {
+      window.cctPopup.document.documentElement.style.setProperty(
+        "--bubble-background-color",
+        bubbleBackgroundColor
+      );
+    }
+    if (hrColor) {
+      window.cctPopup.document.documentElement.style.setProperty(
+        "--hr-color",
+        hrColor
+      );
+    }
   }
+}
+
+async function updatePreview() {
+  //console.log("updatePreview()");
+  let popupUrl = "https://securitylive.com/tts/translator.html?popup=aws&";
+
+  if (location.hostname.includes("local.tts.bot")) {
+    popupUrl = "https://local.tts.bot/translator.html?popup=aws&";
+  } else if (location.hostname.includes("dev.tts.bot")) {
+    popupUrl = "https://dev.tts.bot/translator.html?popup=aws&";
+  } else if (location.hostname.includes("uat.tts.bot")) {
+    popupUrl = "https://uat.tts.bot/translator.html?popup=aws&";
+  } else if (location.hostname.includes("tts.bot")) {
+    popupUrl = "https://tts.bot/translator.html?popup=aws&";
+  }
+
+  const setVar = (varName, varValue) => {
+    if (window.cctPopup) {
+      window.cctPopup.document.documentElement.style.setProperty(
+        "--" + varName,
+        varValue
+      );
+    }
+    popupUrl += `${varName}=${varValue}&`;
+  };
+
+  const fontFamily = document.getElementById("fontFamily").value;
+  const fontWeight = document.getElementById("fontWeight").value;
+  const fontColor = document.getElementById("cpFontColor").value;
+  const fontColorOpacity = document.getElementById("fontColorOpacity").value;
+  const fontSize = document.getElementById("fontSize").value;
+  const webkitTextStrokeSize = document.getElementById(
+    "webkitTextStrokeSize"
+  ).value;
+  const webkitTextStrokeColor = document.getElementById(
+    "cpWebkitTextStrokeColor"
+  ).value;
+  const webkitTextStrokeColorOpacity = document.getElementById(
+    "webkitTextStrokeColorOpacity"
+  ).value;
+  const bubbleBackgroundColor = document.getElementById(
+    "cpBubbleBackgroundColor"
+  ).value;
+  const bubbleBackgroundOpacity = document.getElementById(
+    "bubbleBackgroundOpacity"
+  ).value;
+  const borderColor = document.getElementById("cpBorderColor").value;
+  const borderColorOpacity =
+    document.getElementById("borderColorOpacity").value;
+  const borderWidth = document.getElementById("borderWidth").value;
+  const borderLineStyle = document.getElementById("borderLineStyle").value;
+  const borderRadius = document.getElementById("borderRadius").value;
+  const hrColor = document.getElementById("cpHrColor").value;
+  const hrColorOpacity = document.getElementById("hrColorOpacity").value;
+  const outlineColor = document.getElementById("cpOutlineColor").value;
+  const outlineColorOpacity = document.getElementById(
+    "outlineColorOpacity"
+  ).value;
+  const outlineOffset = document.getElementById("outlineOffset").value;
+  const shadowColor = document.getElementById("cpShadowColor").value;
+  const shadowColorOpacity =
+    document.getElementById("shadowColorOpacity").value;
+  const shadowOffsetHorizontal = document.getElementById(
+    "shadowOffsetHorizontal"
+  ).value;
+  const shadowOffsetVertical = document.getElementById(
+    "shadowOffsetVertical"
+  ).value;
+  const shadowBlur = document.getElementById("shadowBlur").value;
+
+  setVar("font-family", fontFamily);
+  setVar("font-weight", fontWeight);
+  setVar("font-color", rgba(fontColor, fontColorOpacity));
+  setVar("font-size", `${fontSize}px`);
+  setVar("webkit-text-stroke-size", `${webkitTextStrokeSize}px`);
+  setVar(
+    "webkit-text-stroke-color",
+    rgba(webkitTextStrokeColor, webkitTextStrokeColorOpacity)
+  );
+  setVar(
+    "bubble-background-color",
+    rgba(bubbleBackgroundColor, bubbleBackgroundOpacity)
+  );
+  setVar("border-color", rgba(borderColor, borderColorOpacity));
+  setVar("border-width", `${borderWidth}px`);
+  setVar("border-line-style", borderLineStyle);
+  setVar("border-radius", `${borderRadius}px`);
+  setVar("hr-color", rgba(hrColor, hrColorOpacity));
+  setVar("outline-color", rgba(outlineColor, outlineColorOpacity));
+  setVar("outline-offset", `${outlineOffset}px`);
+  setVar("shadow-color", rgba(shadowColor, shadowColorOpacity));
+  setVar("shadow-offset-horizontal", `${shadowOffsetHorizontal}px`);
+  setVar("shadow-offset-vertical", `${shadowOffsetVertical}px`);
+  setVar("shadow-blur", `${shadowBlur}px`);
+
+  let popupDragger = document.getElementById("txtCCTURL");
+  document.getElementById("txtCCTURL").value = popupUrl;
+
+  //popupDragger.draggable = true;
+  document.addEventListener("dragstart", (e) => {
+    //dragged = e.target;
+    console.log("drag started");
+    // Customize the visible 'thumbnail' while dragging
+    //e.dataTransfer.setDragImage(document.querySelector('#dragImage'), pos, pos);
+    // Set the data type, and the value. You specifically want text/uri-list.
+    e.dataTransfer.setData("text/uri-list", popupUrl);
+  });
+  //console.log("popup url:", popupUrl);
 }
 
 /**************************Client Connecting****************************/
@@ -318,6 +594,7 @@ function onConnecting(address, port) {
 }
 
 function onConnected(address, port) {
+  con.channel = document.getElementById("channel").value;
   document.getElementById("status").innerHTML = " [ Connected ]";
   let message =
     "<speak>Connected to channel " + getSpokenName(con.channel) + ".</speak>";
@@ -353,12 +630,14 @@ function onConnected(address, port) {
   ) {
     document.getElementById("cbAutoTranslateChat").checked = true;
   }
+
+  //onSub();
 }
 /**************************Client Connecting****************************/
 function onBan(channel, username, reason) {
   console.log("arguments:", arguments, "reason:", reason);
   //ttsBanByUser(channel.substring(1), username);
-  window.audioPlayer.SpeakNow(
+  window.audioPlayer.SpeakNext(
     "<speak>Hey chat, " +
       username +
       " was banned, thought you should know.</speak>",
@@ -417,21 +696,189 @@ function onCheer() {
 }
 
 function onSub() {
-  console.log("onSub:");
+  //targuments = arguments;
+
+  //console.log();
+  console.log("onSub:", targuments);
+
+  try {
+    let username = targuments[4]["display-name"];
+
+    //let message = `${username} just subsribed for ${}, thank you so much!`;
+    let message = targuments[4]["system-msg"];
+    addSystemBubble(message, ++messageID);
+
+    window.audioPlayer.Speak("", message, "", "system", "text", messageID);
+
+    if (!targuments[4]["msg-id"].includes("gift")) {
+      addMessageBubble(username, targuments[3], "", true, "", ++messageID);
+
+      let prefix =
+        "<speak>Sub message from " + getSpokenName(username) + " says </speak>";
+
+      audioPlayer.Speak(prefix, targuments[3], "", username, "text", messageID);
+    }
+  } catch (e) {
+    console.log("onSub() error:", e);
+  }
+}
+
+function onGiftSub() {
+  let targuments = {
+    0: "#security_live",
+    1: "posfolife2",
+    2: 0,
+    3: "TheNordicMama",
+    4: {
+      prime: false,
+      plan: "1000",
+      planName: "Channel Subscription (security_live)",
+    },
+    5: {
+      "badge-info": {
+        subscriber: "19",
+      },
+      badges: {
+        vip: "1",
+        subscriber: "3",
+        premium: "1",
+      },
+      color: null,
+      "display-name": "posfolife2",
+      emotes: null,
+      flags: null,
+      id: "8f2d8d57-97f5-4c02-85fa-c0e0dc466b4f",
+      login: "posfolife2",
+      mod: false,
+      "msg-id": "subgift",
+      "msg-param-gift-months": true,
+      "msg-param-goal-contribution-type": "SUBS",
+      "msg-param-goal-current-contributions": "252",
+      "msg-param-goal-target-contributions": "333",
+      "msg-param-goal-user-contributions": true,
+      "msg-param-months": "13",
+      "msg-param-origin-id":
+        "16 fd 10 42 89 01 76 9d cd 32 1c 48 ca a4 95 fb 7e f1 ab 80",
+      "msg-param-recipient-display-name": "TheNordicMama",
+      "msg-param-recipient-id": "497362888",
+      "msg-param-recipient-user-name": "thenordicmama",
+      "msg-param-sender-count": "47",
+      "msg-param-sub-plan-name": "Channel Subscription (security_live)",
+      "msg-param-sub-plan": "1000",
+      "room-id": "473060639",
+      subscriber: true,
+      "system-msg":
+        "posfolife2 gifted a Tier 1 sub to TheNordicMama! They have given 47 Gift Subs in the channel!",
+      "tmi-sent-ts": "1684677952362",
+      "user-id": "629680192",
+      "user-type": null,
+      "emotes-raw": null,
+      "badge-info-raw": "subscriber/19",
+      "badges-raw": "vip/1,subscriber/3,premium/1",
+      "message-type": "subgift",
+    },
+  };
+
+  //targuments = arguments;
+
+  //console.log();
+  console.log("onGiftSub:", targuments);
+
+  try {
+    let username = targuments[4]["display-name"];
+
+    //let message = `${username} just subsribed for ${}, thank you so much!`;
+    let message = targuments[4]["system-msg"];
+    addSystemBubble(message, ++messageID);
+
+    window.audioPlayer.Speak("", message, "", "system", "text", messageID);
+
+    if (!targuments[4]["msg-id"].includes("gift")) {
+      addMessageBubble(username, targuments[3], "", true, "", ++messageID);
+
+      let prefix =
+        "<speak>Sub message from " + getSpokenName(username) + " says </speak>";
+
+      audioPlayer.Speak(prefix, targuments[3], "", username, "text", messageID);
+    }
+  } catch (e) {
+    console.log("onSub() error:", e);
+  }
+}
+
+function onNewChatter() {
+  console.log("onNewChatter:");
   console.log(arguments);
 }
+
 function onRitual() {
   console.log("onRitual:");
   console.log(arguments);
 }
+
 function onRaid() {
+  /*
+  let targuments = {
+    0: "#security_live",
+    1: "BRYCEfromNZ101",
+    2: 1,
+    3: {
+      "badge-info": null,
+      badges: null,
+      color: "#FF7F50",
+      "display-name": "BRYCEfromNZ101",
+      emotes: null,
+      flags: null,
+      id: "2f4a2422-ce15-4e3f-9ba5-32f267234fab",
+      login: "brycefromnz101",
+      mod: false,
+      "msg-id": "raid",
+      "msg-param-displayName": "BRYCEfromNZ101",
+      "msg-param-login": "brycefromnz101",
+      "msg-param-profileImageURL":
+        "https://static-cdn.jtvnw.net/jtv_user_pictures/1389ab04-6bf8-4002-af25-3a14fe847e3f-profile_image-%s.png",
+      "msg-param-viewerCount": true,
+      "room-id": "473060639",
+      subscriber: false,
+      "system-msg": "1 raiders from BRYCEfromNZ101 have joined!",
+      "tmi-sent-ts": "1684985190493",
+      "user-id": "502277389",
+      "user-type": null,
+      "emotes-raw": null,
+      "badge-info-raw": null,
+      "badges-raw": null,
+      "message-type": "raid",
+    },
+  };
+  */
+
   console.log("onRaid:");
   console.log(arguments);
+
+  try {
+    //let message = `${username} just subsribed for ${}, thank you so much!`;
+    let message = arguments[3]["system-msg"].replace("_", " ");
+    addSystemBubble(message, ++messageID);
+
+    window.audioPlayer.Speak("", message, "", "system", "text", messageID);
+  } catch (e) {
+    console.log("onSub() error:", e);
+  }
 }
 
 /**************************Init and Connect to Chat****************************/
 async function connect() {
   init();
+
+  const goListener = function (event) {
+    audioPlayerNew.play();
+    document.removeEventListener("click", goListener);
+  };
+
+  // Add the event listener
+  document.addEventListener("click", goListener);
+
+  // Remove the event listener
 
   //Twitch Client
   var options = {
@@ -447,7 +894,7 @@ async function connect() {
       username: document.getElementById("twitch_username").value,
       password: access_token,
     },
-    channels: [sanitizeChanName(con.channel)],
+    channels: [sanitize(con.channel)],
   };
 
   window.client = tmi.client(options);
@@ -457,15 +904,28 @@ async function connect() {
   localStorage.setItem("channel", con.channel);
 
   //Attached Handlers
+  window.client.on("action", onAction);
   window.client.on("chat", onChat);
+  window.client.on("usernotice", onNotice);
   window.client.on("connecting", onConnecting);
   window.client.on("connected", onConnected);
   window.client.on("ban", onBan);
   window.client.on("cheer", onCheer);
-  window.client.on("subscription", onSub);
-  window.client.on("resub", onSub);
   window.client.on("ritual", onRitual);
+  window.client.on("newchatter", onNewChatter);
+
   window.client.on("raided", onRaid);
+
+  window.client.on("sub", onSub);
+  window.client.on("resub", onSub);
+  window.client.on("primepaidupgrade", onSub);
+  window.client.on("giftpaidupgrade", onSub);
+
+  window.client.on("subgift", onGiftSub);
+  window.client.on("anonsubgift", onGiftSub);
+  window.client.on("submysterygift", onGiftSub);
+  window.client.on("anonsubmysterygift", onGiftSub);
+  window.client.on("anongiftpaidupgrade", onGiftSub);
 
   //Disable UI Elements
   document.getElementById("srcLangSelect").disabled = true;
@@ -547,6 +1007,22 @@ function websocketCustomConnect() {
         "text",
         command.voice
       );
+    } else if (command.topic == "game2tts") {
+      chatters[command.speaker] = {};
+      chatters[command.speaker].voice = command.voice;
+      chatters[command.speaker].voice_option = command.voice_option;
+      chatters[command.speaker].display_name = command.speaker;
+      chatters[command.speaker].spoken_name = command.speaker;
+
+      window.audioPlayer.SpeakGame2TTS(
+        command.speaker,
+        command.text,
+        command.voice,
+        command.voice_option
+      );
+    } else if (command.topic == "GPT-Moderated") {
+      console.log(command);
+      doChat(con.channel, command.userstate, command.message, false);
     } else {
       window.audioPlayer.SpeakNow(
         "<speak>" + event.data + "</speak>",
@@ -653,6 +1129,37 @@ function loadAndSortLanguages() {
   });
 }
 
+function loadAndSortTLDs() {
+  let tldLoadingStart = window.performance.now();
+
+  TLDs = tmpTLDs.sort((a, b) => {
+    // Compare by length first
+    const lengthDifference = b.length - a.length;
+    if (lengthDifference !== 0) return lengthDifference;
+
+    // If lengths are equal, sort alphabetically
+    return a.localeCompare(b);
+  });
+
+  let domains = "";
+
+  for (let tld of TLDs) {
+    domains += `${tld}|`;
+  }
+
+  domains = domains.slice(0, -1);
+
+  TLDsRegex = new RegExp(
+    "((([a-z]+:\\/\\/)?(www\\.)?([a-zA-Z0-9-]+\\.)+(" +
+      domains +
+      ")?(\\w*)?)\\b.*)",
+    "g"
+  );
+
+  var time_diff = window.performance.now() - tldLoadingStart;
+  console.log("loaded TLDs in:", parseFloat(time_diff).toFixed(2), "ms");
+}
+
 function voiceSelected(voice) {
   var userVoiceOptionSource = document.getElementById(
       "system-voice-option-template"
@@ -707,7 +1214,7 @@ function getHTMLEntityEncoding(char) {
     case "'":
       return "&apos;";
     case '"':
-      return "&quote;";
+      return "&quot;";
     case "&":
       return "&amp;";
     case ";":
@@ -719,8 +1226,62 @@ function escapeRegExp(text) {
   return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
 }
 
-/**************************Receive and Translate Chat****************************/
+async function onAction(channel, userstate, message, self) {
+  userstate.chat_action = true;
+  onChat(channel, userstate, message, self);
+}
+
+async function onNotice(msgid, channel, tags, msg) {
+  console.log(arguments);
+}
+
 async function onChat(channel, userstate, message, self) {
+  channel = channel.replace("#", "").trim();
+
+  console.log("------------ onChat() ---------");
+  console.log(userstate);
+  console.log("message:", message);
+
+  if (message.match("(^s*!)")) {
+    runChatCommand(channel, userstate.username, message, userstate.mod);
+
+    if (document.getElementById("cbDeleteCommands").checked) {
+      deleteTwitchChatMessage(twitch_id, userstate.id);
+    }
+    return;
+  }
+
+  if (document.getElementById("cbRouteChatThroughWebsocket").checked) {
+    if (
+      document.getElementById("cbSendTextToWebsocket").checked &&
+      websocketCustom &&
+      websocketCustom.readyState === WebSocket.OPEN
+    ) {
+      var wsObject = {
+        action: "tts.bot-Chat",
+        channel: channel,
+        userstate: userstate,
+        message: message,
+        time: Date.now(),
+      };
+      //console.log("sendTextToCustomWebsocket():", wsObject);
+      //if (isFinal)
+      websocketCustom.send(JSON.stringify(wsObject));
+    } else {
+      doChat(channel, userstate, message, self);
+    }
+  } else {
+    doChat(channel, userstate, message, self);
+  }
+}
+
+async function doChat(channel, userstate, message, self) {
+  let translatedRegex = /\(Translated from.*\)$/;
+  if (message.match(translatedRegex)) {
+    console.log("Ignore translated chat messages:", message);
+    return;
+  }
+
   let speakEmotes = document.getElementById("cbSpeakEmotesTTS").checked;
   let dedupEmotes = document.getElementById("cbDedupEmotesTTS").checked;
   let matchedEmotes = [];
@@ -728,15 +1289,18 @@ async function onChat(channel, userstate, message, self) {
   channel = channel.replace("#", "");
   message = message.trim();
 
-  //console.log(userstate);
-  //console.log("message", message);
   //console.log("chatters:", chatters);
+
+  if (userstate["custom-reward-id"]) {
+    console.log(userstate);
+  }
 
   if (userstate["custom-reward-id"] == "9914796b-d33c-4317-bb9e-e66b5d372ac2") {
     console.log("inject script redeem");
     deleteTwitchChatMessage(twitch_id, userstate.id);
     return;
   }
+
   // TODO delete messages with injection stuffs
   // || message.match('(?!<\w+>.*</\w+>)')
 
@@ -775,7 +1339,7 @@ async function onChat(channel, userstate, message, self) {
 
   if (!speakEmotes && userstate["emote-only"]) {
     allowTTS = false;
-    allowTTSmessage += "Emote Only Chat - ";
+    allowTTSmessage += "Message is emotes only - ";
   } else if (!speakEmotes || (speakEmotes && dedupEmotes)) {
     var emoteParsingStart = window.performance.now();
 
@@ -860,16 +1424,53 @@ async function onChat(channel, userstate, message, self) {
     allowTTSmessage += "TTS Banned - ";
   }
 
-  if (message) {
-    if (message.match("(^s*!)")) {
-      runChatCommand(channel, username, message, userstate.mod);
-
-      if (document.getElementById("cbDeleteCommands").checked) {
-        deleteTwitchChatMessage(twitch_id, userstate.id);
+  if (
+    userstate.hasOwnProperty("gpt_type") &&
+    userstate.hasOwnProperty("action") &&
+    userstate.gpt_type == "moderation"
+  ) {
+    console.log("moderation:");
+    console.log(message);
+    console.log(userstate);
+    let reason = userstate.action.match(/\s(.*)/);
+    if (reason) {
+      console.log("REASON:");
+      console.log(reason);
+      if (userstate.gpt_result == "BAN") {
+        allowTTSmessage += reason[1] + " - ";
+        allowTTS = false;
+        message =
+          "THIS MESSAGE INTENTIONALLY LEFT BLANK BY AI (BAN) Original Message: " +
+          message;
+      } else if (userstate.gpt_result == "TIMEOUT") {
+        allowTTSmessage += reason[1] + " - ";
+        allowTTS = false;
+        message =
+          "THIS MESSAGE INTENTIONALLY LEFT BLANK BY AI (TIMEOUT) Original Message: " +
+          message;
+      } else if (userstate.gpt_result == "DOWNVOTE") {
+        allowTTSmessage += reason[1] + " - ";
+        allowTTS = true;
+      } else if (userstate.gpt_result == "UPVOTE") {
+        allowTTSmessage += reason[1] + " - ";
+        allowTTS = true;
+      } else if (userstate.gpt_result == "ONLY") {
+        allowTTSmessage += reason[1] + " - ";
+        allowTTS = true;
       }
-      return;
     }
+  } else if (userstate.gpt_type == "comical") {
+    console.log(message);
+    console.log(userstate);
+    allowTTSmessage += "Don't Speak Comic Relief - ";
+    message = `@${userstate["display-name"]} ${userstate.action}`;
+    username = "gpt";
+    allowTTS = false;
+    //window.client.action(con.channel, "GPT: " + message);
+    //return;
+  }
 
+  if (message) {
     var params = {
       //Settings: {
       //  Profanity: "MASK"
@@ -882,8 +1483,8 @@ async function onChat(channel, userstate, message, self) {
     window.translator.translateText(
       params,
       function onIncomingMessageTranslate(err, data) {
-        //console.log('Original Message  : ' + message);
-        //console.log('Translated Message: ' + data.TranslatedText);
+        //console.log("Original Message  : " + message);
+        //console.log("Translated Message: " + data.TranslatedText);
 
         var translatedMessage = data.TranslatedText;
         var identicalTranslation = false;
@@ -906,6 +1507,7 @@ async function onChat(channel, userstate, message, self) {
               return entity;
             }
           );
+
           message = message.replace(/[<>;&'"]/g, function (i) {
             var entity = getHTMLEntityEncoding(i);
             return entity;
@@ -927,7 +1529,7 @@ async function onChat(channel, userstate, message, self) {
             }
 
             if (con.cbAutoTranslateChat.checked && !identicalTranslation) {
-              window.client.action(
+              window.client.say(
                 con.channel,
                 chatters[username].display_name +
                   ": " +
@@ -1015,51 +1617,80 @@ async function onChat(channel, userstate, message, self) {
 
           let bubbleText = message;
 
+          let userRegex = /@([A-Za-z0-9_]+)/g;
+          let usernames = new Set(); // Create a Set to store unique usernames
+          let userMatches = [...spokenText.matchAll(userRegex)]; // Convert the iterator to an array
+
+          for (const [, username] of userMatches) {
+            // Destructure and iterate through the matches
+            usernames.add(username); // Add the username (without '@') to the Set
+          }
+
           // Option to replace @usernames with spoken names.
-          if (document.getElementById("cbReplaceAtNames").checked) {
-            let userRegex = /@([A-Za-z0-9_]+)/g;
+          if (
+            document.getElementById("cbReplaceAtNames").checked &&
+            userMatches.length > 0
+          ) {
+            let color = "#00FF00";
 
-            let userMatches = [...spokenText.matchAll(userRegex)]; // Convert the iterator to an array
-
-            if (userMatches.length > 0) {
-              // Check if there are any matches
-              //console.log(userMatches);
-
-              let usernames = new Set(); // Create a Set to store unique usernames
-
-              for (const [, username] of userMatches) {
-                // Destructure and iterate through the matches
-                usernames.add(username); // Add the username (without '@') to the Set
-              }
-
+            try {
               for (let username of usernames) {
-                // Iterate through unique usernames
-                let user = username.toLowerCase();
-                if (chatters[user]) {
-                  let spokenName = chatters[user].spoken_name;
-                  if (chatters[user].color) {
-                    color = chatters[user].color;
-                  } else {
-                    color = GetColorForUsername(user);
-                  }
+                if (username) {
+                  // Iterate through unique usernames
+                  let user = username.toLowerCase();
+                  if (chatters[user]) {
+                    let spokenName = chatters[user].spoken_name;
+                    if (chatters[user].hasOwnProperty("color")) {
+                      color = chatters[user].color;
+                    } else {
+                      color = GetColorForUsername(user);
+                    }
 
-                  spokenText = spokenText.replaceAll(
-                    "@" + username,
-                    spokenName
-                  );
-                  bubbleText = bubbleText.replaceAll(
-                    "@" + username,
-                    `<strong style='color:${color}'>@${username}:</strong><span class="message-at-reference">(${spokenName.trim()})</span>`
-                  );
+                    spokenText = spokenText.replaceAll(
+                      "@" + username,
+                      spokenName
+                    );
+                    bubbleText = bubbleText.replaceAll(
+                      "@" + username,
+                      `<strong style='color:${color}'>@${username}:</strong><span class="message-at-reference">(${spokenName.trim()})</span>`
+                    );
+                  }
+                }
+              }
+            } catch (e) {
+              console.log("Exception for:", user);
+              console.log(e);
+            }
+          }
+
+          if (
+            !document.getElementById("cbSpeakOtherAtNames").checked &&
+            userMatches.length > 0
+          ) {
+            let tmpTTSFlag = allowTTS;
+            allowTTS = false;
+            allowTTSmessage = "Don't speak @ references - ";
+            for (let username of usernames) {
+              if (username) {
+                if (username.toLowerCase() == con.channel) {
+                  // If TTS was allowed in previous checks, then allow for @streamer reference
+                  if (tmpTTSFlag) {
+                    allowTTS = true;
+                  }
                 }
               }
             }
           }
 
           // TODO speak text up to comment delimiter
-          if (message.match("(^s*-|^s*#|^s*<!--|^s*;|^s*//)")) {
+          if (
+            message.match(/^\s*-|^\s*#|^\s*<!--|^\s*;|^\s*\/\//) ||
+            message.match(
+              /\s*@[a-zA-Z0-9_]+(\s+\s*-|\s*#|\s*<!--|\s*;|\s*\/\/)/
+            )
+          ) {
             allowTTS = false;
-            allowTTSmessage = "Commentted out - ";
+            allowTTSmessage += "Commentted out - ";
           }
 
           addMessageBubble(
@@ -1073,21 +1704,54 @@ async function onChat(channel, userstate, message, self) {
 
           //If speak translation in enabled, speak translated message
           if (con.cbSpeak.checked && allowTTS) {
-            var regex = /_/gi;
             var longnumex = /\d{6,}/;
-            var linkex =
-              /(?:(?:https?):\/\/)?(?:[\w-]+(?:\.[\w-]+)+)(?:\/[^\s]*)?/g;
-            //var longex = /\S{100,}/g;
 
+            let tldRegexStart = window.performance.now();
+
+            var regex = /_/gi;
             spokenText = spokenText.replace(regex, " ");
-            spokenText = spokenText.replace(linkex, " (Web link) ");
+            try {
+              let linkMatches = [...spokenText.matchAll(TLDsRegex)];
+              if (linkMatches) {
+                console.log(linkMatches);
+                for (let link of linkMatches) {
+                  if (!link[3] && !link[4] && link[7]) {
+                    console.log("Likely not a web link:", link[0]);
+                  } else if (link[7]) {
+                    spokenText = spokenText.replace(link[0], " (Bad Link) ");
+                  } else if (link[6]) {
+                    spokenText = spokenText.replace(link[0], " (Web Link) ");
+                  } else {
+                    spokenText = spokenText.replace(link[0], " (WTF Link) ");
+                  }
+                }
+              }
+            } catch (e) {
+              console.log("web link replace error:", e);
+            }
+
+            var time_diff = window.performance.now() - tldRegexStart;
+            console.log(
+              "Weblink and 1500+ TLDs checked in:",
+              parseFloat(time_diff).toFixed(2),
+              "ms"
+            );
+
             //spokenText = spokenText.replace(longnumex, " (Long number) ");
             //spokenText = spokenText.replace(longex, ' (long word) ');
 
             var prefix = "";
-            if (last_speaker != username) {
-              prefix = "<speak>" + getSpokenName(username) + " says </speak>";
+
+            if (
+              userstate.hasOwnProperty("chat_action") &&
+              userstate.chat_action
+            ) {
+              last_speaker = "Unset-by-action";
+              prefix = `<speak> ${getSpokenName(username)} </speak>`;
+            } else if (last_speaker != username) {
+              prefix = `<speak> ${getSpokenName(username)} says </speak>`;
             }
+
             audioPlayer.Speak(
               prefix,
               spokenText,
@@ -1135,13 +1799,6 @@ function addMessageBubble(
   messageID
 ) {
   let buttons =
-    makeButton(
-      "Don't Speak",
-      "secondary",
-      "comment-slash",
-      username,
-      messageID
-    ) +
     makeButton("TTS Ban", "warning", "volume-xmark", username, messageID) +
     makeButton("Ban", "danger", "gavel", username, messageID);
 
@@ -1163,6 +1820,8 @@ function addMessageBubble(
   } else {
     color = GetColorForUsername(username);
   }
+
+  console.log(chatters[username]);
 
   con.liveChatUI.innerHTML += `<div id="message-id${messageID}" class="chat-bubble">
                                           <div class="username-container" id="message-user-id${messageID}">
@@ -1195,6 +1854,8 @@ function addMessageBubble(
                                             <div class="btn-group p-1">${buttons}</div>
                                           </div>
                                         </div>`;
+
+  con.liveChatUIContainer.scrollTop = con.liveChatUIContainer.scrollHeight;
 }
 
 function addSystemBubble(message, messageID) {
@@ -1219,12 +1880,17 @@ function addSystemBubble(message, messageID) {
                           <div class="buttons-container"><span class="btn-group"></span></div>
                         </div>
                         `;
+  con.liveChatUIContainer.scrollTop = con.liveChatUIContainer.scrollHeight;
 }
 
 function makeButton(btnName, btnClass, btnIcon, btnArgument, mID) {
   var messageButtonName = btnName.replace(/\W/g, "");
 
-  if (messageButtonName == "TTSBan" && chatters[btnArgument].ttsBanned) {
+  if (
+    messageButtonName == "TTSBan" &&
+    chatters[btnArgument] &&
+    chatters[btnArgument].ttsBanned
+  ) {
     btnName = "TTS Unban";
     messageButtonName = "TTSUnban";
   } else if (messageButtonName == "DontSpeak") {
@@ -1311,6 +1977,7 @@ function similarityPercentage(s1, s2) {
 }
 
 function runChatCommand(channel, username, message, mod) {
+  let parts = [];
   if (!chatters.hasOwnProperty(username)) {
     chatters[username] = {};
   }
@@ -1388,11 +2055,23 @@ function runChatCommand(channel, username, message, mod) {
     ttsBan(channel, message, true);
   } else if (message.startsWith("!ttsunban") && (mod || channel == username)) {
     ttsBan(channel, message, false);
+  } else if (
+    (message.startsWith("!tts-pause") || message.startsWith("!ttspause")) &&
+    (mod || channel == username) &&
+    !window.audioPlayer.isPaused()
+  ) {
+    pause();
+  } else if (
+    (message.startsWith("!tts-unpause") || message.startsWith("!ttsunpause")) &&
+    (mod || channel == username) &&
+    window.audioPlayer.isPaused()
+  ) {
+    pause();
   }
 }
 
 function ttsBan(channel, message, ban) {
-  parts = message.split(" ");
+  let parts = message.split(" ");
   if (parts.length > 1) {
     var user = parts[1].toLowerCase();
     user = user.replace("@", "");
@@ -1564,32 +2243,41 @@ async function saveTTSConfig(channel, username) {
   //('saveTTSConfig(' + channel + ',' + username + ')');
   var data = {};
   var request = {};
-  data.login = username;
-  data.voice = chatters[username].voice;
-  data.voice_option = chatters[username].voice_option;
-  data.spoken_name = chatters[username].spoken_name;
+  data.login = sanitize(username);
+  data.voice = sanitize(chatters[username].voice);
+  data.voice_option = sanitize(chatters[username].voice_option);
+  data.spoken_name = sanitize(chatters[username].spoken_name);
   data.ttsBanned = chatters[username].ttsBanned;
   data.access_token = access_token;
   request.data = [];
   request.data.push(data);
   //console.log("saveTTSConfig request data:", request);
-  var url = "https://api.tts.bot/tts/" + channel + "/" + username;
-  await $.ajax({
-    url: url,
-    type: "PUT",
-    dataType: "json",
-    contentType: "application/json",
-    data: JSON.stringify(request),
-    success: function (response) {
-      console.log("Config Saved Successfully:", response);
 
-      //alert("Save Much Success!");
-    },
-    error: function (error) {
-      console.log("Config Save Failed:", error);
-      return;
-    },
-  });
+  if (backendEnabled) {
+    const url = `https://api.tts.bot/tts/${channel}/${username}`;
+
+    const requestOptions = {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(request),
+    };
+
+    fetch(url, requestOptions)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Config Save Failed");
+        }
+        return response.json();
+      })
+      .then((responseData) => {
+        console.log("Config Saved Successfully:", responseData);
+        //alert("Save Much Success!");
+      })
+      .catch((error) => {
+        console.log("Config Save Failed:", error);
+      });
+  }
+
   localStorage.setItem("chatters", JSON.stringify(chatters));
   //console.log("localStorage:", localStorage.getItem('chatters'));
 }
@@ -1655,39 +2343,13 @@ async function loadVoice(lvuserstate) {
   //console.log('loadVoice(' + username + ')');
   var channel = document.getElementById("channel").value;
   var hasLocalChannelConfig = false;
-  await $.ajax({
-    url: "https://api.tts.bot/tts/" + channel + "/" + username,
-    success: function (response) {
-      //console.log("Data for " + channel + ":", response);
-      if (response.hasOwnProperty("Item")) {
-        //console.log('loadVoice(' + channel + '): ' + response.Item.voice.toLowerCase() + ' from DynamoDB');
-        chatters[username] = {};
-        chatters[username].voice = response.Item.voice.toLowerCase();
-        chatters[username].voice_option = response.Item.voice_option;
-        chatters[username].spoken_name = response.Item.spoken_name;
-        chatters[username].ttsBanned = response.Item.ttsBanned;
-        chatters[username].display_name = response.Item.display_name;
-        chatters[username].color = lvuserstate.color;
-        hasLocalChannelConfig = true;
-      }
-    },
-    error: function (request, status, error) {
-      console.log("loadVoice(" + channel + ") error: using Brian");
-      chatters[username].voice = "brian";
-      chatters[username].voice_option = "standard";
-      chatters[username].display_name = lvuserstate["display-name"];
-      chatters[username].color = lvuserstate.color;
-    },
-  });
-
-  if (!hasLocalChannelConfig) {
-    //console.log("Does not have local config.");
+  if (backendEnabled) {
     await $.ajax({
-      url: "https://api.tts.bot/tts/all/" + username,
+      url: "https://api.tts.bot/tts/" + channel + "/" + username,
       success: function (response) {
-        //console.log("Data from all for:", response);
+        //console.log("Data for " + channel + ":", response);
         if (response.hasOwnProperty("Item")) {
-          //console.log('loadVoice(global): ' + response.Item.voice.toLowerCase() + ' from DynamoDB');
+          //console.log('loadVoice(' + channel + '): ' + response.Item.voice.toLowerCase() + ' from DynamoDB');
           chatters[username] = {};
           chatters[username].voice = response.Item.voice.toLowerCase();
           chatters[username].voice_option = response.Item.voice_option;
@@ -1695,32 +2357,60 @@ async function loadVoice(lvuserstate) {
           chatters[username].ttsBanned = response.Item.ttsBanned;
           chatters[username].display_name = response.Item.display_name;
           chatters[username].color = lvuserstate.color;
-        } else if (chatters[username].hasOwnProperty("voice")) {
-          //console.log('loadVoice() chatters[' + username + '].voice: ' + chatters[username].voice);
-          chatters[username].voice = "justin";
-          chatters[username].voice_option = "standard";
-          chatters[username].spoken_name = username;
-          chatters[username].ttsBanned = false;
-          chatters[username].display_name = lvuserstate["display-name"];
-        } else {
-          //console.log('loadVoice() catchall: using Justin for ' + username);
-          chatters[username].voice = "justin";
-          chatters[username].voice_option = "standard";
-          chatters[username].spoken_name = username;
-          chatters[username].ttsBanned = false;
-          chatters[username].display_name = lvuserstate["display-name"];
-          chatters[username].color = lvuserstate.color;
+          hasLocalChannelConfig = true;
         }
       },
       error: function (request, status, error) {
-        console.log("loadVoice(global) error: using Brian");
+        console.log("loadVoice(" + channel + ") error: using Brian");
         chatters[username].voice = "brian";
         chatters[username].voice_option = "standard";
-        chatters[username].ttsBanned = false;
         chatters[username].display_name = lvuserstate["display-name"];
         chatters[username].color = lvuserstate.color;
       },
     });
+
+    if (!hasLocalChannelConfig) {
+      //console.log("Does not have local config.");
+      await $.ajax({
+        url: "https://api.tts.bot/tts/all/" + username,
+        success: function (response) {
+          //console.log("Data from all for:", response);
+          if (response.hasOwnProperty("Item")) {
+            //console.log('loadVoice(global): ' + response.Item.voice.toLowerCase() + ' from DynamoDB');
+            chatters[username] = {};
+            chatters[username].voice = response.Item.voice.toLowerCase();
+            chatters[username].voice_option = response.Item.voice_option;
+            chatters[username].spoken_name = response.Item.spoken_name;
+            chatters[username].ttsBanned = response.Item.ttsBanned;
+            chatters[username].display_name = response.Item.display_name;
+            chatters[username].color = lvuserstate.color;
+          } else if (chatters[username].hasOwnProperty("voice")) {
+            //console.log('loadVoice() chatters[' + username + '].voice: ' + chatters[username].voice);
+            chatters[username].voice = "justin";
+            chatters[username].voice_option = "standard";
+            chatters[username].spoken_name = username;
+            chatters[username].ttsBanned = false;
+            chatters[username].display_name = lvuserstate["display-name"];
+          } else {
+            //console.log('loadVoice() catchall: using Justin for ' + username);
+            chatters[username].voice = "justin";
+            chatters[username].voice_option = "standard";
+            chatters[username].spoken_name = username;
+            chatters[username].ttsBanned = false;
+            chatters[username].display_name = lvuserstate["display-name"];
+            chatters[username].color = lvuserstate.color;
+          }
+        },
+        error: function (request, status, error) {
+          console.log("loadVoice(global) error: using Brian");
+          chatters[username].voice = "brian";
+          chatters[username].voice_option = "standard";
+          chatters[username].ttsBanned = false;
+          chatters[username].display_name = lvuserstate["display-name"];
+          chatters[username].color = lvuserstate.color;
+        },
+      });
+    }
   }
 }
 
@@ -1744,7 +2434,7 @@ function message_key(ele) {
 
 function sendMessage() {
   if (con.sendMessage.value) {
-    message = con.sendMessage.value;
+    let message = con.sendMessage.value;
     var params = {
       Text: con.sendMessage.value,
       SourceLanguageCode: con.targetLanguage,
@@ -1758,8 +2448,8 @@ function sendMessage() {
           console.log("Error calling Translate. " + err.message + err.stack);
         }
         if (data) {
-          //console.log("M: " + message);
-          //console.log("T: " + translatedMessage);
+          console.log("M: " + message);
+          console.log("T: " + translatedMessage);
           var translatedMessage = data.TranslatedText;
 
           //Send message to chat
@@ -1775,8 +2465,8 @@ function sendMessage() {
             "<strong> ME: </strong>: " + translatedMessage + "<br>";
 
           //Scroll chat and translated UI to bottom to keep focus on latest messages
-          con.liveChatUIContainer.scrollTop =
-            con.liveChatUIContainer.scrollHeight;
+          //con.liveChatUIContainer.scrollTop =
+          //  con.liveChatUIContainer.scrollHeight;
         }
       }
     );
@@ -1804,13 +2494,13 @@ function sendVoiceMessage(text) {
 function AudioPlayer() {
   //console.log('AudioPlayer()');
   // start listening on mic for streamer voice recognition, don't do TTS while streamer is speaking
-  vr_function();
-  var audioPlayer = document.createElement("audio");
-  audioPlayer.setAttribute("id", "audioPlayer");
-  document.body.appendChild(audioPlayer);
+  //vr_function();
+  //var audioPlayer = document.createElement("audio");
+  //audioPlayer.setAttribute("id", "audioPlayer");
+  //document.body.appendChild(audioPlayer);
 
   var isSpeaking = false;
-  this.isPaused = false;
+  var isPaused = false;
   var banRequested = false;
   var currentSpokenMessage = {};
   var banMessage = {};
@@ -1819,6 +2509,22 @@ function AudioPlayer() {
   var speaker = {
     self: this,
     messageQueue: [],
+    StartVoiceRecognition: function () {
+      if (
+        document.getElementById("btn-vr-go").innerText ==
+        "Start Voice Recognition"
+      ) {
+        document.getElementById("btn-vr-go").innerText =
+          "Stop Voice Recognition";
+        vr_function();
+      } else {
+        document.getElementById("btn-vr-go").innerText =
+          "Start Voice Recognition";
+      }
+    },
+    isSpeaking: function () {
+      return isSpeaking;
+    },
     isPaused: function () {
       return isPaused;
     },
@@ -1836,22 +2542,57 @@ function AudioPlayer() {
       if (isSpeaking || streamerIsSpeaking || isPaused) {
         lastQueuedMessage = message;
         this.messageQueue.push(message);
+        updateQueueCount(this.messageQueue.length);
       } else {
         speakMessage(message, false).then(speakNextMessage).catch(console.log);
       }
     },
-    SpeakNow: async function (text, username, ssmlTextType, voice) {
+    SpeakNow: async function (
+      text,
+      username,
+      ssmlTextType,
+      voice,
+      voice_option
+    ) {
       //console.log("Speaking: " + text + " -- with voice: " + voice);
       //If currently speaking a message, add new message to the messageQueue
       isSpeaking = true;
       let message = {};
+
       message.text = text;
       message.username = username;
       message.voice = voice;
+      message.voice_option = voice_option;
       message.ssmlTextType = ssmlTextType;
       await speakMessage(message, true)
         .then(speakNextMessage)
         .catch(console.log);
+    },
+    SpeakGame2TTS: async function (speaker, text, voice, voice_option) {
+      //console.log("Speaking: " + text + " -- with voice: " + voice);
+      //If currently speaking a message, add new message to the messageQueue
+      addMessageBubble(speaker, text, "", true, "", ++messageID);
+
+      var prefix = "";
+      if (last_speaker != speaker) {
+        prefix =
+          "<speak>" + getSpokenName(speaker.toLowerCase()) + " says </speak>";
+      }
+
+      let message = {};
+      message.text = text;
+      message.username = speaker;
+      message.voice = voice;
+      message.voice_option = voice_option;
+      message.messageID = messageID;
+
+      if (isSpeaking) {
+        lastQueuedMessage = message;
+        this.messageQueue.unshift(message);
+        updateQueueCount(this.messageQueue.length);
+      } else {
+        speakMessage(message, false).then(speakNextMessage).catch(console.log);
+      }
     },
     SpeakNext: async function (text, username, ssmlTextType, voice, mID) {
       //console.log("Speaking: " + text + " -- with voice: " + voice);
@@ -1866,36 +2607,38 @@ function AudioPlayer() {
       if (isSpeaking) {
         lastQueuedMessage = message;
         this.messageQueue.unshift(message);
+        updateQueueCount(this.messageQueue.length);
       } else {
         speakMessage(message, false).then(speakNextMessage).catch(console.log);
       }
     },
     Pause: async function () {
-      audioPlayer.pause();
+      audioPlayerNew.pause();
       isPaused = true;
     },
     Continue: async function () {
-      audioPlayer.play();
+      audioPlayerNew.play();
       isPaused = false;
       speakNextMessage();
     },
     Skip: async function () {
-      audioPlayer.pause();
+      audioPlayerNew.pause();
       const event = new Event("skip");
-      audioPlayer.dispatchEvent(event);
+      audioPlayerNew.dispatchEvent(event);
       isSpeaking = false;
       speakNextMessage();
     },
     Dump: async function () {
       this.messageQueue = [];
       const event = new Event("skip");
-      audioPlayer.dispatchEvent(event);
+      audioPlayerNew.dispatchEvent(event);
       isSpeaking = false;
     },
     PopLastMessage: async function (username) {
       for (var i = this.messageQueue.length - 1; i >= 0; i--) {
         if (username == this.messageQueue[i].username) {
           this.messageQueue.splice(i, 1);
+          updateQueueCount(this.messageQueue.length);
           break;
         }
       }
@@ -1904,6 +2647,7 @@ function AudioPlayer() {
       for (var i = this.messageQueue.length - 1; i >= 0; i--) {
         if (username == this.messageQueue[i].username) {
           this.messageQueue.splice(i, 1);
+          updateQueueCount(this.messageQueue.length);
           break;
         }
       }
@@ -1913,13 +2657,13 @@ function AudioPlayer() {
         return element.username != username;
       });
       const event = new Event("skip");
-      audioPlayer.dispatchEvent(event);
+      audioPlayerNew.dispatchEvent(event);
       isSpeaking = false;
       speakNextMessage();
     },
     Ban: async function () {
       banMessage = currentSpokenMessage;
-      audioPlayer.pause();
+      audioPlayerNew.pause();
 
       let message = "Ban " + banMessage.username + "?";
 
@@ -1947,7 +2691,7 @@ function AudioPlayer() {
           "text"
         );
         const event = new Event("skip");
-        audioPlayer.dispatchEvent(event);
+        audioPlayerNew.dispatchEvent(event);
         isSpeaking = false;
         speakNextMessage();
         banMessage = {};
@@ -2015,6 +2759,12 @@ function AudioPlayer() {
     },
   };
 
+  function updateQueueCount(count) {
+    document.getElementById(
+      "queueCount"
+    ).innerHTML = `Messages Queued(${count})`;
+  }
+
   // Speak text message
   async function speakMessage(message, immediate) {
     isSpeaking = true;
@@ -2039,6 +2789,8 @@ function AudioPlayer() {
     try {
       if (message.prefix) {
         prefix.text = message.prefix;
+        var regex = /_/gi;
+        prefix.text = prefix.text.replace(regex, " ");
         prefix.username = "system";
         prefix.ssmlTextType = "ssml";
         prefix.messageID = message.messageID;
@@ -2156,6 +2908,8 @@ function AudioPlayer() {
 
   // Speak next message in the list
   function speakNextMessage() {
+    updateQueueCount(speaker.messageQueue.length);
+
     if (!streamerIsSpeaking && !isSpeaking && !isPaused) {
       var queue = speaker.messageQueue;
       if (queue.length > 0) {
@@ -2218,7 +2972,7 @@ function AudioPlayer() {
         Text: message.text,
         VoiceId: voice,
       };
-      //console.log('Speaking with:', params);
+      console.log("Speaking with:", params);
 
       polly.synthesizeSpeech(params, function (err, data) {
         if (err) {
@@ -2237,25 +2991,29 @@ function AudioPlayer() {
       //console.log(audioStream);
       //var uInt8Array = new Uint8Array(audioStream);
       var arrayBuffer = audioStream.buffer;
-      var blob = new Blob([arrayBuffer]);
+      var blob = new Blob([arrayBuffer], { type: "audio/mpeg" });
       var url = URL.createObjectURL(blob);
-      audioPlayer.src = url;
+      //audioPlayer.src = url;
+      audioPlayerNew.src = url;
+      //testAP = new Audio(url);
 
-      audioPlayer.addEventListener("ended", onEnded);
-      audioPlayer.addEventListener("skip", onEnded);
+      audioPlayerNew.addEventListener("ended", onEnded);
+      audioPlayerNew.addEventListener("skip", onEnded);
+      //audioPlayer.addEventListener("ended", onEnded);
+      //audioPlayer.addEventListener("skip", onEnded);
 
       function onEnded() {
         //("onEnded:", arguments);
-        audioPlayer.pause();
-        audioPlayer.removeEventListener("ended", onEnded);
-        audioPlayer.removeEventListener("skip", onEnded);
+        audioPlayerNew.pause();
+        audioPlayerNew.removeEventListener("ended", onEnded);
+        audioPlayerNew.removeEventListener("skip", onEnded);
 
         // STOP MIDI FX
 
         resolve();
       }
 
-      audioPlayer.play().catch(function (error) {
+      audioPlayerNew.play().catch(function (error) {
         console.log("audioPlayer error: " + JSON.stringify(error));
         reject(error);
       });
@@ -2285,7 +3043,12 @@ function AudioPlayer() {
         //console.log("recognition.onend()");
         justWaitAMoment();
         streamerLastSpoke = Date.now();
-        vr_function();
+        if (
+          document.getElementById("btn-vr-go").innerText ==
+          "Stop Voice Recognition"
+        ) {
+          vr_function();
+        }
       };
 
       var trans_sourcelang = document.getElementById("dstLangSelect").value;
@@ -2297,7 +3060,7 @@ function AudioPlayer() {
       var query = "";
       var request = new XMLHttpRequest();
 
-      recognition.onresult = function (event) {
+      recognition.onresult = async function (event) {
         if (
           !document.getElementById("cbSTTS").checked &&
           !document.getElementById("cbSendTextToWebsocket").checked
@@ -2308,13 +3071,14 @@ function AudioPlayer() {
         var results = event.results;
         var speechProcessingStart = window.performance.now();
 
+        //sendEventToCCT(event);
+
         for (var i = event.resultIndex; i < results.length; i++) {
           var text = results[i][0].transcript.trim();
           var confidence = results[i][0].confidence;
+
           if (results[i].isFinal) {
-            //console.log("onresult isFinal:", text);
             runVoiceCommand(text);
-            sendTextToCCTPopup(text, true);
 
             //console.log("final spoke for:", Date.now() - speechStarted);
             //console.log("speechTimeQueue:", speechTimeQueue);
@@ -2325,6 +3089,7 @@ function AudioPlayer() {
               Date.now(),
               confidence
             );
+
             sendTextToAWSWebsocket(
               text,
               true,
@@ -2405,9 +3170,18 @@ function AudioPlayer() {
 
             //console.log("interim now():", Date.now());
             runImmediateVoiceCommand(text);
-            sendTextToCCTPopup(text, false);
+
+            if (!document.getElementById("cbUseFinalResultsOnly").checked) {
+              sendTextToAWSWebsocket(
+                text,
+                false,
+                speechStarted,
+                Date.now(),
+                confidence
+              );
+            }
+
             sendTextToCustomWebsocket(text, false, speechStarted, Date.now());
-            //sendTextToAWSWebsocket(text, false);
           }
         }
 
@@ -2428,12 +3202,12 @@ function AudioPlayer() {
   }
 
   function sendTextToCCTPopup(text, isFinal) {
-    if (cctPopup != null && !cctPopup.closed) {
+    if (window.cctPopup != null && !window.cctPopup.closed) {
       //var lblFirstName = cctPopup.document.getElementById("lblFirstName");
       //var lblLastName = cctPopup.document.getElementById("lblLastName");
       //lblFirstName.innerHTML = document.getElementById("txtFirstName").value;
       //lblLastName.innerHTML = document.getElementById("txtLastName").value;
-      cctPopup.focus();
+      window.cctPopup.focus();
     }
   }
 
@@ -2544,7 +3318,7 @@ function AudioPlayer() {
       waitingIntervalID = setInterval(function () {
         justWaitAMoment();
       }, 500);
-      console.log("waitingIntervalID=", waitingIntervalID);
+      //console.log("waitingIntervalID=", waitingIntervalID);
     }
 
     let waitTimeMS = document.getElementById("txtTTSWaitTime").value * 1000;
@@ -2584,7 +3358,8 @@ function AudioPlayer() {
   // Get a Cognito Identity ID
   await cognitoIdentity.getId(
     {
-      IdentityPoolId: "us-west-2:74292e8b-5888-4e9c-930d-a6379a9a4398",
+      IdentityPoolId: "us-west-2:906a8430-e48a-4084-9513-dcf502e5e58a",
+      //IdentityPoolId: "us-west-2:74292e8b-5888-4e9c-930d-a6379a9a4398",
     },
     async (err, data) => {
       if (err) {
@@ -2594,7 +3369,8 @@ function AudioPlayer() {
 
       // Configure the Identity Pool ID and the Identity ID
       AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-        IdentityPoolId: "us-west-2:74292e8b-5888-4e9c-930d-a6379a9a4398",
+        IdentityPoolId: "us-west-2:906a8430-e48a-4084-9513-dcf502e5e58a",
+        //IdentityPoolId: "us-west-2:74292e8b-5888-4e9c-930d-a6379a9a4398",
         IdentityId: data.IdentityId,
       });
 
@@ -2621,9 +3397,11 @@ function AudioPlayer() {
 })();
 
 async function finishSetup() {
-  //console.log('final load function()');
+  console.log("final load function()");
   await buildVoiceLookup();
   loadAndSortLanguages();
+  loadAndSortTLDs();
+  //console.log(TLDsRegex);
 
   Handlebars.registerHelper("contains", function (needle, haystack, options) {
     //needle = Handlebars.escapeExpression(needle);

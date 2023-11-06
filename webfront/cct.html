@@ -86,7 +86,6 @@
             </script>
 
     <script type="text/javascript">
-        var flag_speech = 0;
         var streamerLastSpoke = Date.now();
         var bubble_timer = 10000;
         var norikittea = false;
@@ -250,10 +249,9 @@
                     document.getElementById('result_text').style.visibility = 'visible';
                     document.getElementById('speech_text-imb').innerHTML = "<< " + recog_text + " >>";
                     streamerLastSpoke = Date.now();
-                    flag_speech = 1;
                 }
             }
-            flag_speech = 0;
+
 
         }
 
