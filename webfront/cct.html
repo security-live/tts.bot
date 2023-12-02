@@ -24,8 +24,7 @@
     <label style="font-size:32px; margin-left:20px;" for="channel">Channel:</label>
     <input type="text" id="channel" name="channel" class="form-control" value placeholder="Channel"><br>
     <button style="font-size:32px; margin-left:20px;" type="button" class="form-control" id="btn-go"
-        onclick='connect()'>Go</button>
-    </dd>
+        onclick="connect()">Go</button>
     <div class="big" id="result_text">
         <div class="text_div" style="position:absolute;bottom:5%; left:30%; right:30%;">
             <table id="text_table" class="center border" style="bottom: 33px;">
@@ -111,15 +110,114 @@
         var voice = "Takumi";
         var voice_option = "neural";
 
+        /*
         awsAccessKeyId = 'AKIAZOBVRH3RET74YR64';
         awsSecretAccessKey = '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';
 
         AWS.config.region = 'us-west-2';
         //ep = new AWS.Endpoint('translate.us-west-2.amazonaws.com');
         AWS.config.credentials = new AWS.Credentials(awsAccessKeyId, awsSecretAccessKey);
+        */
+
+                
+/*
+        (async function () {
+          // Create a CognitoIdentity service object
+          AWS.config.region = 'us-west-2';
+          const cognitoIdentity = new AWS.CognitoIdentity();
+
+          // Get a Cognito Identity ID
+          await cognitoIdentity.getId(
+            {
+              IdentityPoolId: "us-west-2:906a8430-e48a-4084-9513-dcf502e5e58a",
+              //IdentityPoolId: "us-west-2:74292e8b-5888-4e9c-930d-a6379a9a4398",
+            },
+            async (err, data) => {
+           
+              if (err) {
+                console.error("Error getting Cognito Identity ID", err);
+                return;
+              }
+
+              // Configure the Identity Pool ID and the Identity ID
+              
+              AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+                IdentityPoolId: "us-west-2:906a8430-e48a-4084-9513-dcf502e5e58a",
+                //IdentityPoolId: "us-west-2:74292e8b-5888-4e9c-930d-a6379a9a4398",
+                IdentityId: data.IdentityId,
+              });
+
+              // Get the temporary AWS credentials
+              
+              await AWS.config.credentials.get((error) => {
+                if (error) {
+                  console.error("Error getting credentials", error);
+                } else {
+                  let ep = new AWS.Endpoint("translate.us-west-2.amazonaws.com");
+                  window.translator = new AWS.Translate({
+                    endpoint: ep,
+                    region: AWS.config.region,
+                  });
+
+                  //finishSetup();
+
+                  console.log(
+                    "Successfully authenticated as an unauthenticated user with Cognito"
+                  );
+                }
+              });
+              
+            }
+          );
+        })();   */    
+        
+        async function cognitoSetup () {
+    try {
+        // Set the region
+        AWS.config.region = 'us-west-2';
+
+        // Create a CognitoIdentity service object
+        const cognitoIdentity = new AWS.CognitoIdentity();
+
+        // Get a Cognito Identity ID
+        const idData = await cognitoIdentity.getId({
+            IdentityPoolId: "us-west-2:906a8430-e48a-4084-9513-dcf502e5e58a",
+        }).promise();
+
+        // Configure the Identity Pool ID and the Identity ID
+        AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+            IdentityPoolId: "us-west-2:906a8430-e48a-4084-9513-dcf502e5e58a",
+            IdentityId: idData.IdentityId,
+        });
+
+        // Get the temporary AWS credentials
+        await new Promise((resolve, reject) => {
+            AWS.config.credentials.get((error) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve();
+                }
+            });
+        });
+
+        // Initialize AWS Translate service
+        let ep = new AWS.Endpoint("translate.us-west-2.amazonaws.com");
+        window.translator = new AWS.Translate({
+            endpoint: ep,
+            region: AWS.config.region,
+        });
+
+        console.log("Successfully authenticated as an unauthenticated user with Cognito");
+    } catch (error) {
+        console.error("Error in Cognito setup:", error);
+    }
+}
+        
 
 
         window.onload = function () {
+           
 
             //window.translator = new AWS.Translate({ endpoint: ep, region: AWS.config.region });
             window.audioPlayer = AudioPlayer();
@@ -198,7 +296,7 @@
         function connect() {
             window.audioPlayer.Speak("lets go");
 
-            var webSocket = new WebSocket("wss://api.tts.bot/?channel=" + document.getElementById('channel').value);
+            var webSocket = new WebSocket("wss://ws.tts.bot/?channel=" + document.getElementById('channel').value);
 
             webSocket.onopen = function () {
                 console.log("Connected to websocket backend.");
@@ -438,6 +536,7 @@
 
         (async function () {
             //console.log('final load function()');
+            await cognitoSetup();
             await buildVoiceLookup();
             loadAndSortLanguages();
 

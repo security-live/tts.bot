@@ -1237,6 +1237,24 @@ async function onNotice(msgid, channel, tags, msg) {
 
 async function onChat(channel, userstate, message, self) {
   channel = channel.replace("#", "").trim();
+  userstate.platform = "Twitch";
+
+  if(userstate.username === "restreambot") {
+    let platform_regex = /\[(.*): (.*)\] (.*)/;
+    
+
+    let matches = message.match(platform_regex);
+    
+    if (matches) {
+        userstate.platform = matches[1]; 
+        userstate.username = matches[2]; 
+        userstate["display-name"] = matches[2];
+        message = matches[3];
+    }  
+  }
+
+
+  //platform 
 
   console.log("------------ onChat() ---------");
   console.log(userstate);
@@ -1312,7 +1330,7 @@ async function doChat(channel, userstate, message, self) {
   if (message.match(/^(oneword|one word|!oneword)/i)) {
     addSystemBubble(message, ++messageID);
     return;
-  }
+  } 
 
   let allowTTS = false;
   let allowTTSmessage = "";
@@ -1699,7 +1717,8 @@ async function doChat(channel, userstate, message, self) {
             translatedMessageHTML,
             allowTTS,
             allowTTSmessage,
-            ++messageID
+            ++messageID,
+            userstate.platform
           );
 
           //If speak translation in enabled, speak translated message
@@ -1741,6 +1760,10 @@ async function doChat(channel, userstate, message, self) {
             //spokenText = spokenText.replace(longex, ' (long word) ');
 
             var prefix = "";
+            var platform_message = "";
+            if(userstate.platform != "Twitch") {
+              platform_message = ` on ${userstate.platform}`
+            }
 
             if (
               userstate.hasOwnProperty("chat_action") &&
@@ -1749,7 +1772,7 @@ async function doChat(channel, userstate, message, self) {
               last_speaker = "Unset-by-action";
               prefix = `<speak> ${getSpokenName(username)} </speak>`;
             } else if (last_speaker != username) {
-              prefix = `<speak> ${getSpokenName(username)} says </speak>`;
+              prefix = `<speak> ${getSpokenName(username)}${platform_message} says </speak>`;
             }
 
             audioPlayer.Speak(
@@ -1796,7 +1819,8 @@ function addMessageBubble(
   translatedMessageHTML,
   allowTTS,
   allowTTSmessage,
-  messageID
+  messageID,
+  platform
 ) {
   let buttons =
     makeButton("TTS Ban", "warning", "volume-xmark", username, messageID) +
@@ -1825,10 +1849,6 @@ function addMessageBubble(
 
   con.liveChatUI.innerHTML += `<div id="message-id${messageID}" class="chat-bubble">
                                           <div class="username-container" id="message-user-id${messageID}">
-                                            <div class="speaker-info">
-                                              <span class="speaker-icon">${speakerIcon}</span>
-                                              <span id="message-system-voice-id${messageID}" class="voice-name">SYSTEM VOICE</span>
-                                            </div>
                                             <span class="username">
                                               <strong style='color:${color}'>${
     chatters[username].display_name
@@ -1837,6 +1857,9 @@ function addMessageBubble(
                                                 username
                                               ].spoken_name.trim()})
                                             </span>
+                                            <div class="speaker-info">
+                                            <span id="message-system-voice-id${messageID}" class="voice-name">${platform}</span>
+                                          </div>
                                           </div>
 
                                           <div class="message-container" id="message-message-id${messageID}">
