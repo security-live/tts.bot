@@ -20,7 +20,7 @@
     <div id="systemLangPlaceholder"></div>
     <div id="systemVoicePlaceholder"></div>
     <label style="font-size:32px; margin-left:20px;" for="delay">Delay:</label>
-    <input type="text" id="delay" name="delay" class="form-control" value="4000"><br>
+    <input type="text" id="delay" name="delay" class="form-control" value="0"><br>
     <label style="font-size:32px; margin-left:20px;" for="channel">Channel:</label>
     <input type="text" id="channel" name="channel" class="form-control" value placeholder="Channel"><br>
     <button style="font-size:32px; margin-left:20px;" type="button" class="form-control" id="btn-go"
@@ -88,7 +88,7 @@
         var streamerLastSpoke = Date.now();
         var bubble_timer = 10000;
         var norikittea = false;
-        var channel = "security_live";
+        var channel = "";
         var websocket = {};
         var voices = {};
         var voicesDesc = {};
@@ -109,67 +109,6 @@
 
         var voice = "Takumi";
         var voice_option = "neural";
-
-        /*
-        awsAccessKeyId = 'AKIAZOBVRH3RET74YR64';
-        awsSecretAccessKey = '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';
-
-        AWS.config.region = 'us-west-2';
-        //ep = new AWS.Endpoint('translate.us-west-2.amazonaws.com');
-        AWS.config.credentials = new AWS.Credentials(awsAccessKeyId, awsSecretAccessKey);
-        */
-
-                
-/*
-        (async function () {
-          // Create a CognitoIdentity service object
-          AWS.config.region = 'us-west-2';
-          const cognitoIdentity = new AWS.CognitoIdentity();
-
-          // Get a Cognito Identity ID
-          await cognitoIdentity.getId(
-            {
-              IdentityPoolId: "us-west-2:906a8430-e48a-4084-9513-dcf502e5e58a",
-              //IdentityPoolId: "us-west-2:74292e8b-5888-4e9c-930d-a6379a9a4398",
-            },
-            async (err, data) => {
-           
-              if (err) {
-                console.error("Error getting Cognito Identity ID", err);
-                return;
-              }
-
-              // Configure the Identity Pool ID and the Identity ID
-              
-              AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-                IdentityPoolId: "us-west-2:906a8430-e48a-4084-9513-dcf502e5e58a",
-                //IdentityPoolId: "us-west-2:74292e8b-5888-4e9c-930d-a6379a9a4398",
-                IdentityId: data.IdentityId,
-              });
-
-              // Get the temporary AWS credentials
-              
-              await AWS.config.credentials.get((error) => {
-                if (error) {
-                  console.error("Error getting credentials", error);
-                } else {
-                  let ep = new AWS.Endpoint("translate.us-west-2.amazonaws.com");
-                  window.translator = new AWS.Translate({
-                    endpoint: ep,
-                    region: AWS.config.region,
-                  });
-
-                  //finishSetup();
-
-                  console.log(
-                    "Successfully authenticated as an unauthenticated user with Cognito"
-                  );
-                }
-              });
-              
-            }
-          );
-        })();   */    
         
         async function cognitoSetup () {
     try {
@@ -601,9 +540,9 @@
             if (localStorage.getItem('systemLangSelect')) {
                 document.getElementById('systemLangSelect').value = localStorage.getItem('systemLangSelect');
             }
-            if (localStorage.getItem('channel')) {
-                document.getElementById('channel').value = localStorage.getItem('channel');
-            }
+            //if (localStorage.getItem('channel')) {
+                document.getElementById('channel').value = channel; // localStorage.getItem('channel');
+            //}
         })();
 
     </script>
