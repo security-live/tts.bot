@@ -482,16 +482,19 @@ async function getColorStyles() {
 
 async function updatePreview() {
   //console.log("updatePreview()");
-  let popupUrl = "https://securitylive.com/tts/translator.html?popup=aws&";
+
+  let srcLang = document.getElementById("dstLangSelect").value;
+
+  let popupUrl = "https://securitylive.com/tts/translator.html?src="+srcLang+"&popup=aws&channel="+con.channel+"&";
 
   if (location.hostname.includes("local.tts.bot")) {
-    popupUrl = "https://local.tts.bot/translator.html?popup=aws&";
+    popupUrl = "https://local.tts.bot/translator.html?src="+srcLang+"&popup=aws&channel="+con.channel+"&";
   } else if (location.hostname.includes("dev.tts.bot")) {
-    popupUrl = "https://dev.tts.bot/translator.html?popup=aws&";
+    popupUrl = "https://dev.tts.bot/translator.html?src="+srcLang+"&popup=aws&channel="+con.channel+"&";
   } else if (location.hostname.includes("uat.tts.bot")) {
-    popupUrl = "https://uat.tts.bot/translator.html?popup=aws&";
+    popupUrl = "https://uat.tts.bot/translator.html?src="+srcLang+"&popup=aws&channel="+con.channel+"&";
   } else if (location.hostname.includes("tts.bot")) {
-    popupUrl = "https://tts.bot/translator.html?popup=aws&";
+    popupUrl = "https://tts.bot/translator.html?src="+srcLang+"&popup=aws&channel="+con.channel+"&";
   }
 
   const setVar = (varName, varValue) => {
@@ -869,6 +872,7 @@ function onRaid() {
 /**************************Init and Connect to Chat****************************/
 async function connect() {
   init();
+  updatePreview();
 
   const goListener = function (event) {
     audioPlayerNew.play();
@@ -3055,6 +3059,7 @@ function AudioPlayer() {
       var recognition = new webkitSpeechRecognition();
       var speechStarted = Date.now();
 
+      recognition.lang = document.getElementById("dstLangSelect").value;
       recognition.interimResults = true;
       recognition.continuous = true;
 

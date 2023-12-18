@@ -41,6 +41,7 @@
       var trans_text = "";
       var arg_recog = null;
       var arg_trans = null;
+      var channel = "";
 
       var trans_sourcelang = "en";
       var trans_destlang = "ja";
@@ -50,8 +51,6 @@
 
       var TRANS_URL = "https://script.google.com/macros/s/" + gas_key + "/exec";
       var query = "";
-
-      var webSocket = new WebSocket("wss://ws.tts.bot/?channel=security_live");
 
       if (getParam("recog") != null) {
           arg_recog = getParam("recog");
@@ -78,6 +77,10 @@
           norikittea = true;
         }
 
+        if (getParam("channel") != null) {
+          channel = getParam("channel");
+        }
+
         if (getParam("bubble-timer") != null) {
           bubble_timer = parseInt(getParam("bubble-timer"));
         }
@@ -97,13 +100,15 @@
               "]!"
           );
         }
-        
+
+        var webSocket = new WebSocket("wss://ws.tts.bot/?channel="+channel);        
+      
         
       webSocket.onopen = function () {
         console.log("Connected to websocket backend.");
         var wsObject = {
           action: "start",
-          channel: "security_live",
+          channel: channel,
         };
         webSocket.send(JSON.stringify(wsObject));
       };
