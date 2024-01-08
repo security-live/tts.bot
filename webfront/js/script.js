@@ -869,6 +869,21 @@ function onRaid() {
   }
 }
 
+async function readCopyBuffer() {
+  try {
+      const text = await navigator.clipboard.readText();
+      console.log('Pasted content:', text);
+      addSystemBubble(text, ++messageID);
+      window.audioPlayer.Speak("", text, "", "system", "text", messageID);
+  } catch (err) {
+      console.error('Failed to read clipboard contents: ', err);
+  }
+}
+
+// Call the function, e.g., in response to a button click
+// readClipboard();
+
+
 /**************************Init and Connect to Chat****************************/
 async function connect() {
   init();

@@ -1,0 +1,126 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@800&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login with Twitch</title>
+<style>
+	body {
+		background-color: #000;
+		background-image: url('media/bg.jpg');
+		background-position: center center;
+		background-size: cover;
+		font-family: "Poppins","HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+		font-weight: 300;
+		color: white;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 100vh;
+		margin: 0;
+	}
+	.container {
+		text-align: center;
+	}
+	.logo {
+		font-family: "Poppins-Bold",
+		margin-bottom: 20px;
+		font-size: 84px;
+		line-height: 80px;
+		vertical-align: middle;
+		font-weight: 900;
+		text-shadow: -6px 8px 12px #000;
+	}
+	.logo img {
+		height: 70px;
+		margin-bottom: -10px;
+	}
+	.login-options {
+		margin: 20px 0;
+		margin-left: auto;
+		margin-right: auto;
+		width: 300px;
+	}
+	.login-option {
+		margin-left: auto;
+		margin-right: auto;
+		margin: 10px 0;
+		text-align: left;
+		width: 240px;
+	}
+	.login-button {
+		border: none;
+		color: white;
+		padding: 20px 20px;
+		text-align: center;
+		text-decoration: none;
+		display: inline-block;
+		font-size: 16px;
+		margin: 4px 2px;
+		cursor: pointer;
+		border-radius: 15px;
+
+		background: rgb(129,223,244);
+		background: -moz-linear-gradient(90deg, rgba(129,223,244,1) 0%, rgba(80,56,237,1) 100%);
+		background: -webkit-linear-gradient(90deg, rgba(129,223,244,1) 0%, rgba(80,56,237,1) 100%);
+		background: linear-gradient(90deg, rgba(129,223,244,1) 0%, rgba(80,56,237,1) 100%);
+		filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#81dff4",endColorstr="#5038ed",GradientType=1); 
+	}
+	.login-button:HOVER {
+		background: #FFF !important;
+		color: #000 !important;
+	}
+	.footer {
+		font-size: 10px;
+	}
+	h1 {
+		text-shadow: 6px 8px 4px rgba(0,0,0,0.25);
+	}
+	h2 {
+		font-weight: 100;
+	}
+	.copy_logo {
+		position: fixed;
+		bottom: 20px;
+		right: 20px;
+		width: 60px;
+		height: 60px;
+	}
+</style>
+</head>
+<body>
+<img class="copy_logo" src="media/profile_image-300x300.png">
+<div class="container">
+    <div class="logo">
+        <img src="media/profile_image-300x300.png">
+		tts.bot
+    </div>
+    <h1>Login With <span style="color:#B36AFF">Twitch</span></h1>
+	<h2>Choose your desired capabilities and click authenticate.</h2>
+    <dl class="login-options">
+        <dd class="login-option">
+            <input type="radio" id="moderation" name="capability" value="moderation">
+            <label for="moderation">Moderation Capabilities</label>
+        </dd>
+        <dd class="login-option">
+            <input type="radio" id="chat" name="capability" value="chat">
+            <label for="chat">Basic Chat Capabilities</label>
+        </dd>
+        <dd class="login-option">
+            <input type="radio" id="anonymous" name="capability" value="anonymous">
+            <label for="anonymous">Anonymous</label>
+        </dd>
+    </dl>
+    <button class="login-button btn">Authenticate</button>
+    <div class="footer">
+        <p>Super Secure Login<br>Like Banks Have</p>
+        Terms & Buy Now
+    </div>
+</div>
+</body>
+</html>
