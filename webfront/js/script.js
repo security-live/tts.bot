@@ -1434,9 +1434,8 @@ async function doChat(channel, userstate, message, self) {
   }
 
   ssmlTextType = "text";
-  if (message.match("^<speak>.*</speak>$")) {
+  if (message.match(/(^\s*<speak>.*<\/speak>\s*$|\s*<speak>.*<\/speak>\s*p\d{1,3}\s*$)/)) {
     ssmlTextType = "ssml";
-  } else if (message.match("<speak>.*</speak>")) {
   }
 
   if (!chatters.hasOwnProperty(username)) {
@@ -1476,15 +1475,11 @@ async function doChat(channel, userstate, message, self) {
       if (userstate.gpt_result == "BAN") {
         allowTTSmessage += reason[1] + " - ";
         allowTTS = false;
-        message =
-          "THIS MESSAGE INTENTIONALLY LEFT BLANK BY AI (BAN) Original Message: " +
-          message;
+        message = "THIS MESSAGE INTENTIONALLY LEFT BLANK BY AI (BAN)";
       } else if (userstate.gpt_result == "TIMEOUT") {
         allowTTSmessage += reason[1] + " - ";
         allowTTS = false;
-        message =
-          "THIS MESSAGE INTENTIONALLY LEFT BLANK BY AI (TIMEOUT) Original Message: " +
-          message;
+        message = "THIS MESSAGE INTENTIONALLY LEFT BLANK BY AI (TIMEOUT)";
       } else if (userstate.gpt_result == "DOWNVOTE") {
         allowTTSmessage += reason[1] + " - ";
         allowTTS = true;
@@ -1727,7 +1722,7 @@ async function doChat(channel, userstate, message, self) {
             )
           ) {
             allowTTS = false;
-            allowTTSmessage += "Commentted out - ";
+            allowTTSmessage += "Commented out - ";
           }
 
           addMessageBubble(
@@ -2859,38 +2854,58 @@ function AudioPlayer() {
       let match = message.text.match(
         /(.+?)(?:\swith)?\s(?:([pu]\d{1,3})\s?)(?:([pu]\d{1,3})\s?)?(?:([pu]\d{1,3})\s?)?(?:([pu]\d{1,3})\s?)?$/i
       );
+      let match2 = message.text.match(/<\/speak>\s*(p\d{1,3})$/i);      
 
-      if (match && match[1]) {
-        let presetCount = 1;
+      if (match2) {
+        let presetValue = match2[1]; // Extracting the value (e.g., 'p0')
+        message.text = message.text.replace(/(<\/speak>\s*)(p\d{1,3})$/i, '$1'); // Removing the value from the string
+
         usefx = true;
-        message.text = match[1];
 
         let wsObject = {
           topic: "ttsfx",
           action: "fxSelect",
+          preset1: match2[1],
+          presetCount: 1,
           time: Date.now(),
         };
-
-        if (match[2]) {
-          wsObject.preset1 = match[2].toLowerCase();
-        }
-        if (match[3]) {
-          wsObject.preset2 = match[3].toLowerCase();
-          presetCount++;
-        }
-        if (match[4]) {
-          wsObject.preset3 = match[4].toLowerCase();
-          presetCount++;
-        }
-        if (match[5]) {
-          wsObject.preset4 = match[5].toLowerCase();
-          presetCount++;
-        }
-
-        wsObject.presetCount = presetCount;
-
+       
         websocketCustom.send(JSON.stringify(wsObject));
+
+        console.log("Preset Value:", presetValue); // Outputs: Preset Value: p0
+        console.log("Modified Message:", message.text); // Outputs the message without 'p0'
+    }
+    else if (match && match[1]) {
+      let presetCount = 1;
+      usefx = true;
+      message.text = match[1];
+
+      let wsObject = {
+        topic: "ttsfx",
+        action: "fxSelect",
+        time: Date.now(),
+      };
+
+      if (match[2]) {
+        wsObject.preset1 = match[2].toLowerCase();
       }
+      if (match[3]) {
+        wsObject.preset2 = match[3].toLowerCase();
+        presetCount++;
+      }
+      if (match[4]) {
+        wsObject.preset3 = match[4].toLowerCase();
+        presetCount++;
+      }
+      if (match[5]) {
+        wsObject.preset4 = match[5].toLowerCase();
+        presetCount++;
+      }
+
+      wsObject.presetCount = presetCount;
+      websocketCustom.send(JSON.stringify(wsObject));
+    }    
+
     } catch (err) {
       console.log("send midi fxSelect: catch(" + err + ")");
     }
