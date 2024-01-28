@@ -1909,6 +1909,7 @@ function addMessageBubble(
     color = GetColorForUsername(username);
   }
 
+  
   console.log(chatters[username]);
 
   con.liveChatUI.innerHTML += `<div id="message-id${messageID}" class="chat-bubble">
