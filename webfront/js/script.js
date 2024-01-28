@@ -263,7 +263,7 @@ chatters["system"].display_name = "System";
 chatters["system"].spoken_name = "System";
 
 chatters["gpt"] = {};
-chatters["gpt"].voice = "matthew";
+chatters["gpt"].voice = "gregory";
 chatters["gpt"].voice_option = "neural";
 chatters["gpt"].display_name = "GPT";
 chatters["gpt"].spoken_name = "GPT";
@@ -1083,6 +1083,7 @@ function websocketAWSConnect() {
     localStorage.setItem("AWSWebsocketURL", AWSWebsocketURL);
     var wsObject = {
       action: "start",
+      language: document.getElementById("dstLangSelect").value,
       channel: con.channel,
       access_token: access_token,
       time: Date.now(),
@@ -1179,7 +1180,7 @@ function loadAndSortTLDs() {
   console.log("loaded TLDs in:", parseFloat(time_diff).toFixed(2), "ms");
 }
 
-function voiceSelected(voice) {
+function systemVoiceSelected(voice) {
   var userVoiceOptionSource = document.getElementById(
       "system-voice-option-template"
     ).innerHTML,
@@ -1203,7 +1204,7 @@ function voiceSelected(voice) {
   );
 }
 
-function voiceOptionSelected(voiceOption) {
+function systemVoiceOptionSelected(voiceOption) {
   var voiceOptionElement = document.getElementById("voice-option");
   voiceOptionElement.value = voiceOption;
 
@@ -1216,6 +1217,46 @@ function voiceOptionSelected(voiceOption) {
     document.getElementById("systemVoiceOption").value
   );
 }
+
+function chatVoiceSelected(voice) {
+  var userVoiceOptionSource = document.getElementById(
+      "chat-voice-option-template"
+    ).innerHTML,
+    userVoiceOptionTemplate = Handlebars.compile(userVoiceOptionSource),
+    userVoiceOptionPlaceholder = document.getElementById(
+      "chatVoiceOptionPlaceholder"
+    );
+  userVoiceOptionPlaceholder.innerHTML = userVoiceOptionTemplate(
+    voices[voice.toLowerCase()]
+  );
+  var voiceOption = document.getElementById("chat-voice-option");
+  voiceOption.value = voices[voice.toLowerCase()].voiceOptions[0];
+
+  localStorage.setItem(
+    "chatVoice",
+    document.getElementById("chatVoice").value
+  );
+  localStorage.setItem(
+    "chatVoiceOption",
+    document.getElementById("chatVoiceOption").value
+  );
+}
+
+function chatVoiceOptionSelected(voiceOption) {
+  var voiceOptionElement = document.getElementById("chat-voice-option");
+  voiceOptionElement.value = voiceOption;
+
+  localStorage.setItem(
+    "chatVoice",
+    document.getElementById("chatVoice").value
+  );
+  localStorage.setItem(
+    "chatVoiceOption",
+    document.getElementById("chatVoiceOption").value
+  );
+}
+
+
 
 function saveLocalStorageLang(elementId) {
   console.log("elementId:", elementId);
@@ -1494,12 +1535,13 @@ async function doChat(channel, userstate, message, self) {
   } else if (userstate.gpt_type == "comical") {
     console.log(message);
     console.log(userstate);
-    allowTTSmessage += "Don't Speak Comic Relief - ";
+    allowTTSmessage += " Speak Comic Relief - ";
     message = `@${userstate["display-name"]} ${userstate.action}`;
     username = "gpt";
     allowTTS = false;
-    //window.client.action(con.channel, "GPT: " + message);
-    //return;
+    ssmlTextType = "text";
+    // window.client.action(con.channel, "GPT: " + message);
+    // return;
   }
 
   if (message) {
@@ -1716,13 +1758,16 @@ async function doChat(channel, userstate, message, self) {
 
           // TODO speak text up to comment delimiter
           if (
-            message.match(/^\s*-|^\s*#|^\s*<!--|^\s*;|^\s*\/\//) ||
+            message.match(/(^\s*-|^\s*#|^\s*&lt;!--|^\s*;|^\s*\/\/)/) ||
             message.match(
-              /\s*@[a-zA-Z0-9_]+(\s+\s*-|\s*#|\s*<!--|\s*;|\s*\/\/)/
+              /\s*@[a-zA-Z0-9_]+(\s+\s*-|\s*#|\s*&lt;!--|\s*;|\s*\/\/)/
             )
           ) {
             allowTTS = false;
             allowTTSmessage += "Commented out - ";
+          }
+          else {
+            console.log("MESSAGE:",message);
           }
 
           addMessageBubble(
@@ -1838,7 +1883,12 @@ function addMessageBubble(
 ) {
   let buttons =
     makeButton("TTS Ban", "warning", "volume-xmark", username, messageID) +
-    makeButton("Ban", "danger", "gavel", username, messageID);
+    makeButton("Ban", "danger", "gavel", username, messageID) + 
+    makeButton("Don't Speak", "secondary", "comment-slash", username, messageID);
+    //makeButton("Upvote", "success", "arrow-up", username, messageID) +
+    //makeButton("Downvote", "secondary", "arrow-down", username, messageID) +
+    //makeButton("Speak Next", "success", "arrow-up", username, messageID) +
+    //makeButton("Don't Speak", "secondary", "arrow-down", username, messageID) ;
 
   //  let buttons = makeButton("Don't Speak", "secondary", "comment-slash", username, messageID) +
   //makeButton("Speak Next", "success", "comment-medical", username, messageID) +
@@ -1882,8 +1932,12 @@ function addMessageBubble(
                                               <span class="voice-name">${userVoice}</span>
                                             </div>
                                             <span class="message">
-                                              ${message}<br>
-                                              ${translatedMessageHTML}
+                                              <span class="orig-message">
+                                                ${message}<br>
+                                              </span>
+                                              <span class="translated-message">
+                                                ${translatedMessageHTML}
+                                              </span>
                                             </span>
                                           </div>
 
@@ -1969,7 +2023,18 @@ function onButtonClick(button, argument, event) {
   } else if (button == "SpeakNext") {
     ttsBan(con.channel, "!ttsban " + argument, true);
   } else if (button == "DontSpeak") {
-    skipMessage(arguement);
+    window.audioPlayer.SkipByID(argument);
+    console.log(argument);
+    if (parseInt(argument) > 0) {
+      let messageElement = document.getElementById(
+        "message-user-id" + argument
+      );
+      messageElement.style.backgroundColor = "#8B0000";
+      messageElement = document.getElementById(
+        "message-message-id" + argument
+      );
+      messageElement.style.backgroundColor = "#8B0000";
+    }
     //event.target.disabled = true;
   }
 }
@@ -2472,34 +2537,69 @@ function message_key(ele) {
 function sendMessage() {
   if (con.sendMessage.value) {
     let message = con.sendMessage.value;
+    let targetLanguage = document.getElementById("chatLangSelect").value;
+
     var params = {
       Text: con.sendMessage.value,
-      SourceLanguageCode: con.targetLanguage,
-      TargetLanguageCode: document.getElementById("chatLangSelect").value,
+      SourceLanguageCode: "auto",
+      TargetLanguageCode: targetLanguage
     };
 
     window.translator.translateText(
       params,
-      function onSendMessageTranslate(err, data) {
+      async function onSendMessageTranslate(err, data) {
         if (err) {
           console.log("Error calling Translate. " + err.message + err.stack);
         }
         if (data) {
-          console.log("M: " + message);
-          console.log("T: " + translatedMessage);
+
           var translatedMessage = data.TranslatedText;
 
+          console.log("M: " + message);
+          console.log("T: " + translatedMessage);
+
           //Send message to chat
-          window.client.action(con.channel, translatedMessage);
+          window.client.say(con.channel, translatedMessage);
 
           //Clear send message UI
           con.sendMessage.value = "";
 
+          let username = document.getElementById("twitch_username").value;
+
+          addMessageBubble(username, message, translatedMessage, true, "Local send", ++messageID, "Local");
+          
+          /*window.audioPlayer.Speak(
+            "",
+            //"<speak>" + getSpokenName(document.getElementById("twitch_username").value) + " says " + text + "</speak>",
+            translatedMessage,
+            "",
+            "system",
+            "text",
+            messageID
+          );*/
+
+          if(document.getElementById("cbSpeakTranslation").checked) {
+            try {
+                let chatVoice = document.getElementById("chatVoice").value;
+                let chatVoiceOption = document.getElementById("chatVoiceOption").value;
+                let message = {};
+                message.text = translatedMessage;
+                message.username = "custom";
+                message.voice = chatVoice;
+                message.engine = chatVoiceOption;
+                message.ssmlTextType = "text";
+                message.messageID = messageID;
+                await window.audioPlayer.SpeakCustom(message);
+            } catch (err) {
+              console.log("speak prefix: catch(" + err + ")");
+            }
+        }
+
           //Print original message in Translated UI
-          con.liveChatUI.innerHTML +=
-            "<strong> ME: </strong>: " + message + "<br>";
-          con.liveChatUI.innerHTML +=
-            "<strong> ME: </strong>: " + translatedMessage + "<br>";
+          //con.liveChatUI.innerHTML +=
+          //  "<strong> ME: </strong>: " + message + "<br>";
+          //con.liveChatUI.innerHTML +=
+          //  "<strong> ME: </strong>: " + translatedMessage + "<br>";
 
           //Scroll chat and translated UI to bottom to keep focus on latest messages
           //con.liveChatUIContainer.scrollTop =
@@ -2649,6 +2749,24 @@ function AudioPlayer() {
         speakMessage(message, false).then(speakNextMessage).catch(console.log);
       }
     },
+    SpeakCustom: async function (message) {
+      //console.log("Speaking: " + text + " -- with voice: " + voice);
+      //If currently speaking a message, add new message to the messageQueue
+      //let message = {};
+      //message.text = text;
+      //message.username = username;
+      //message.voice = voice;
+      //message.ssmlTextType = ssmlTextType;
+      //message.messageID = mID;
+
+      if (isSpeaking) {
+        lastQueuedMessage = message;
+        this.messageQueue.unshift(message);
+        updateQueueCount(this.messageQueue.length);
+      } else {
+        speakMessage(message, false).then(speakNextMessage).catch(console.log);
+      }
+    },    
     Pause: async function () {
       audioPlayerNew.pause();
       isPaused = true;
@@ -2665,6 +2783,11 @@ function AudioPlayer() {
       isSpeaking = false;
       speakNextMessage();
     },
+    SkipByID: async function (id) {
+      this.messageQueue = this.messageQueue.filter(function (element) {
+        return element.messageID != id;
+      });
+    },    
     Dump: async function () {
       this.messageQueue = [];
       const event = new Event("skip");
@@ -3015,7 +3138,7 @@ function AudioPlayer() {
         //messageElement.innerHTML = `${voice} (${engine})`;
       } else if (message.username == "custom") {
         voice = message.voice.toLowerCase();
-        engine = voices[voice].voiceOptions[0];
+        engine = message.engine;
       } else {
         voice = voices[voice].name;
       }
@@ -3284,6 +3407,7 @@ function AudioPlayer() {
       var wsObject = {
         action: "sendmessage",
         channel: con.channel,
+        language: document.getElementById("dstLangSelect").value,
         message: text,
         started: speechStarted,
         finished: speechEnded,
@@ -3518,6 +3642,45 @@ async function finishSetup() {
       localStorage.getItem("systemVoiceOption");
   }
 
+// --------------------------------------------------------
+// Chat voice selector
+// --------------------------------------------------------
+
+  var chatVoiceSource = document.getElementById(
+    "chat-voice-template"
+  ).innerHTML,
+  chatVoiceTemplate = Handlebars.compile(chatVoiceSource),
+  chatVoicePlaceholder = document.getElementById("chatVoicePlaceholder");
+
+chatVoicePlaceholder.innerHTML = chatVoiceTemplate(data);
+
+var chatVoiceOptionSource = document.getElementById(
+    "chat-voice-option-template"
+  ).innerHTML,
+  chatVoiceOptionTemplate = Handlebars.compile(chatVoiceOptionSource),
+  chatVoiceOptionPlaceholder = document.getElementById(
+    "chatVoiceOptionPlaceholder"
+  );
+
+var optionData = {};
+
+optionData.voiceOptions = voices[data.voice.toLowerCase()].voiceOptions;
+optionData.voiceOption = voices[data.voice.toLowerCase()].voiceOptions[0];
+
+chatVoiceOptionPlaceholder.innerHTML =
+  chatVoiceOptionTemplate(optionData);
+
+if (localStorage.getItem("chatVoice")) {
+  document.getElementById("chatVoice").value =
+    localStorage.getItem("chatVoice");
+}
+if (localStorage.getItem("chatVoiceOption")) {
+  document.getElementById("chatVoiceOption").value =
+    localStorage.getItem("chatVoiceOption");
+}
+
+// ---------------------------------------------------------------------
+
   var srcLangSource = document.getElementById("lang-template").innerHTML,
     srcLangTemplate = Handlebars.compile(srcLangSource),
     srcLangPlaceholder = document.getElementById("srcLangPlaceholder");
@@ -3537,7 +3700,7 @@ async function finishSetup() {
   data.elementId = "dstLangSelect";
   dstLangPlaceholder.innerHTML = dstLangTemplate(data);
 
-  var chatLangSource = document.getElementById("lang-template").innerHTML,
+  var chatLangSource = document.getElementById("chat-lang-template").innerHTML,
     chatLangTemplate = Handlebars.compile(chatLangSource),
     chatLangPlaceholder = document.getElementById("chatLangPlaceholder");
 
@@ -3570,6 +3733,10 @@ async function finishSetup() {
     document.getElementById("chatLangSelect").value =
       localStorage.getItem("chatLangSelect");
   }
+  else {
+    document.getElementById("chatLangSelect").value = document.getElementById("dstLangSelect").value;
+  }
+
   if (localStorage.getItem("systemLangSelect")) {
     document.getElementById("systemLangSelect").value =
       localStorage.getItem("systemLangSelect");

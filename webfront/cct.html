@@ -99,8 +99,8 @@
         var arg_recog = null;
         var arg_trans = null;
 
-        var trans_sourcelang = 'en';
-        var trans_destlang = 'ja';
+        var trans_sourcelang = 'es';
+        var trans_destlang = 'en';
 
         var gas_key = "AKfycbwi_joFMoaC8-kiSnvNiIfUqABbVar5Mg0g2nxu2BxuPkQiHJ5WwzYAFg"
 
@@ -254,6 +254,11 @@
                 //console.log("event:", event);
                 var wsObject = JSON.parse(event.data);
                 recog_text = wsObject.message;
+                let language = wsObject.language;
+                if(language) {
+                    trans_sourcelang = language;
+                }
+
                 if (wsObject.isFinal) {
                     var request = new XMLHttpRequest();
                     document.getElementById('speech_text-imb').innerHTML = recog_text;

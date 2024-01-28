@@ -967,32 +967,50 @@
         <!-- Live Chat -->
 
         <!-- Send Message -->
-        <div class="section-send-message row mt-auto py-2">
-          <div class="col-3 col-md-2">
-            <div id="chatLangPlaceholder" class="form-group"></div>
+        <div class="section-send-message mt-auto py-2">
+          <!-- First row for inputs and placeholders -->
+          <div class="row">
+              <!-- Text to translate input -->
+              <div class="col-md-5">
+                  <dt>Text to translate:</dt>
+                  <input type="text" id="message" class="form-control" onkeydown="message_key(this)" />
+              </div>
+        
+              <!-- Language placeholder -->
+              <div class="col-md-2">
+                  <div id="chatLangPlaceholder"></div>
+              </div>
+        
+              <!-- Voice placeholder -->
+              <div class="col-md-3">
+                  <div id="chatVoicePlaceholder"></div>
+              </div>
+        
+              <!-- Voice option placeholder -->
+              <div class="col-md-2">    
+                  <div id="chatVoiceOptionPlaceholder"></div>
+              </div>
           </div>
-
-          <div class="col-6 col-md-8">
-            <input
-              type="text"
-              id="message"
-              class="form-control"
-              onkeydown="message_key(this)"
-            />
+        
+          <!-- Second row for the Send button -->
+          <div class="row">
+            <div class="col-md-auto">
+              <button style="width: 100px" type="button" class="btn btn-dark" id="btn-send" onclick="sendMessage()">
+                  Send
+              </button>
           </div>
-
-          <div class="col-3 col-md-2">
-            <button
-              style="width: 100px"
-              type="button"
-              class="form-control btn btn-dark"
-              id="btn-send"
-              onclick="sendMessage()"
-            >
-              Send
-            </button>
+          <div class="col-md-auto">
+              <div class="form-check mt-2">
+                  <input class="form-check-input" type="checkbox" id="cbSpeakTranslation" onchange="saveOption(this)">
+                  <label class="form-check-label" for="cbSpeakTranslation">
+                      Speak translation
+                  </label>
+              </div>
+          </div>
           </div>
         </div>
+         
+      
       </div>
     </div>
 
@@ -1013,7 +1031,7 @@
     <script id="system-voice-template" type="text/x-handlebars-template">
       <dt>System Voice Selection: </dt>
       <dd class="clearfix">
-        <select id="systemVoice" onchange="voiceSelected(this.value)">
+        <select id="systemVoice" onchange="systemVoiceSelected(this.value)">
           {{#select voice}}
             {{#each voices.Voices}}
               <option value="{{Id}}">{{Id}}
@@ -1035,7 +1053,41 @@
     </script>
 
     <script id="system-voice-option-template" type="text/x-handlebars-template">
-      <select id="systemVoiceOption" onchange="voiceOptionSelected(this.value)">
+      <select id="systemVoiceOption" onchange="systemVoiceOptionSelected(this.value)">
+        {{#select voiceOption}}
+          {{#each voiceOptions}}
+            <option value="{{this}}">{{this}}</option>
+          {{/each}}
+        {{/select}}
+      </select>
+    </script>
+
+    <script id="chat-voice-template" type="text/x-handlebars-template">
+      <dt>Speak with voice: </dt>
+      <dd class="clearfix">
+        <select id="chatVoice" class="form-control" onchange="chatVoiceSelected(this.value)">
+          {{#select voice}}
+            {{#each voices.Voices}}
+              <option value="{{Id}}">{{Id}}
+                ({{LanguageCode}}
+                --
+                {{LanguageName}})</option>
+            {{/each}}
+          {{/select}}
+        </select>
+        <input
+          type="hidden"
+          size="10"
+          name="chat-voice-option"
+          id="chat-voice-option"
+          value="{{voice_option}}"
+        />
+      </dd>
+    </script>
+
+    <script id="chat-voice-option-template" type="text/x-handlebars-template">
+      <dt>Engine:</dt>
+      <select id="chatVoiceOption" class="form-control" onchange="chatVoiceOptionSelected(this.value)">
         {{#select voiceOption}}
           {{#each voiceOptions}}
             <option value="{{this}}">{{this}}</option>
@@ -1060,6 +1112,23 @@
         </select>
       </dd>
     </script>
+
+    <script id="chat-lang-template" type="text/x-handlebars-template">
+      <dt>Translate to:</dt>
+      <dd class="clearfix">
+        <select
+          id="{{elementId}}"
+          class="form-control"
+          onchange="saveLocalStorageLang('{{elementId}}')"
+        >
+          <option value="choose">Choose Language</option>
+          {{#each langs}}
+            <option value="{{this.languageCode}}">{{this.languageName}}
+              ({{this.languageCode}})</option>
+          {{/each}}
+        </select>
+      </dd>
+    </script>    
 
     <script src="js/script.js"></script>
   </body>
