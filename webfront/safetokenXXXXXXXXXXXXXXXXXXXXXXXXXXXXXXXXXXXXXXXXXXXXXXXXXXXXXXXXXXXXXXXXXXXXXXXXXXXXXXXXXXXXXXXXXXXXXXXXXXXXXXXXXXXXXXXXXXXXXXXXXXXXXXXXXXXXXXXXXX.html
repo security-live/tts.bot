@@ -22,7 +22,10 @@
             "https://localhost/tts.bot/webfront/index.html?autoconnect=false";
         } else if (location.hostname.includes("dev.tts.bot")) {
           redirectURL = "https://dev.tts.bot/index.html?autoconnect=false";
-        } else if (location.hostname.includes("tts.bot")) {
+        } else if (location.hostname.includes("local.tts.bot")) {
+          redirectURL = "https://local.tts.bot/index.html?autoconnect=false";
+        }
+        else if (location.hostname.includes("tts.bot")) {
           redirectURL = "https://tts.bot/index.html?autoconnect=false";
         }
 

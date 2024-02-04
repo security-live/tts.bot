@@ -2243,6 +2243,11 @@ function ttsBan(channel, message, ban) {
   if (parts.length > 1) {
     var user = parts[1].toLowerCase();
     user = user.replace("@", "");
+    if(!chatters.hasOwnProperty(user)) {
+      console.log("Chatter not loaded");
+      loadVoice({"username":user});
+    }
+
     if (ban) {
       window.audioPlayer.DumpByUser(user);
     }
