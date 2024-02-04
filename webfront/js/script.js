@@ -107,10 +107,10 @@ function showAuthButton() {
   var twitchURL =
     '<a href="https://id.twitch.tv/oauth2/authorize?client_id=dan71ek0pct1u7b8ht5u4h55zlcxvq&redirect_uri=' +
     redirectURL +
-    '&response_type=token&scope=chat:read+chat:edit" class="btn btn-primary" > Authorize On Twitch with minimal permissions</a >' +
+    '&response_type=token&scope=moderator:manage:shoutouts+whispers:read+whispers:edit+user:manage:whispers+chat:read+chat:edit" class="btn btn-primary" > Authorize On Twitch with minimal permissions</a >' +
     '<a href="https://id.twitch.tv/oauth2/authorize?client_id=dan71ek0pct1u7b8ht5u4h55zlcxvq&redirect_uri=' +
     redirectURL +
-    '&response_type=token&scope=chat:read+chat:edit+moderator:manage:banned_users+moderator:manage:chat_messages+channel:manage:moderators" class="btn btn-primary" > Authorize On Twitch with ban and chat delete permissions</a >';
+    '&response_type=token&scope=moderator:manage:shoutouts+whispers:read+whispers:edit+user:manage:whispers+chat:read+chat:edit+moderator:manage:banned_users+moderator:manage:chat_messages+channel:manage:moderators" class="btn btn-primary" > Authorize On Twitch with ban and chat delete permissions</a >';
 
   $("#login").html(twitchURL);
   $("#login").show();
@@ -636,7 +636,61 @@ function onConnected(address, port) {
 
   //onSub();
 }
-/**************************Client Connecting****************************/
+
+// Called every time the bot receives a whisper
+function onWhisper(from, userstate, message, self) {
+    if (self) return; // Ignore messages from the bot
+
+    loadVoice(userstate);
+
+    // Log whisper to console
+    console.log(`Received a whisper from ${from}: ${message}`);
+    from = from.replace("#", "").trim();
+
+    if(document.getElementById("cbReadWhispers").checked) {
+
+
+      if(document.getElementById("cbReadWhispersModsOnly").checked) {
+          console.log("only read if mod");
+          getModerators(twitch_id);
+      }
+      else {
+
+          addMessageBubble(from, message,"",true,"Whisper",++messageID,"Twitch Whisper");
+          let prefix = "<speak>" + getSpokenName(from) + " whispers </speak>";
+          let whisper = message;
+          let mode = "text";
+          let username = userstate.username;
+
+          let orig_voice = chatters[username].voice;
+          let orig_voice_option = chatters[username].voice_option;
+
+          if(document.getElementById("cbActuallyWhisperWhispers").checked) {
+            
+            if(voices[chatters[username].voice.toLowerCase()].voiceOptions[0] == "standard") {
+              chatters[username].voice_option = "standard";
+            } else {
+              chatters[username].voice = "justin";
+              chatters[username].voice_option = "standard";
+            }
+            
+            whisper = `<speak>
+                      <amazon:effect name="whispered">${message}</amazon:effect>
+                </speak>`;
+                mode = "ssml";
+          }
+
+          window.audioPlayer.Speak(prefix, whisper, "", from, mode, messageID);
+
+      }
+
+    }
+
+}
+
+
+
+
 function onBan(channel, username, reason) {
   console.log("arguments:", arguments, "reason:", reason);
   //ttsBanByUser(channel.substring(1), username);
@@ -864,6 +918,11 @@ function onRaid() {
     addSystemBubble(message, ++messageID);
 
     window.audioPlayer.Speak("", message, "", "system", "text", messageID);
+    
+    if(document.getElementById("cbAutoShoutoutRaids").checked) {
+      shoutoutUser(twitch_id,arguments[3].login);
+    }
+
   } catch (e) {
     console.log("onSub() error:", e);
   }
@@ -945,6 +1004,8 @@ async function connect() {
   window.client.on("submysterygift", onGiftSub);
   window.client.on("anonsubmysterygift", onGiftSub);
   window.client.on("anongiftpaidupgrade", onGiftSub);
+
+  window.client.on('whisper', onWhisper);
 
   //Disable UI Elements
   document.getElementById("srcLangSelect").disabled = true;
@@ -1820,8 +1881,12 @@ async function doChat(channel, userstate, message, self) {
 
             var prefix = "";
             var platform_message = "";
-            if(userstate.platform != "Twitch") {
-              platform_message = ` on ${userstate.platform}`
+            //var platform_message = " on Twitch";
+            if(userstate.platform === "Twitch Whisper") {
+              platform_message = "Twitch Whisper";
+            }
+            else if(userstate.platform != "Twitch") {
+              platform_message = ` on ${platform}`;
             }
 
             if (
@@ -2213,6 +2278,36 @@ function ttsUnbanByUser(channel, user) {
                                                       */
 }
 
+
+
+
+async function getModerators(channel_id) {
+  (async () => {
+    try {
+      const response = await fetch(
+        `https://api.twitch.tv/helix/moderation/moderators?broadcaster_id=${channel_id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Client-ID": "dan71ek0pct1u7b8ht5u4h55zlcxvq",
+            Authorization: `Bearer ${access_token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        console.log("Moderators:",response);
+      } else {
+        console.error("Could not get moderators.", response);
+      }
+    } catch (error) {
+      console.error("Error fetching moderators.", error);
+    }
+  })();
+}
+
+
 async function deleteTwitchChatMessage(channel_id, message_id) {
   (async () => {
     try {
@@ -2238,6 +2333,53 @@ async function deleteTwitchChatMessage(channel_id, message_id) {
     }
   })();
 }
+
+async function shoutoutUser(channel_id, login) {
+  console.log("channel_id:", twitch_id, "login:", login);
+  let login_id_to_shoutout = null;
+
+  await $.ajax({
+    url: "https://api.twitch.tv/helix/users?login=" + login,
+    type: "GET",
+    headers: {
+      "client-id": "dan71ek0pct1u7b8ht5u4h55zlcxvq",
+      Authorization: "Bearer " + access_token,
+    },
+    success: function (response) {
+      console.log(response);
+      login_id_to_shoutout = response.data[0].id;
+      console.log("shoutoutUser() got login_id:", login_id_to_shoutout);
+    },
+    error: function (response) {
+      console.log("unable to lookup", login, "for shoutout");
+    },
+  });
+
+  if (login_id_to_shoutout) {
+    console.log(
+      "url:",
+      `https://api.twitch.tv/helix/chat/shoutouts?from_broadcaster_id=${channel_id}&to_broadcaster_id=${login_id_to_shoutout}&moderator_id=${channel_id}`
+       
+    );
+    await $.ajax({
+      url: `https://api.twitch.tv/helix/chat/shoutouts?from_broadcaster_id=${channel_id}&to_broadcaster_id=${login_id_to_shoutout}&moderator_id=${channel_id}`,
+      type: "POST",
+      dataType: "json",
+      contentType: "application/json",
+      headers: {
+        "Client-ID": "dan71ek0pct1u7b8ht5u4h55zlcxvq",
+        Authorization: `Bearer ${access_token}`,
+      },
+      success: function (response) {
+        console.log("User shoutout successful:", response);
+      },
+      error: function (error) {
+        console.error("Error shouting out user:", error);
+      },
+    });
+  }
+}
+
 
 async function banUser(channel_id, login, reason) {
   if (!reason) {
@@ -2468,6 +2610,7 @@ async function loadVoice(lvuserstate) {
         chatters[username].voice = "brian";
         chatters[username].voice_option = "standard";
         chatters[username].display_name = lvuserstate["display-name"];
+        chatters[username].soken_name = lvuserstate["display-name"];
         chatters[username].color = lvuserstate.color;
       },
     });
@@ -2510,6 +2653,7 @@ async function loadVoice(lvuserstate) {
           chatters[username].voice_option = "standard";
           chatters[username].ttsBanned = false;
           chatters[username].display_name = lvuserstate["display-name"];
+          chatters[username].spoken_name = lvuserstate["display-name"];
           chatters[username].color = lvuserstate.color;
         },
       });
@@ -3245,7 +3389,8 @@ function AudioPlayer() {
       recognition.onresult = async function (event) {
         if (
           !document.getElementById("cbSTTS").checked &&
-          !document.getElementById("cbSendTextToWebsocket").checked
+          !document.getElementById("cbSendTextToWebsocket").checked &&
+          !document.getElementById("cbPauseTTSOnSpeech").checked
         ) {
           return;
         }
