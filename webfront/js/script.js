@@ -2750,15 +2750,16 @@ async function loadVoice(lvuserstate) {
 
     if (!hasLocalChannelConfig) {
       //console.log("Does not have local config.");
-
+      chatters[username] = {};
       try {
         await $.ajax({
           url: "https://api.tts.bot/tts/all/" + username,
           success: function (response) {
             //console.log("Data from all for:", response);
+            
+
             if (response.hasOwnProperty("Item")) {
               //console.log('loadVoice(global): ' + response.Item.voice.toLowerCase() + ' from DynamoDB');
-              chatters[username] = {};
               chatters[username].voice = response.Item.voice.toLowerCase();
               chatters[username].voice_option = response.Item.voice_option;
               chatters[username].spoken_name = response.Item.spoken_name;
