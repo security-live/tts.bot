@@ -6,6 +6,7 @@ var waitingAMoment = false;
 var waitingIntervalID = 0;
 var streamerLastSpoke = 0;
 var chatters = {};
+var moderators = {};
 var localChattersData = {};
 var lastMessages = [];
 
@@ -107,10 +108,10 @@ function showAuthButton() {
   var twitchURL =
     '<a href="https://id.twitch.tv/oauth2/authorize?client_id=dan71ek0pct1u7b8ht5u4h55zlcxvq&redirect_uri=' +
     redirectURL +
-    '&response_type=token&scope=chat:read+chat:edit" class="btn btn-primary" > Authorize On Twitch with minimal permissions</a >' +
+    '&response_type=token&scope=moderation:read+moderator:manage:shoutouts+whispers:read+whispers:edit+user:manage:whispers+chat:read+chat:edit" class="btn btn-primary" > Authorize On Twitch with minimal permissions</a >' +
     '<a href="https://id.twitch.tv/oauth2/authorize?client_id=dan71ek0pct1u7b8ht5u4h55zlcxvq&redirect_uri=' +
     redirectURL +
-    '&response_type=token&scope=chat:read+chat:edit+moderator:manage:banned_users+moderator:manage:chat_messages+channel:manage:moderators" class="btn btn-primary" > Authorize On Twitch with ban and chat delete permissions</a >';
+    '&response_type=token&scope=moderation:read+moderator:manage:shoutouts+whispers:read+whispers:edit+user:manage:whispers+chat:read+chat:edit+moderator:manage:banned_users+moderator:manage:chat_messages+channel:manage:moderators" class="btn btn-primary" > Authorize On Twitch with ban and chat delete permissions</a >';
 
   $("#login").html(twitchURL);
   $("#login").show();
@@ -482,19 +483,50 @@ async function getColorStyles() {
 
 async function updatePreview() {
   //console.log("updatePreview()");
+  let srcLang;
 
-  let srcLang = document.getElementById("dstLangSelect").value;
+  if(document.getElementById("dstLangSelect")) {
+    srcLang = document.getElementById("dstLangSelect").value;
+  }
+  else {
+    return;
+  }
 
-  let popupUrl = "https://securitylive.com/tts/translator.html?src="+srcLang+"&popup=aws&channel="+con.channel+"&";
+  let popupUrl =
+    "https://securitylive.com/tts/translator.html?src=" +
+    srcLang +
+    "&popup=aws&channel=" +
+    con.channel +
+    "&";
 
   if (location.hostname.includes("local.tts.bot")) {
-    popupUrl = "https://local.tts.bot/translator.html?src="+srcLang+"&popup=aws&channel="+con.channel+"&";
+    popupUrl =
+      "https://local.tts.bot/translator.html?src=" +
+      srcLang +
+      "&popup=aws&channel=" +
+      con.channel +
+      "&";
   } else if (location.hostname.includes("dev.tts.bot")) {
-    popupUrl = "https://dev.tts.bot/translator.html?src="+srcLang+"&popup=aws&channel="+con.channel+"&";
+    popupUrl =
+      "https://dev.tts.bot/translator.html?src=" +
+      srcLang +
+      "&popup=aws&channel=" +
+      con.channel +
+      "&";
   } else if (location.hostname.includes("uat.tts.bot")) {
-    popupUrl = "https://uat.tts.bot/translator.html?src="+srcLang+"&popup=aws&channel="+con.channel+"&";
+    popupUrl =
+      "https://uat.tts.bot/translator.html?src=" +
+      srcLang +
+      "&popup=aws&channel=" +
+      con.channel +
+      "&";
   } else if (location.hostname.includes("tts.bot")) {
-    popupUrl = "https://tts.bot/translator.html?src="+srcLang+"&popup=aws&channel="+con.channel+"&";
+    popupUrl =
+      "https://tts.bot/translator.html?src=" +
+      srcLang +
+      "&popup=aws&channel=" +
+      con.channel +
+      "&";
   }
 
   const setVar = (varName, varValue) => {
@@ -602,7 +634,14 @@ function onConnected(address, port) {
   let message =
     "<speak>Connected to channel " + getSpokenName(con.channel) + ".</speak>";
   addSystemBubble(message, ++messageID);
-  window.audioPlayer.Speak("", message, "", "system", "ssml", messageID);
+  window.audioPlayer.Speak(
+    "",
+    message,
+    "",
+    { username: "system" },
+    "ssml",
+    messageID
+  );
 
   //window.audioPlayer.Speak("Connected to channel " + con.channel, "justin");
 
@@ -634,9 +673,68 @@ function onConnected(address, port) {
     document.getElementById("cbAutoTranslateChat").checked = true;
   }
 
-  //onSub();
+  getModerators();
 }
-/**************************Client Connecting****************************/
+
+// Called every time the bot receives a whisper
+async function onWhisper(from, userstate, message, self) {
+  if (self) return; // Ignore messages from the bot
+
+  await loadVoice(userstate);
+  userstate.tts_voice = chatters[userstate.username].voice;
+  userstate.tts_voice_option = chatters[userstate.username].voice_option;
+  userstate.tts_spoken_name = chatters[userstate.username].spoken_name;
+
+  // Log whisper to console
+  console.log(`Received a whisper from ${from}: ${message}`);
+  from = from.replace("#", "").trim();
+
+  let isMod = await isModerator(await getTwitchUserID(from),twitch_id);
+  let modsOnly = document.getElementById("cbReadWhispersModsOnly").checked;
+  let readWhispers = document.getElementById("cbReadWhispers").checked;
+  let modText = "";
+
+  if(isMod) {
+    modText = "Moderator ";
+  }
+
+  if (readWhispers) {
+    if ((modsOnly && isMod) || !modsOnly) {
+      addMessageBubble( 
+        from,
+        message,
+        "",
+        true,
+        "Whisper",
+        ++messageID,
+        "Twitch Whisper"
+      );
+      let prefix = "<speak>"+ modText + " " + getSpokenName(from) + " whispers </speak>";
+      let whisper = message;
+      let mode = "text";
+      let username = userstate.username;
+
+      if (document.getElementById("cbActuallyWhisperWhispers").checked) {
+        if (
+          userstate.tts_voice_option === "neural" &&
+          voices[userstate.tts_voice.toLowerCase()].voiceOptions.length == 1
+        ) {
+          userstate.tts_voice = "matthew";
+        }
+
+        userstate.tts_voice_option = "standard";
+
+        whisper = `<speak>
+                      <amazon:effect name="whispered">${message}</amazon:effect>
+                </speak>`;
+        mode = "ssml";
+      }
+
+      window.audioPlayer.Speak(prefix, whisper, "", userstate, mode, messageID);
+    }
+  }
+}
+
 function onBan(channel, username, reason) {
   console.log("arguments:", arguments, "reason:", reason);
   //ttsBanByUser(channel.substring(1), username);
@@ -649,7 +747,7 @@ function onBan(channel, username, reason) {
   );
 }
 
-function onCheer() {
+async function onCheer() {
   /*
         let arguments = {
           0: "#security_live",
@@ -686,26 +784,48 @@ function onCheer() {
   console.log("onCheer:");
   console.log(arguments);
   let username = arguments[1].username;
+
+  await loadVoice({ username: username });
+  let userstate = {};
+  userstate.username = username;
+  userstate.tts_voice = chatters[userstate.username].voice;
+  userstate.tts_voice_option = chatters[userstate.username].voice_option;
+  userstate.tts_spoken_name = chatters[userstate.username].spoken_name;
+
   let message = `${arguments[1]["display-name"]} just cheered ${arguments[1].bits} bits, thank you so much!`;
 
   addSystemBubble(message, ++messageID);
-  window.audioPlayer.Speak("", message, "", "system", "text", messageID);
+  window.audioPlayer.Speak(
+    "",
+    message,
+    "",
+    { username: "system" },
+    "text",
+    messageID
+  );
 
   addMessageBubble(username, arguments[2], "", true, "", ++messageID);
 
   let prefix = "<speak>" + getSpokenName(username) + " says </speak>";
 
-  audioPlayer.Speak(prefix, arguments[2], "", username, "text", messageID);
+  audioPlayer.Speak(prefix, arguments[2], "", userstate, "text", messageID);
 }
 
-function onSub() {
-  //targuments = arguments;
+async function onSub() {
+  targuments = arguments;
 
   //console.log();
   console.log("onSub:", targuments);
 
   try {
     let username = targuments[4]["display-name"];
+    await loadVoice({ username: username });
+    let userstate = {};
+    userstate.username = username;
+    userstate.tts_voice = chatters[userstate.username].voice;
+    userstate.tts_voice_option = chatters[userstate.username].voice_option;
+    userstate.tts_spoken_name = chatters[userstate.username].spoken_name;
+
 
     //let message = `${username} just subsribed for ${}, thank you so much!`;
     let message = targuments[4]["system-msg"];
@@ -719,14 +839,15 @@ function onSub() {
       let prefix =
         "<speak>Sub message from " + getSpokenName(username) + " says </speak>";
 
-      audioPlayer.Speak(prefix, targuments[3], "", username, "text", messageID);
+      audioPlayer.Speak(prefix, targuments[3], "", userstate, "text", messageID);
     }
   } catch (e) {
     console.log("onSub() error:", e);
   }
 }
 
-function onGiftSub() {
+async function onGiftSub() {
+  /*
   let targuments = {
     0: "#security_live",
     1: "posfolife2",
@@ -781,29 +902,24 @@ function onGiftSub() {
       "message-type": "subgift",
     },
   };
-
-  //targuments = arguments;
+*/
 
   //console.log();
-  console.log("onGiftSub:", targuments);
+  console.log("onGiftSub:", arguments);
 
   try {
-    let username = targuments[4]["display-name"];
-
     //let message = `${username} just subsribed for ${}, thank you so much!`;
-    let message = targuments[4]["system-msg"];
+    let message = arguments[5]["system-msg"];
     addSystemBubble(message, ++messageID);
 
-    window.audioPlayer.Speak("", message, "", "system", "text", messageID);
-
-    if (!targuments[4]["msg-id"].includes("gift")) {
-      addMessageBubble(username, targuments[3], "", true, "", ++messageID);
-
-      let prefix =
-        "<speak>Sub message from " + getSpokenName(username) + " says </speak>";
-
-      audioPlayer.Speak(prefix, targuments[3], "", username, "text", messageID);
-    }
+    window.audioPlayer.Speak(
+      "",
+      message,
+      "",
+      { username: "system" },
+      "text",
+      messageID
+    );
   } catch (e) {
     console.log("onSub() error:", e);
   }
@@ -864,6 +980,10 @@ function onRaid() {
     addSystemBubble(message, ++messageID);
 
     window.audioPlayer.Speak("", message, "", "system", "text", messageID);
+
+    if (document.getElementById("cbAutoShoutoutRaids").checked) {
+      shoutoutUser(twitch_id, arguments[3].login);
+    }
   } catch (e) {
     console.log("onSub() error:", e);
   }
@@ -871,18 +991,17 @@ function onRaid() {
 
 async function readCopyBuffer() {
   try {
-      const text = await navigator.clipboard.readText();
-      console.log('Pasted content:', text);
-      addSystemBubble(text, ++messageID);
-      window.audioPlayer.Speak("", text, "", "system", "text", messageID);
+    const text = await navigator.clipboard.readText();
+    console.log("Pasted content:", text);
+    addSystemBubble(text, ++messageID);
+    window.audioPlayer.Speak("", text, "", "system", "text", messageID);
   } catch (err) {
-      console.error('Failed to read clipboard contents: ', err);
+    console.error("Failed to read clipboard contents: ", err);
   }
 }
 
 // Call the function, e.g., in response to a button click
 // readClipboard();
-
 
 /**************************Init and Connect to Chat****************************/
 async function connect() {
@@ -945,6 +1064,8 @@ async function connect() {
   window.client.on("submysterygift", onGiftSub);
   window.client.on("anonsubmysterygift", onGiftSub);
   window.client.on("anongiftpaidupgrade", onGiftSub);
+
+  window.client.on("whisper", onWhisper);
 
   //Disable UI Elements
   document.getElementById("srcLangSelect").disabled = true;
@@ -1232,10 +1353,7 @@ function chatVoiceSelected(voice) {
   var voiceOption = document.getElementById("chat-voice-option");
   voiceOption.value = voices[voice.toLowerCase()].voiceOptions[0];
 
-  localStorage.setItem(
-    "chatVoice",
-    document.getElementById("chatVoice").value
-  );
+  localStorage.setItem("chatVoice", document.getElementById("chatVoice").value);
   localStorage.setItem(
     "chatVoiceOption",
     document.getElementById("chatVoiceOption").value
@@ -1246,24 +1364,17 @@ function chatVoiceOptionSelected(voiceOption) {
   var voiceOptionElement = document.getElementById("chat-voice-option");
   voiceOptionElement.value = voiceOption;
 
-  localStorage.setItem(
-    "chatVoice",
-    document.getElementById("chatVoice").value
-  );
+  localStorage.setItem("chatVoice", document.getElementById("chatVoice").value);
   localStorage.setItem(
     "chatVoiceOption",
     document.getElementById("chatVoiceOption").value
   );
 }
 
-
-
 function saveLocalStorageLang(elementId) {
   console.log("elementId:", elementId);
   localStorage.setItem(elementId, document.getElementById(elementId).value);
 }
-
-/**************************Init and Connect to Chat****************************/
 
 function getHTMLEntityEncoding(char) {
   switch (char) {
@@ -1282,6 +1393,21 @@ function getHTMLEntityEncoding(char) {
   }
 }
 
+function decodeHTMLEntities(encodedStr) {
+  const entityToChar = {
+    "&lt;": "<",
+    "&gt;": ">",
+    "&apos;": "'",
+    "&quot;": '"',
+    "&amp;": "&",
+    "&semi;": ";",
+  };
+
+  return encodedStr.replace(/&lt;|&gt;|&apos;|&quot;|&amp;|&semi;/g, function(matched) {
+    return entityToChar[matched];
+  });
+}
+
 function escapeRegExp(text) {
   return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
 }
@@ -1296,25 +1422,30 @@ async function onNotice(msgid, channel, tags, msg) {
 }
 
 async function onChat(channel, userstate, message, self) {
+  if (self) return;
+  await loadVoice(userstate);
+  userstate.tts_voice = chatters[userstate.username].voice;
+  userstate.tts_voice_option = chatters[userstate.username].voice_option;
+  userstate.tts_spoken_name = chatters[userstate.username].spoken_name;
+  //userstate.tts_lang = chatters[userstate.username].lang;
+
   channel = channel.replace("#", "").trim();
   userstate.platform = "Twitch";
 
-  if(userstate.username === "restreambot") {
+  if (userstate.username === "restreambot") {
     let platform_regex = /\[(.*): (.*)\] (.*)/;
-    
 
     let matches = message.match(platform_regex);
-    
+
     if (matches) {
-        userstate.platform = matches[1]; 
-        userstate.username = matches[2]; 
-        userstate["display-name"] = matches[2];
-        message = matches[3];
-    }  
+      userstate.platform = matches[1];
+      userstate.username = matches[2];
+      userstate["display-name"] = matches[2];
+      message = matches[3];
+    }
   }
 
-
-  //platform 
+  //platform
 
   console.log("------------ onChat() ---------");
   console.log(userstate);
@@ -1390,7 +1521,7 @@ async function doChat(channel, userstate, message, self) {
   if (message.match(/^(oneword|one word|!oneword)/i)) {
     addSystemBubble(message, ++messageID);
     return;
-  } 
+  }
 
   let allowTTS = false;
   let allowTTSmessage = "";
@@ -1464,7 +1595,7 @@ async function doChat(channel, userstate, message, self) {
                                                     "ms"
                                                   );*/
   }
-
+  /*
   if (
     username == "streamelements" ||
     username == "pretzelrocks" ||
@@ -1473,9 +1604,13 @@ async function doChat(channel, userstate, message, self) {
     last_speaker = username;
     return;
   }
-
+*/
   ssmlTextType = "text";
-  if (message.match(/(^\s*<speak>.*<\/speak>\s*$|\s*<speak>.*<\/speak>\s*p\d{1,3}\s*$)/)) {
+  if (
+    message.match(
+      /(^\s*<speak>.*<\/speak>\s*$|\s*<speak>.*<\/speak>\s*p\d{1,3}\s*$)/
+    )
+  ) {
     ssmlTextType = "ssml";
   }
 
@@ -1490,7 +1625,6 @@ async function doChat(channel, userstate, message, self) {
     localStorage.setItem("chatters", JSON.stringify(chatters));
   }
 
-  await loadVoice(userstate);
   localStorage.setItem("chatters", JSON.stringify(chatters));
 
   if (
@@ -1569,6 +1703,7 @@ async function doChat(channel, userstate, message, self) {
         if (err) {
           console.log("Error calling Translate. " + err.message + err.stack);
         }
+
         if (data) {
           let spokenText = translatedMessage;
           spokenText = spokenText.replace(/&/g, function (i) {
@@ -1607,7 +1742,7 @@ async function doChat(channel, userstate, message, self) {
                 con.channel,
                 chatters[username].display_name +
                   ": " +
-                  translatedMessage +
+                  data.TranslatedText +
                   " (Translated from " +
                   supportedLanguages.en[data.SourceLanguageCode] +
                   ")"
@@ -1687,7 +1822,9 @@ async function doChat(channel, userstate, message, self) {
             translatedMessageHTML = `${translatedMessage} (${translatedFromMessage})`;
           }
 
-          if (identicalTranslation) translatedMessageHTML = "";
+          if (identicalTranslation) {
+            translatedMessageHTML = "";
+          }
 
           let bubbleText = message;
 
@@ -1765,9 +1902,8 @@ async function doChat(channel, userstate, message, self) {
           ) {
             allowTTS = false;
             allowTTSmessage += "Commented out - ";
-          }
-          else {
-            console.log("MESSAGE:",message);
+          } else {
+            console.log("MESSAGE:", message);
           }
 
           addMessageBubble(
@@ -1820,8 +1956,11 @@ async function doChat(channel, userstate, message, self) {
 
             var prefix = "";
             var platform_message = "";
-            if(userstate.platform != "Twitch") {
-              platform_message = ` on ${userstate.platform}`
+            //var platform_message = " on Twitch";
+            if (userstate.platform === "Twitch Whisper") {
+              platform_message = "Twitch Whisper";
+            } else if (userstate.platform != "Twitch") {
+              platform_message = ` on ${platform}`;
             }
 
             if (
@@ -1831,14 +1970,16 @@ async function doChat(channel, userstate, message, self) {
               last_speaker = "Unset-by-action";
               prefix = `<speak> ${getSpokenName(username)} </speak>`;
             } else if (last_speaker != username) {
-              prefix = `<speak> ${getSpokenName(username)}${platform_message} says </speak>`;
+              prefix = `<speak> ${getSpokenName(
+                username
+              )}${platform_message} says </speak>`;
             }
 
             audioPlayer.Speak(
               prefix,
               spokenText,
               translatedFromMessage,
-              username,
+              userstate,
               ssmlTextType,
               messageID
             );
@@ -1883,12 +2024,18 @@ function addMessageBubble(
 ) {
   let buttons =
     makeButton("TTS Ban", "warning", "volume-xmark", username, messageID) +
-    makeButton("Ban", "danger", "gavel", username, messageID) + 
-    makeButton("Don't Speak", "secondary", "comment-slash", username, messageID);
-    //makeButton("Upvote", "success", "arrow-up", username, messageID) +
-    //makeButton("Downvote", "secondary", "arrow-down", username, messageID) +
-    //makeButton("Speak Next", "success", "arrow-up", username, messageID) +
-    //makeButton("Don't Speak", "secondary", "arrow-down", username, messageID) ;
+    makeButton("Ban", "danger", "gavel", username, messageID) +
+    makeButton(
+      "Don't Speak",
+      "secondary",
+      "comment-slash",
+      username,
+      messageID
+    );
+  //makeButton("Upvote", "success", "arrow-up", username, messageID) +
+  //makeButton("Downvote", "secondary", "arrow-down", username, messageID) +
+  //makeButton("Speak Next", "success", "arrow-up", username, messageID) +
+  //makeButton("Don't Speak", "secondary", "arrow-down", username, messageID) ;
 
   //  let buttons = makeButton("Don't Speak", "secondary", "comment-slash", username, messageID) +
   //makeButton("Speak Next", "success", "comment-medical", username, messageID) +
@@ -1932,8 +2079,8 @@ function addMessageBubble(
                                               <span class="voice-name">${userVoice}</span>
                                             </div>
                                             <span class="message">
-                                              <span class="orig-message">
-                                                ${message}<br>
+                                              <span id="message-message-message-id${messageID}" class="orig-message">
+                                              ${message}<br>
                                               </span>
                                               <span class="translated-message">
                                                 ${translatedMessageHTML}
@@ -1945,6 +2092,8 @@ function addMessageBubble(
                                             <div class="btn-group p-1">${buttons}</div>
                                           </div>
                                         </div>`;
+
+  //document.getElementById(`message-message-message-id${messageID}`).innerText = message;                                      
 
   con.liveChatUIContainer.scrollTop = con.liveChatUIContainer.scrollHeight;
 }
@@ -2023,6 +2172,7 @@ function onButtonClick(button, argument, event) {
   } else if (button == "SpeakNext") {
     ttsBan(con.channel, "!ttsban " + argument, true);
   } else if (button == "DontSpeak") {
+    onGiftSub();
     window.audioPlayer.SkipByID(argument);
     console.log(argument);
     if (parseInt(argument) > 0) {
@@ -2030,9 +2180,7 @@ function onButtonClick(button, argument, event) {
         "message-user-id" + argument
       );
       messageElement.style.backgroundColor = "#8B0000";
-      messageElement = document.getElementById(
-        "message-message-id" + argument
-      );
+      messageElement = document.getElementById("message-message-id" + argument);
       messageElement.style.backgroundColor = "#8B0000";
     }
     //event.target.disabled = true;
@@ -2177,6 +2325,11 @@ function ttsBan(channel, message, ban) {
   if (parts.length > 1) {
     var user = parts[1].toLowerCase();
     user = user.replace("@", "");
+    if (!chatters.hasOwnProperty(user)) {
+      console.log("Chatter not loaded");
+      //loadVoice({"username":user});
+    }
+
     if (ban) {
       window.audioPlayer.DumpByUser(user);
     }
@@ -2212,6 +2365,84 @@ function ttsUnbanByUser(channel, user) {
                                                       */
 }
 
+async function getModerators(channel_id) {
+  (async () => {
+    try {
+      const response = await fetch(
+        `https://api.twitch.tv/helix/moderation/moderators?broadcaster_id=${channel_id}&first=100`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Client-Id": "dan71ek0pct1u7b8ht5u4h55zlcxvq",
+            Authorization: `Bearer ${access_token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        moderators = await response.json();
+      } else {
+        console.error("Could not get moderators.", response);
+      }
+    } catch (error) {
+      console.error("Error fetching moderators.", error);
+    }
+  })();
+}
+
+async function getTwitchUserID(login) {
+  //console.log("getTwitchUserID() ",login);
+    try {
+      const response = await fetch(
+        `https://api.twitch.tv/helix/users?login=${login}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Client-Id": "dan71ek0pct1u7b8ht5u4h55zlcxvq",
+            Authorization: `Bearer ${access_token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        let body = await response.json();
+        return body.data[0].id;
+      } else {
+        console.error("Could not get user id.", response);
+      }
+    } catch (error) {
+      console.error("Error fetching user.", error);
+    }
+}
+
+async function isModerator(user_id, channel_id) {
+    try {
+      const response = await fetch(
+        `https://api.twitch.tv/helix/moderation/moderators?broadcaster_id=${channel_id}&user_id=${user_id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Client-Id": "dan71ek0pct1u7b8ht5u4h55zlcxvq",
+            Authorization: `Bearer ${access_token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        let body = await response.json();
+        console.log("user mod info:",body.data);
+        return body.data.length > 0;
+      } else {
+        console.error("Could not get moderators.", response);
+      }
+    } catch (error) {
+      console.error("Error fetching moderators.", error);
+    }
+}
+
 async function deleteTwitchChatMessage(channel_id, message_id) {
   (async () => {
     try {
@@ -2236,6 +2467,51 @@ async function deleteTwitchChatMessage(channel_id, message_id) {
       console.error("Error deleting message 2:", error);
     }
   })();
+}
+
+async function shoutoutUser(channel_id, login) {
+  console.log("channel_id:", twitch_id, "login:", login);
+  let login_id_to_shoutout = null;
+
+  await $.ajax({
+    url: "https://api.twitch.tv/helix/users?login=" + login,
+    type: "GET",
+    headers: {
+      "client-id": "dan71ek0pct1u7b8ht5u4h55zlcxvq",
+      Authorization: "Bearer " + access_token,
+    },
+    success: function (response) {
+      console.log(response);
+      login_id_to_shoutout = response.data[0].id;
+      console.log("shoutoutUser() got login_id:", login_id_to_shoutout);
+    },
+    error: function (response) {
+      console.log("unable to lookup", login, "for shoutout");
+    },
+  });
+
+  if (login_id_to_shoutout) {
+    console.log(
+      "url:",
+      `https://api.twitch.tv/helix/chat/shoutouts?from_broadcaster_id=${channel_id}&to_broadcaster_id=${login_id_to_shoutout}&moderator_id=${channel_id}`
+    );
+    await $.ajax({
+      url: `https://api.twitch.tv/helix/chat/shoutouts?from_broadcaster_id=${channel_id}&to_broadcaster_id=${login_id_to_shoutout}&moderator_id=${channel_id}`,
+      type: "POST",
+      dataType: "json",
+      contentType: "application/json",
+      headers: {
+        "Client-ID": "dan71ek0pct1u7b8ht5u4h55zlcxvq",
+        Authorization: `Bearer ${access_token}`,
+      },
+      success: function (response) {
+        console.log("User shoutout successful:", response);
+      },
+      error: function (error) {
+        console.error("Error shouting out user:", error);
+      },
+    });
+  }
 }
 
 async function banUser(channel_id, login, reason) {
@@ -2467,51 +2743,58 @@ async function loadVoice(lvuserstate) {
         chatters[username].voice = "brian";
         chatters[username].voice_option = "standard";
         chatters[username].display_name = lvuserstate["display-name"];
+        chatters[username].soken_name = lvuserstate["display-name"];
         chatters[username].color = lvuserstate.color;
       },
     });
 
     if (!hasLocalChannelConfig) {
       //console.log("Does not have local config.");
-      await $.ajax({
-        url: "https://api.tts.bot/tts/all/" + username,
-        success: function (response) {
-          //console.log("Data from all for:", response);
-          if (response.hasOwnProperty("Item")) {
-            //console.log('loadVoice(global): ' + response.Item.voice.toLowerCase() + ' from DynamoDB');
-            chatters[username] = {};
-            chatters[username].voice = response.Item.voice.toLowerCase();
-            chatters[username].voice_option = response.Item.voice_option;
-            chatters[username].spoken_name = response.Item.spoken_name;
-            chatters[username].ttsBanned = response.Item.ttsBanned;
-            chatters[username].display_name = response.Item.display_name;
-            chatters[username].color = lvuserstate.color;
-          } else if (chatters[username].hasOwnProperty("voice")) {
-            //console.log('loadVoice() chatters[' + username + '].voice: ' + chatters[username].voice);
-            chatters[username].voice = "justin";
+
+      try {
+        await $.ajax({
+          url: "https://api.tts.bot/tts/all/" + username,
+          success: function (response) {
+            //console.log("Data from all for:", response);
+            if (response.hasOwnProperty("Item")) {
+              //console.log('loadVoice(global): ' + response.Item.voice.toLowerCase() + ' from DynamoDB');
+              chatters[username] = {};
+              chatters[username].voice = response.Item.voice.toLowerCase();
+              chatters[username].voice_option = response.Item.voice_option;
+              chatters[username].spoken_name = response.Item.spoken_name;
+              chatters[username].ttsBanned = response.Item.ttsBanned;
+              chatters[username].display_name = response.Item.display_name;
+              chatters[username].color = lvuserstate.color;
+            } else if (chatters[username].hasOwnProperty("voice")) {
+              //console.log('loadVoice() chatters[' + username + '].voice: ' + chatters[username].voice);
+              chatters[username].voice = "justin";
+              chatters[username].voice_option = "standard";
+              chatters[username].spoken_name = username;
+              chatters[username].ttsBanned = false;
+              chatters[username].display_name = lvuserstate["display-name"];
+            } else {
+              //console.log('loadVoice() catchall: using Justin for ' + username);
+              chatters[username].voice = "justin";
+              chatters[username].voice_option = "standard";
+              chatters[username].spoken_name = username;
+              chatters[username].ttsBanned = false;
+              chatters[username].display_name = lvuserstate["display-name"];
+              chatters[username].color = lvuserstate.color;
+            }
+          },
+          error: function (request, status, error) {
+            console.log("loadVoice(global) error: using Brian");
+            chatters[username].voice = "brian";
             chatters[username].voice_option = "standard";
-            chatters[username].spoken_name = username;
             chatters[username].ttsBanned = false;
             chatters[username].display_name = lvuserstate["display-name"];
-          } else {
-            //console.log('loadVoice() catchall: using Justin for ' + username);
-            chatters[username].voice = "justin";
-            chatters[username].voice_option = "standard";
-            chatters[username].spoken_name = username;
-            chatters[username].ttsBanned = false;
-            chatters[username].display_name = lvuserstate["display-name"];
+            chatters[username].spoken_name = lvuserstate["display-name"];
             chatters[username].color = lvuserstate.color;
-          }
-        },
-        error: function (request, status, error) {
-          console.log("loadVoice(global) error: using Brian");
-          chatters[username].voice = "brian";
-          chatters[username].voice_option = "standard";
-          chatters[username].ttsBanned = false;
-          chatters[username].display_name = lvuserstate["display-name"];
-          chatters[username].color = lvuserstate.color;
-        },
-      });
+          },
+        });
+      } catch (err) {
+        console.log(err);
+      }
     }
   }
 }
@@ -2542,7 +2825,7 @@ function sendMessage() {
     var params = {
       Text: con.sendMessage.value,
       SourceLanguageCode: "auto",
-      TargetLanguageCode: targetLanguage
+      TargetLanguageCode: targetLanguage,
     };
 
     window.translator.translateText(
@@ -2552,7 +2835,6 @@ function sendMessage() {
           console.log("Error calling Translate. " + err.message + err.stack);
         }
         if (data) {
-
           var translatedMessage = data.TranslatedText;
 
           console.log("M: " + message);
@@ -2566,8 +2848,16 @@ function sendMessage() {
 
           let username = document.getElementById("twitch_username").value;
 
-          addMessageBubble(username, message, translatedMessage, true, "Local send", ++messageID, "Local");
-          
+          addMessageBubble(
+            username,
+            message,
+            translatedMessage,
+            true,
+            "Local send",
+            ++messageID,
+            "Local"
+          );
+
           /*window.audioPlayer.Speak(
             "",
             //"<speak>" + getSpokenName(document.getElementById("twitch_username").value) + " says " + text + "</speak>",
@@ -2578,22 +2868,23 @@ function sendMessage() {
             messageID
           );*/
 
-          if(document.getElementById("cbSpeakTranslation").checked) {
+          if (document.getElementById("cbSpeakTranslation").checked) {
             try {
-                let chatVoice = document.getElementById("chatVoice").value;
-                let chatVoiceOption = document.getElementById("chatVoiceOption").value;
-                let message = {};
-                message.text = translatedMessage;
-                message.username = "custom";
-                message.voice = chatVoice;
-                message.engine = chatVoiceOption;
-                message.ssmlTextType = "text";
-                message.messageID = messageID;
-                await window.audioPlayer.SpeakCustom(message);
+              let chatVoice = document.getElementById("chatVoice").value;
+              let chatVoiceOption =
+                document.getElementById("chatVoiceOption").value;
+              let message = {};
+              message.text = translatedMessage;
+              message.username = "custom";
+              message.voice = chatVoice;
+              message.engine = chatVoiceOption;
+              message.ssmlTextType = "text";
+              message.messageID = messageID;
+              await window.audioPlayer.SpeakCustom(message);
             } catch (err) {
               console.log("speak prefix: catch(" + err + ")");
             }
-        }
+          }
 
           //Print original message in Translated UI
           //con.liveChatUI.innerHTML +=
@@ -2665,15 +2956,19 @@ function AudioPlayer() {
     isPaused: function () {
       return isPaused;
     },
-    Speak: async function (prefix, text, suffix, username, ssmlTextType, mID) {
+    Speak: async function (prefix, text, suffix, userstate, ssmlTextType, mID) {
       //console.log("Speaking: " + text + " -- with voice: " + voice);
       //If currently speaking a message, add new message to the messageQueue
       let message = {};
       message.prefix = prefix;
       message.suffix = suffix;
       message.text = text;
-      message.username = username;
+      message.username = userstate.username;
       message.ssmlTextType = ssmlTextType;
+      message.tts_voice = userstate.tts_voice;
+      message.tts_voice_option = userstate.tts_voice_option;
+      message.tts_spoken_name = userstate.tts_spoken_name;
+
       message.messageID = mID;
 
       if (isSpeaking || streamerIsSpeaking || isPaused) {
@@ -2766,7 +3061,7 @@ function AudioPlayer() {
       } else {
         speakMessage(message, false).then(speakNextMessage).catch(console.log);
       }
-    },    
+    },
     Pause: async function () {
       audioPlayerNew.pause();
       isPaused = true;
@@ -2787,12 +3082,13 @@ function AudioPlayer() {
       this.messageQueue = this.messageQueue.filter(function (element) {
         return element.messageID != id;
       });
-    },    
+    },
     Dump: async function () {
       this.messageQueue = [];
       const event = new Event("skip");
       audioPlayerNew.dispatchEvent(event);
       isSpeaking = false;
+      updateQueueCount(this.messageQueue.length);
     },
     PopLastMessage: async function (username) {
       for (var i = this.messageQueue.length - 1; i >= 0; i--) {
@@ -2819,6 +3115,7 @@ function AudioPlayer() {
       const event = new Event("skip");
       audioPlayerNew.dispatchEvent(event);
       isSpeaking = false;
+      updateQueueCount(this.messageQueue.length);
       speakNextMessage();
     },
     Ban: async function () {
@@ -2977,11 +3274,11 @@ function AudioPlayer() {
       let match = message.text.match(
         /(.+?)(?:\swith)?\s(?:([pu]\d{1,3})\s?)(?:([pu]\d{1,3})\s?)?(?:([pu]\d{1,3})\s?)?(?:([pu]\d{1,3})\s?)?$/i
       );
-      let match2 = message.text.match(/<\/speak>\s*(p\d{1,3})$/i);      
+      let match2 = message.text.match(/<\/speak>\s*(p\d{1,3})$/i);
 
       if (match2) {
         let presetValue = match2[1]; // Extracting the value (e.g., 'p0')
-        message.text = message.text.replace(/(<\/speak>\s*)(p\d{1,3})$/i, '$1'); // Removing the value from the string
+        message.text = message.text.replace(/(<\/speak>\s*)(p\d{1,3})$/i, "$1"); // Removing the value from the string
 
         usefx = true;
 
@@ -2992,43 +3289,41 @@ function AudioPlayer() {
           presetCount: 1,
           time: Date.now(),
         };
-       
+
         websocketCustom.send(JSON.stringify(wsObject));
 
         console.log("Preset Value:", presetValue); // Outputs: Preset Value: p0
         console.log("Modified Message:", message.text); // Outputs the message without 'p0'
-    }
-    else if (match && match[1]) {
-      let presetCount = 1;
-      usefx = true;
-      message.text = match[1];
+      } else if (match && match[1]) {
+        let presetCount = 1;
+        usefx = true;
+        message.text = match[1];
 
-      let wsObject = {
-        topic: "ttsfx",
-        action: "fxSelect",
-        time: Date.now(),
-      };
+        let wsObject = {
+          topic: "ttsfx",
+          action: "fxSelect",
+          time: Date.now(),
+        };
 
-      if (match[2]) {
-        wsObject.preset1 = match[2].toLowerCase();
-      }
-      if (match[3]) {
-        wsObject.preset2 = match[3].toLowerCase();
-        presetCount++;
-      }
-      if (match[4]) {
-        wsObject.preset3 = match[4].toLowerCase();
-        presetCount++;
-      }
-      if (match[5]) {
-        wsObject.preset4 = match[5].toLowerCase();
-        presetCount++;
-      }
+        if (match[2]) {
+          wsObject.preset1 = match[2].toLowerCase();
+        }
+        if (match[3]) {
+          wsObject.preset2 = match[3].toLowerCase();
+          presetCount++;
+        }
+        if (match[4]) {
+          wsObject.preset3 = match[4].toLowerCase();
+          presetCount++;
+        }
+        if (match[5]) {
+          wsObject.preset4 = match[5].toLowerCase();
+          presetCount++;
+        }
 
-      wsObject.presetCount = presetCount;
-      websocketCustom.send(JSON.stringify(wsObject));
-    }    
-
+        wsObject.presetCount = presetCount;
+        websocketCustom.send(JSON.stringify(wsObject));
+      }
     } catch (err) {
       console.log("send midi fxSelect: catch(" + err + ")");
     }
@@ -3102,48 +3397,23 @@ function AudioPlayer() {
 
   // Get synthesized speech from Amazon polly
   async function getPollyAudioStream(message) {
-    //console.log("getPollyAudioStream:");
-    //console.log(message);
-    //console.trace();
+    console.log("getPollyAudioStream:");
+    console.log(message);
+
     return new Promise(function (resolve, reject) {
       var polly = new AWS.Polly();
-
-      var voice = "ivy";
-      if (
-        chatters[message.username] &&
-        chatters[message.username].hasOwnProperty("voice")
-      ) {
-        voice = chatters[message.username].voice;
-      }
-      //console.log('voice: ' + voice);
-
-      var engine = "standard";
-      //console.log("Chatters:");
-      //console.log(chatters);
-      //console.log("Voices:");
-      //console.log(voices);
-      if (
-        chatters[message.username] &&
-        chatters[message.username].hasOwnProperty("voice_option")
-      ) {
-        engine = chatters[message.username].voice_option;
-      } else {
-        engine = voices[voice].voiceOptions[0];
-      }
+      let voice = message.tts_voice;
+      let engine = message.tts_voice_option;
 
       if (message.username == "system") {
         voice = document.getElementById("systemVoice").value;
         engine = document.getElementById("systemVoiceOption").value;
-        //messageElement = document.getElementById("message-system-voice-id" + message.messageID);
-        //messageElement.innerHTML = `${voice} (${engine})`;
       } else if (message.username == "custom") {
         voice = message.voice.toLowerCase();
         engine = message.engine;
-      } else {
-        voice = voices[voice].name;
       }
-
-      voice = voices[voice.toLocaleLowerCase()].name;
+      console.log("getPollyAudioStream() voice:",voice);
+      voice = voices[voice.toLowerCase()].name;
 
       var params = {
         OutputFormat: "mp3",
@@ -3244,7 +3514,8 @@ function AudioPlayer() {
       recognition.onresult = async function (event) {
         if (
           !document.getElementById("cbSTTS").checked &&
-          !document.getElementById("cbSendTextToWebsocket").checked
+          !document.getElementById("cbSendTextToWebsocket").checked &&
+          !document.getElementById("cbPauseTTSOnSpeech").checked
         ) {
           return;
         }
@@ -3295,7 +3566,7 @@ function AudioPlayer() {
                 //"<speak>" + getSpokenName(document.getElementById("twitch_username").value) + " says " + text + "</speak>",
                 text,
                 "",
-                "system",
+                { username: "system" },
                 "text",
                 messageID
               );
@@ -3333,7 +3604,7 @@ function AudioPlayer() {
                       "",
                       request.responseText,
                       "",
-                      "system",
+                      { username: "system" },
                       "text",
                       messageID
                     );
@@ -3642,44 +3913,43 @@ async function finishSetup() {
       localStorage.getItem("systemVoiceOption");
   }
 
-// --------------------------------------------------------
-// Chat voice selector
-// --------------------------------------------------------
+  // --------------------------------------------------------
+  // Chat voice selector
+  // --------------------------------------------------------
 
   var chatVoiceSource = document.getElementById(
-    "chat-voice-template"
-  ).innerHTML,
-  chatVoiceTemplate = Handlebars.compile(chatVoiceSource),
-  chatVoicePlaceholder = document.getElementById("chatVoicePlaceholder");
+      "chat-voice-template"
+    ).innerHTML,
+    chatVoiceTemplate = Handlebars.compile(chatVoiceSource),
+    chatVoicePlaceholder = document.getElementById("chatVoicePlaceholder");
 
-chatVoicePlaceholder.innerHTML = chatVoiceTemplate(data);
+  chatVoicePlaceholder.innerHTML = chatVoiceTemplate(data);
 
-var chatVoiceOptionSource = document.getElementById(
-    "chat-voice-option-template"
-  ).innerHTML,
-  chatVoiceOptionTemplate = Handlebars.compile(chatVoiceOptionSource),
-  chatVoiceOptionPlaceholder = document.getElementById(
-    "chatVoiceOptionPlaceholder"
-  );
+  var chatVoiceOptionSource = document.getElementById(
+      "chat-voice-option-template"
+    ).innerHTML,
+    chatVoiceOptionTemplate = Handlebars.compile(chatVoiceOptionSource),
+    chatVoiceOptionPlaceholder = document.getElementById(
+      "chatVoiceOptionPlaceholder"
+    );
 
-var optionData = {};
+  var optionData = {};
 
-optionData.voiceOptions = voices[data.voice.toLowerCase()].voiceOptions;
-optionData.voiceOption = voices[data.voice.toLowerCase()].voiceOptions[0];
+  optionData.voiceOptions = voices[data.voice.toLowerCase()].voiceOptions;
+  optionData.voiceOption = voices[data.voice.toLowerCase()].voiceOptions[0];
 
-chatVoiceOptionPlaceholder.innerHTML =
-  chatVoiceOptionTemplate(optionData);
+  chatVoiceOptionPlaceholder.innerHTML = chatVoiceOptionTemplate(optionData);
 
-if (localStorage.getItem("chatVoice")) {
-  document.getElementById("chatVoice").value =
-    localStorage.getItem("chatVoice");
-}
-if (localStorage.getItem("chatVoiceOption")) {
-  document.getElementById("chatVoiceOption").value =
-    localStorage.getItem("chatVoiceOption");
-}
+  if (localStorage.getItem("chatVoice")) {
+    document.getElementById("chatVoice").value =
+      localStorage.getItem("chatVoice");
+  }
+  if (localStorage.getItem("chatVoiceOption")) {
+    document.getElementById("chatVoiceOption").value =
+      localStorage.getItem("chatVoiceOption");
+  }
 
-// ---------------------------------------------------------------------
+  // ---------------------------------------------------------------------
 
   var srcLangSource = document.getElementById("lang-template").innerHTML,
     srcLangTemplate = Handlebars.compile(srcLangSource),
@@ -3732,9 +4002,9 @@ if (localStorage.getItem("chatVoiceOption")) {
   if (localStorage.getItem("chatLangSelect")) {
     document.getElementById("chatLangSelect").value =
       localStorage.getItem("chatLangSelect");
-  }
-  else {
-    document.getElementById("chatLangSelect").value = document.getElementById("dstLangSelect").value;
+  } else {
+    document.getElementById("chatLangSelect").value =
+      document.getElementById("dstLangSelect").value;
   }
 
   if (localStorage.getItem("systemLangSelect")) {

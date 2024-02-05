@@ -356,6 +356,7 @@
                     last messages in the last X seconds. (Levenshtein distance)
                   </label>
                 </div>
+                <div class="form-check">
                 <label for="txtChatLevPct"
                   >Percent:
                   <input
@@ -380,6 +381,55 @@
                     placeholder="300"
                     oninput="saveOption(this)"
                 /></label>
+              </div>
+
+                <div class="form-check d-inline-block">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="cbReadWhispers"
+                    onchange="saveOption(this)"
+                  />
+                  <label class="form-check-label" for="cbReadWhispers">
+                    Read Whispers
+                  </label>
+                </div>
+                <div class="form-check d-inline-block">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="cbReadWhispersModsOnly"
+                    onchange="saveOption(this)"
+                  />
+                  <label class="form-check-label" for="cbReadWhispersModsOnly">
+                    Mods Only
+                  </label>
+                </div>
+                <div class="form-check d-inline-block">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="cbActuallyWhisperWhispers"
+                    onchange="saveOption(this)"
+                  />
+                  <label class="form-check-label" for="cbActuallyWhisperWhispers">
+                    Actually Whisper Messages with SSML
+                  </label>
+                </div>    
+                
+                <div class="form-check d-inline-block">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="cbAutoShoutoutRaids"
+                    onchange="saveOption(this)"
+                    checked
+                  />
+                  <label class="form-check-label" for="cbAutoShoutoutRaids">
+                    Auto Twitch shoutout on Raid
+                  </label>
+                </div>  
+                
               </div>
 
               <div class="col-md-6">
