@@ -1632,7 +1632,7 @@ async function doChat(channel, userstate, message, self) {
     chatters[username].ttsBanned
   ) {
     allowTTS = false;
-    allowTTSmessage += "TTS Banned - ";
+    allowTTSmessage += "TTS Silenced - ";
   }
 
   if (
@@ -1906,6 +1906,11 @@ async function doChat(channel, userstate, message, self) {
             console.log("MESSAGE:", message);
           }
 
+          if(chatters[username].ttsBanned) {
+            allowTTS = false;
+            allowTTSmessage += "TTS Silenced - ";
+          }
+ 
           addMessageBubble(
             username,
             bubbleText,
@@ -3457,6 +3462,7 @@ function AudioPlayer() {
         audioPlayerNew.pause();
         audioPlayerNew.removeEventListener("ended", onEnded);
         audioPlayerNew.removeEventListener("skip", onEnded);
+        audioPlayerNew.src = "";
 
         // STOP MIDI FX
 
@@ -3505,8 +3511,7 @@ function AudioPlayer() {
       var trans_sourcelang = document.getElementById("dstLangSelect").value;
       var trans_destlang = document.getElementById("systemLangSelect").value;
 
-      var gas_key =
-        "AKfycbwi_joFMoaC8-kiSnvNiIfUqABbVar5Mg0g2nxu2BxuPkQiHJ5WwzYAFg";
+      var gas_key =                                                                          "AKfycbwi_joFMoaC8-kiSnvNiIfUqABbVar5Mg0g2nxu2BxuPkQiHJ5WwzYAFg";
       var TRANS_URL = "https://script.google.com/macros/s/" + gas_key + "/exec";
       var query = "";
       var request = new XMLHttpRequest();
