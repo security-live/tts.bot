@@ -429,6 +429,33 @@
                     Auto Twitch shoutout on Raid
                   </label>
                 </div>  
+
+                <div class="sts-options-wrapper">
+                  <div class="sts-options-title">Speech -&gt; Translation -&gt; Speech (STS) Options</div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="cbSTS" onchange="saveOption(this)" />
+                    <label class="form-check-label" for="cbSTS">
+                      Enable STS (Chrome or Safari(maybe) only, browser must have Webkit Voice Recognition)
+                    </label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="cbSendSpeechTranslation" onchange="saveOption(this)" />
+                    <label class="form-check-label" for="cbSendSpeechTranslation">
+                      Send Spoken Text and Translation to Channel (Be aware this will send translations to any channel connected)
+                    </label>
+                  </div>
+
+                  <div id="stsLangPlaceholder"></div>
+                  <div id="stsVoicePlaceholder"></div>
+
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="cbSetLangFromLastChat" onchange="saveOption(this)" />
+                    <label class="form-check-label" for="cbSetLangFromLastChat">
+                      Set language and voice to match the last translated chat message.
+                    </label>
+                  </div>                  
+  
+                </div>              
                 
               </div>
 
@@ -516,36 +543,6 @@
                       placeholder="example regex: (affirmative)"
                       oninput="saveOption(this)"
                   /></label>
-
-                  <div class="form-check">
-                    <input
-                      class="form-check-input"
-                      type="checkbox"
-                      id="cbSTTS"
-                      onchange="saveOption(this)"
-                    />
-                    <label class="form-check-label" for="cbSTTS">
-                      Use Webkit Voice Recognition and speak result in system
-                      language and voice. (Must allow mic access and choose
-                      correct mic input)
-                    </label>
-                  </div>
-
-                  <div class="form-check">
-                    <input
-                      class="form-check-input"
-                      type="checkbox"
-                      id="cbSendDictationTranslation"
-                      onchange="saveOption(this)"
-                    />
-                    <label
-                      class="form-check-label"
-                      for="cbSendDictationTranslation"
-                    >
-                      Send Dictation Text and Translation to Channel (Be aware
-                      this will send translations to any channel connected)
-                    </label>
-                  </div>
 
                   <div class="form-check">
                     <input
@@ -1112,6 +1109,42 @@
       </select>
     </script>
 
+
+    <script id="sts-voice-template" type="text/x-handlebars-template">
+      <dt>STS Voice Selection: </dt>
+      <dd class="clearfix">
+        <select id="stsVoice" onchange="stsVoiceSelected(this.value)">
+          {{#select voice}}
+            {{#each voices.Voices}}
+              <option value="{{Id}}">{{Id}}
+                ({{LanguageCode}}
+                --
+                {{LanguageName}})</option>
+            {{/each}}
+          {{/select}}
+        </select>
+        <input
+          type="hidden"
+          size="10"
+          name="sts-voice-option"
+          id="sts-voice-option"
+          value="{{voice_option}}"
+        />
+      </dd>
+      <div id="stsVoiceOptionPlaceholder"></div>
+    </script>
+
+    <script id="sts-voice-option-template" type="text/x-handlebars-template">
+      <select id="stsVoiceOption" onchange="stsVoiceOptionSelected(this.value)">
+        {{#select voiceOption}}
+          {{#each voiceOptions}}
+            <option value="{{this}}">{{this}}</option>
+          {{/each}}
+        {{/select}}
+      </select>
+    </script>
+
+
     <script id="chat-voice-template" type="text/x-handlebars-template">
       <dt>Speak with voice: </dt>
       <dd class="clearfix">
@@ -1146,7 +1179,7 @@
       </select>
     </script>
 
-    <script id="lang-template" type="text/x-handlebars-template">
+    <script id="system-lang-template" type="text/x-handlebars-template">
       <dt>{{name}}</dt>
       <dd class="clearfix">
         <select
@@ -1162,6 +1195,23 @@
         </select>
       </dd>
     </script>
+
+    <script id="sts-lang-template" type="text/x-handlebars-template">
+      <dt>Translate to:</dt>
+      <dd class="clearfix">
+        <select
+          id="{{elementId}}"
+          class="form-control"
+          onchange="saveLocalStorageLang('{{elementId}}')"
+        >
+          <option value="choose">Choose Language</option>
+          {{#each langs}}
+            <option value="{{this.languageCode}}">{{this.languageName}}
+              ({{this.languageCode}})</option>
+          {{/each}}
+        </select>
+      </dd>
+    </script>      
 
     <script id="chat-lang-template" type="text/x-handlebars-template">
       <dt>Translate to:</dt>
