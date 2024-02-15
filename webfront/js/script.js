@@ -485,10 +485,9 @@ async function updatePreview() {
   //console.log("updatePreview()");
   let srcLang;
 
-  if(document.getElementById("dstLangSelect")) {
+  if (document.getElementById("dstLangSelect")) {
     srcLang = document.getElementById("dstLangSelect").value;
-  }
-  else {
+  } else {
     return;
   }
 
@@ -689,18 +688,18 @@ async function onWhisper(from, userstate, message, self) {
   console.log(`Received a whisper from ${from}: ${message}`);
   from = from.replace("#", "").trim();
 
-  let isMod = await isModerator(await getTwitchUserID(from),twitch_id);
+  let isMod = await isModerator(await getTwitchUserID(from), twitch_id);
   let modsOnly = document.getElementById("cbReadWhispersModsOnly").checked;
   let readWhispers = document.getElementById("cbReadWhispers").checked;
   let modText = "";
 
-  if(isMod) {
+  if (isMod) {
     modText = "Moderator ";
   }
 
   if (readWhispers) {
     if ((modsOnly && isMod) || !modsOnly) {
-      addMessageBubble( 
+      addMessageBubble(
         from,
         message,
         "",
@@ -709,7 +708,8 @@ async function onWhisper(from, userstate, message, self) {
         ++messageID,
         "Twitch Whisper"
       );
-      let prefix = "<speak>"+ modText + " " + getSpokenName(from) + " whispers </speak>";
+      let prefix =
+        "<speak>" + modText + " " + getSpokenName(from) + " whispers </speak>";
       let whisper = message;
       let mode = "text";
       let username = userstate.username;
@@ -826,7 +826,6 @@ async function onSub() {
     userstate.tts_voice_option = chatters[userstate.username].voice_option;
     userstate.tts_spoken_name = chatters[userstate.username].spoken_name;
 
-
     //let message = `${username} just subsribed for ${}, thank you so much!`;
     let message = targuments[4]["system-msg"];
     addSystemBubble(message, ++messageID);
@@ -839,7 +838,14 @@ async function onSub() {
       let prefix =
         "<speak>Sub message from " + getSpokenName(username) + " says </speak>";
 
-      audioPlayer.Speak(prefix, targuments[3], "", userstate, "text", messageID);
+      audioPlayer.Speak(
+        prefix,
+        targuments[3],
+        "",
+        userstate,
+        "text",
+        messageID
+      );
     }
   } catch (e) {
     console.log("onSub() error:", e);
@@ -1403,9 +1409,12 @@ function decodeHTMLEntities(encodedStr) {
     "&semi;": ";",
   };
 
-  return encodedStr.replace(/&lt;|&gt;|&apos;|&quot;|&amp;|&semi;/g, function(matched) {
-    return entityToChar[matched];
-  });
+  return encodedStr.replace(
+    /&lt;|&gt;|&apos;|&quot;|&amp;|&semi;/g,
+    function (matched) {
+      return entityToChar[matched];
+    }
+  );
 }
 
 function escapeRegExp(text) {
@@ -1626,14 +1635,6 @@ async function doChat(channel, userstate, message, self) {
   }
 
   localStorage.setItem("chatters", JSON.stringify(chatters));
-
-  if (
-    chatters[username].hasOwnProperty("ttsBanned") &&
-    chatters[username].ttsBanned
-  ) {
-    allowTTS = false;
-    allowTTSmessage += "TTS Silenced - ";
-  }
 
   if (
     userstate.hasOwnProperty("gpt_type") &&
@@ -1906,11 +1907,11 @@ async function doChat(channel, userstate, message, self) {
             console.log("MESSAGE:", message);
           }
 
-          if(chatters[username].ttsBanned) {
+          if (chatters[username]?.ttsBanned) {
             allowTTS = false;
             allowTTSmessage += "TTS Silenced - ";
           }
- 
+
           addMessageBubble(
             username,
             bubbleText,
@@ -2098,7 +2099,7 @@ function addMessageBubble(
                                           </div>
                                         </div>`;
 
-  //document.getElementById(`message-message-message-id${messageID}`).innerText = message;                                      
+  //document.getElementById(`message-message-message-id${messageID}`).innerText = message;
 
   con.liveChatUIContainer.scrollTop = con.liveChatUIContainer.scrollHeight;
 }
@@ -2398,54 +2399,54 @@ async function getModerators(channel_id) {
 
 async function getTwitchUserID(login) {
   //console.log("getTwitchUserID() ",login);
-    try {
-      const response = await fetch(
-        `https://api.twitch.tv/helix/users?login=${login}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Client-Id": "dan71ek0pct1u7b8ht5u4h55zlcxvq",
-            Authorization: `Bearer ${access_token}`,
-          },
-        }
-      );
-
-      if (response.ok) {
-        let body = await response.json();
-        return body.data[0].id;
-      } else {
-        console.error("Could not get user id.", response);
+  try {
+    const response = await fetch(
+      `https://api.twitch.tv/helix/users?login=${login}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Client-Id": "dan71ek0pct1u7b8ht5u4h55zlcxvq",
+          Authorization: `Bearer ${access_token}`,
+        },
       }
-    } catch (error) {
-      console.error("Error fetching user.", error);
+    );
+
+    if (response.ok) {
+      let body = await response.json();
+      return body.data[0].id;
+    } else {
+      console.error("Could not get user id.", response);
     }
+  } catch (error) {
+    console.error("Error fetching user.", error);
+  }
 }
 
 async function isModerator(user_id, channel_id) {
-    try {
-      const response = await fetch(
-        `https://api.twitch.tv/helix/moderation/moderators?broadcaster_id=${channel_id}&user_id=${user_id}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Client-Id": "dan71ek0pct1u7b8ht5u4h55zlcxvq",
-            Authorization: `Bearer ${access_token}`,
-          },
-        }
-      );
-
-      if (response.ok) {
-        let body = await response.json();
-        console.log("user mod info:",body.data);
-        return body.data.length > 0;
-      } else {
-        console.error("Could not get moderators.", response);
+  try {
+    const response = await fetch(
+      `https://api.twitch.tv/helix/moderation/moderators?broadcaster_id=${channel_id}&user_id=${user_id}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Client-Id": "dan71ek0pct1u7b8ht5u4h55zlcxvq",
+          Authorization: `Bearer ${access_token}`,
+        },
       }
-    } catch (error) {
-      console.error("Error fetching moderators.", error);
+    );
+
+    if (response.ok) {
+      let body = await response.json();
+      console.log("user mod info:", body.data);
+      return body.data.length > 0;
+    } else {
+      console.error("Could not get moderators.", response);
     }
+  } catch (error) {
+    console.error("Error fetching moderators.", error);
+  }
 }
 
 async function deleteTwitchChatMessage(channel_id, message_id) {
@@ -2756,7 +2757,7 @@ async function loadVoice(lvuserstate) {
     if (!hasLocalChannelConfig) {
       //console.log("Does not have local config.");
       chatters[username] = {};
-      
+
       try {
         await $.ajax({
           url: "https://api.tts.bot/tts/all/" + username,
@@ -2903,21 +2904,6 @@ function sendMessage() {
         }
       }
     );
-  }
-}
-
-function sendVoiceMessage(text) {
-  if (text) {
-    window.client.action(con.channel, text);
-
-    //Print original message in Translated UI
-    con.liveChatUI.innerHTML += "<strong> ME: </strong>: " + text + "<br>";
-
-    //Print translated message in Chat UI
-    con.liveChatUI.innerHTML += "<strong> ME: </strong>: " + text + "<br>";
-
-    //Scroll chat and translated UI to bottom to keep focus on latest messages
-    con.liveChatUIContainer.scrollTop = con.liveChatUIContainer.scrollHeight;
   }
 }
 
@@ -3417,7 +3403,7 @@ function AudioPlayer() {
         voice = message.voice.toLowerCase();
         engine = message.engine;
       }
-      console.log("getPollyAudioStream() voice:",voice);
+      console.log("getPollyAudioStream() voice:", voice);
       voice = voices[voice.toLowerCase()].name;
 
       var params = {
@@ -3511,7 +3497,8 @@ function AudioPlayer() {
       var trans_sourcelang = document.getElementById("dstLangSelect").value;
       var trans_destlang = document.getElementById("systemLangSelect").value;
 
-      var gas_key =                                                                          "AKfycbwi_joFMoaC8-kiSnvNiIfUqABbVar5Mg0g2nxu2BxuPkQiHJ5WwzYAFg";
+      var gas_key =
+        "AKfycbwi_joFMoaC8-kiSnvNiIfUqABbVar5Mg0g2nxu2BxuPkQiHJ5WwzYAFg";
       var TRANS_URL = "https://script.google.com/macros/s/" + gas_key + "/exec";
       var query = "";
       var request = new XMLHttpRequest();
@@ -3563,9 +3550,18 @@ function AudioPlayer() {
               if (
                 document.getElementById("cbSendDictationTranslation").checked
               ) {
-                sendVoiceMessage(text);
+                window.client.say(con.channel, text);
               }
-              addSystemBubble(text, ++messageID);
+              //addSystemBubble(text, ++messageID);
+              addMessageBubble(
+                con.channel,
+                text,
+                "",
+                allowTTS,
+                "Dictation",
+                ++messageID,
+                "Local"
+              );
               window.audioPlayer.Speak(
                 "",
                 //"<speak>" + getSpokenName(document.getElementById("twitch_username").value) + " says " + text + "</speak>",
@@ -3596,7 +3592,7 @@ function AudioPlayer() {
                       document.getElementById("cbSendDictationTranslation")
                         .checked
                     ) {
-                      sendVoiceMessage(
+                      window.client.say(con.channel,
                         text +
                           " ( " +
                           request.responseText +
@@ -3604,7 +3600,17 @@ function AudioPlayer() {
                           confidence
                       );
                     }
-                    addSystemBubble(text, ++messageID);
+
+                    addMessageBubble(
+                      con.channel,
+                      text,
+                      request.responseText,
+                      true,
+                      "Translated Dictation",
+                      ++messageID,
+                      "Local"
+                    );
+
                     window.audioPlayer.Speak(
                       "",
                       request.responseText,
