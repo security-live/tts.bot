@@ -1480,10 +1480,7 @@ function selectRandomVoiceByLanguageCode(languageCode) {
 
 async function onChat(channel, userstate, message, self) {
   if (self) return;
-  await loadVoice(userstate);
-  userstate.tts_voice = chatters[userstate.username].voice;
-  userstate.tts_voice_option = chatters[userstate.username].voice_option;
-  userstate.tts_spoken_name = chatters[userstate.username].spoken_name;
+
   //userstate.tts_lang = chatters[userstate.username].lang;
 
   channel = channel.replace("#", "").trim();
@@ -1502,7 +1499,11 @@ async function onChat(channel, userstate, message, self) {
     }
   }
 
-  //platform
+  await loadVoice(userstate);
+  userstate.tts_voice = chatters[userstate.username].voice;
+  userstate.tts_voice_option = chatters[userstate.username].voice_option;
+  userstate.tts_spoken_name = chatters[userstate.username].spoken_name;  
+  chatters[userstate.username].platform = userstate.platform;
 
   console.log("------------ onChat() ---------");
   console.log(userstate);
@@ -1573,7 +1574,8 @@ async function doChat(channel, userstate, message, self) {
   if (self) return;
 
   //console.log("userstate:", userstate);
-  var username = userstate["username"];
+  let username = userstate["username"];
+  let platform = userstate.platform;
 
   if (message.match(/^(oneword|one word|!oneword)/i)) {
     addSystemBubble(message, ++messageID);
@@ -2080,6 +2082,8 @@ async function doChat(channel, userstate, message, self) {
     );
   }
 }
+
+
 
 function addMessageBubble(
   username,
@@ -2694,6 +2698,7 @@ async function saveTTSConfig(channel, username) {
   data.voice_option = sanitize(chatters[username].voice_option);
   data.spoken_name = sanitize(chatters[username].spoken_name);
   data.ttsBanned = chatters[username].ttsBanned;
+  data.platform = chatters[username].platform;
   data.access_token = access_token;
   request.data = [];
   request.data.push(data);
