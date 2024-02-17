@@ -1,556 +1,930 @@
 <!DOCTYPE html>
 <!-- ReggieTheBug helped with all of the customizing options and I was pretty much a surrogate of hands -- Security_Live -->
 <html>
-
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title>Security Live Translator</title>
-    <link href="fonts.css" rel="stylesheet">
-    <link href="styles.css" rel="stylesheet">
+    <link href="fonts.css" rel="stylesheet" />
+    <link href="styles.css" rel="stylesheet" />
     <script src="aws-sdk.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
-        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
-        crossorigin="anonymous"></script>
+    <script
+      src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+      integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+      crossorigin="anonymous"
+    ></script>
+    <style>
+      .top-bar {
+        display: flex;
+        align-items: center;
+        justify-content: start;
+        flex-wrap: wrap;
+        gap: 20px; /* Adjust based on your spacing preference */
+        padding: 10px; /* Padding around the container */
+        background: #f0f0f0; /* Optional: background color for the top bar */
+      }
 
-</head>
+      .input-group label {
+        font-size: 12px;
+        margin-right: 10px; /* Adjust label spacing */
+      }
 
-<body class="translatorText">
+      .input-group input,
+      .top-bar button {
+        font-size: 12px;
+        padding: 5px 10px; /* Adjust input and button padding */
+      }
 
-    <div id="systemLangPlaceholder"></div>
-    <div id="systemVoicePlaceholder"></div>
-    <label style="font-size:32px; margin-left:20px;" for="delay">Delay:</label>
-    <input type="text" id="delay" name="delay" class="form-control" value="0"><br>
-    <label style="font-size:32px; margin-left:20px;" for="channel">Channel:</label>
-    <input type="text" id="channel" name="channel" class="form-control" value placeholder="Channel"><br>
-    <button style="font-size:32px; margin-left:20px;" type="button" class="form-control" id="btn-go"
-        onclick="connect()">Go</button>
-    <div class="big" id="result_text">
-        <div class="text_div" style="position:absolute;bottom:5%; left:30%; right:30%;">
-            <table id="text_table" class="center border" style="bottom: 33px;">
-                <tbody>
-                    <tr>
-                        <td id="tbl_td" align="center" valign="bottom">
-                            <div class="outline shadow" id="speech_text-imb">
-                                Security Live Translator
-                            </div>
-                            <hr>
-                            <div class="outline shadow" id="trans_text-imb">
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+      /* Additional responsive adjustments as needed */
+      @media (max-width: 768px) {
+        .top-bar {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+
+  <body class="translatorText">
+    <div class="top-bar">
+      <div class="input-group">
+        <input
+          type="radio"
+          id="inputWebSocket"
+          name="inputSource"
+          value="WebSocket"
+          checked
+        />
+        <label for="inputWebSocket">TTS.bot WebSocket</label>
+        <input
+          type="radio"
+          id="inputMicrophone"
+          name="inputSource"
+          value="Microphone"
+        />
+        <label for="inputMicrophone">Microphone</label>
+      </div>
+      <div class="input-group" id="micSelection" style="display: none">
+        <label for="micList">Microphone:</label>
+        <select
+          id="micList"
+          class="form-control"
+          onchange="saveLocalStorageMic('micList')"
+        ></select>
+        <div class="input-group" id="micLangPlaceholder"></div>
+      </div>
+
+      <div class="input-group" id="systemLangPlaceholder"></div>
+      <div class="input-group" id="systemVoicePlaceholder"></div>
+      <div class="input-group">
+        <label for="delay">Delay:</label>
+        <input
+          type="text"
+          id="delay"
+          name="delay"
+          class="form-control"
+          size="3"
+          value="0"
+        />
+      </div>
+      <div class="input-group">
+        <label for="channel">Channel:</label>
+        <input
+          type="text"
+          id="channel"
+          name="channel"
+          class="form-control"
+          placeholder="Channel"
+        />
+      </div>
+      <button
+        type="button"
+        class="form-control"
+        id="btn-go"
+        onclick="connect()"
+      >
+        Go
+      </button>
     </div>
+    <div class="big" id="result_text">
+      <div
+        class="text_div"
+        style="position: absolute; bottom: 5%; left: 30%; right: 30%"
+      >
+        <table id="text_table" class="center border" style="bottom: 33px">
+          <tbody>
+            <tr>
+              <td id="tbl_td" align="center" valign="bottom">
+                <div class="outline shadow" id="speech_text-imb">
+                  Security Live Translator
+                </div>
+                <hr />
+                <div class="outline shadow" id="trans_text-imb"></div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <script src="awsTranslateSupportedLanguages.js"></script>
 
     <script id="system-voice-template" type="text/x-handlebars-template">
-        <dt class="clearfix" style="font-size:32px; margin-left:20px;">Voice Selection: </dt>
-        <dd class="clearfix">
-          <select id="systemVoice"  onchange="voiceSelected(this.value)">
-            {{#select voice}}
+      <dt class="clearfix" style="font-size:12px; margin-left:20px;">Voice
+        Selection:
+      </dt>
+      <dd class="clearfix">
+        <select id="systemVoice" onchange="voiceSelected(this.value)">
+          {{#select voice}}
             {{#each voices.Voices}}
-              <option value="{{Id}}">{{Id}} ({{LanguageCode}} -- {{LanguageName}})</option>
+              <option value="{{Id}}">{{Id}}
+                ({{LanguageCode}}
+                --
+                {{LanguageName}})</option>
             {{/each}}
-            {{/select}}
-          </select>
-          <input type="hidden" size="10" name="voice-option" id="voice-option" value="{{voice_option}}">
-        </dd>                  
-        <div id=systemVoiceOptionPlaceholder></div>
+          {{/select}}
+        </select>
+        <input
+          type="hidden"
+          size="10"
+          name="voice-option"
+          id="voice-option"
+          value="{{voice_option}}"
+        />
+      </dd>
+      <div id="systemVoiceOptionPlaceholder"></div>
     </script>
 
     <script id="system-voice-option-template" type="text/x-handlebars-template">
-        <dd class="clearfix">
-      <select id="systemVoiceOption" onchange="voiceOptionSelected(this.value)">
-        {{#select voiceOption}}
-        {{#each voiceOptions}}
-          <option value="{{this}}">{{this}}</option>
-        {{/each}}
-        {{/select}}
-      </select>     
-    </dd>
+      <dd class="clearfix">
+        <select
+          id="systemVoiceOption"
+          onchange="voiceOptionSelected(this.value)"
+        >
+          {{#select voiceOption}}
+            {{#each voiceOptions}}
+              <option value="{{this}}">{{this}}</option>
+            {{/each}}
+          {{/select}}
+        </select>
+      </dd>
     </script>
 
-    <script id="lang-template" type="text/x-handlebars-template">
-      <dt class="clearfix" style="font-size:32px; margin-left:20px;">Language Selection: </dt> 
-      <dd class="clearfix"> 
-        <select id="systemLangSelect" class="form-control" onchange="saveLocalStorageLang('systemLangSelect')">
-            <option value="auto">Auto</option>
-            {{#each langs}}
-            <option value="{{this.languageCode}}">{{this.languageName}} ({{this.languageCode}})</option>
-            {{/each}}
-            </select>
-            </dd>
-            </script>
+    <script id="system-lang-template" type="text/x-handlebars-template">
+      <dt class="clearfix" style="font-size:12px; margin-left:20px;">Output
+        Lang:
+      </dt>
+      <dd class="clearfix">
+        <select
+          id="systemLangSelect"
+          class="form-control"
+          onchange="saveLocalStorageLang('systemLangSelect')"
+        >
+          {{#each langs}}
+            <option value="{{this.languageCode}}">{{this.languageName}}
+              ({{this.languageCode}})</option>
+          {{/each}}
+        </select>
+      </dd>
+    </script>
+
+    <script id="mic-lang-template" type="text/x-handlebars-template">
+      <dt class="clearfix" style="font-size:12px; margin-left:20px;">Input Lang:
+      </dt>
+      <dd class="clearfix">
+        <select
+          id="micLangSelect"
+          class="form-control"
+          onchange="saveLocalStorageLang('micLangSelect')"
+        >
+          {{#each langs}}
+            <option value="{{this.languageCode}}">{{this.languageName}}
+              ({{this.languageCode}})</option>
+          {{/each}}
+        </select>
+      </dd>
+    </script>
 
     <script type="text/javascript">
-        var streamerLastSpoke = Date.now();
-        var bubble_timer = 10000;
-        var norikittea = false;
-        var channel = "";
-        var websocket = {};
-        var voices = {};
-        var voicesDesc = {};
-        var sortedLanguages = [];
-        var speechDelay = 4000;
-        var recog_text = '';
-        var trans_text = '';
-        var arg_recog = null;
-        var arg_trans = null;
+      var streamerLastSpoke = Date.now();
+      var bubble_timer = 10000;
+      var norikittea = false;
+      var channel = "";
+      var websocket = {};
+      var voices = {};
+      var voicesDesc = {};
+      var sortedLanguages = [];
+      var recog_text = "";
+      var trans_text = "";
+      var arg_recog = null;
+      var arg_trans = null;
 
-        var trans_sourcelang = 'es';
-        var trans_destlang = 'en';
+      var trans_sourcelang = "es";
+      var trans_destlang = "en";
 
-        var gas_key = "AKfycbwi_joFMoaC8-kiSnvNiIfUqABbVar5Mg0g2nxu2BxuPkQiHJ5WwzYAFg"
+      var gas_key =
+        "AKfycbwi_joFMoaC8-kiSnvNiIfUqABbVar5Mg0g2nxu2BxuPkQiHJ5WwzYAFg";
 
-        var TRANS_URL = 'https://script.google.com/macros/s/' + gas_key + '/exec';
-        var query = ''
+      var TRANS_URL = "https://script.google.com/macros/s/" + gas_key + "/exec";
+      var query = "";
 
-        var voice = "Takumi";
-        var voice_option = "neural";
-        
-        async function cognitoSetup () {
-    try {
-        // Set the region
-        AWS.config.region = 'us-west-2';
+      var voice = "Takumi";
+      var voice_option = "neural";
 
-        // Create a CognitoIdentity service object
-        const cognitoIdentity = new AWS.CognitoIdentity();
+      async function cognitoSetup() {
+        try {
+          // Set the region
+          AWS.config.region = "us-west-2";
 
-        // Get a Cognito Identity ID
-        const idData = await cognitoIdentity.getId({
-            IdentityPoolId: "us-west-2:906a8430-e48a-4084-9513-dcf502e5e58a",
-        }).promise();
+          // Create a CognitoIdentity service object
+          const cognitoIdentity = new AWS.CognitoIdentity();
 
-        // Configure the Identity Pool ID and the Identity ID
-        AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+          // Get a Cognito Identity ID
+          const idData = await cognitoIdentity
+            .getId({
+              IdentityPoolId: "us-west-2:906a8430-e48a-4084-9513-dcf502e5e58a",
+            })
+            .promise();
+
+          // Configure the Identity Pool ID and the Identity ID
+          AWS.config.credentials = new AWS.CognitoIdentityCredentials({
             IdentityPoolId: "us-west-2:906a8430-e48a-4084-9513-dcf502e5e58a",
             IdentityId: idData.IdentityId,
-        });
+          });
 
-        // Get the temporary AWS credentials
-        await new Promise((resolve, reject) => {
+          // Get the temporary AWS credentials
+          await new Promise((resolve, reject) => {
             AWS.config.credentials.get((error) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve();
-                }
+              if (error) {
+                reject(error);
+              } else {
+                resolve();
+              }
             });
-        });
+          });
 
-        // Initialize AWS Translate service
-        let ep = new AWS.Endpoint("translate.us-west-2.amazonaws.com");
-        window.translator = new AWS.Translate({
+          // Initialize AWS Translate service
+          let ep = new AWS.Endpoint("translate.us-west-2.amazonaws.com");
+          window.translator = new AWS.Translate({
             endpoint: ep,
             region: AWS.config.region,
-        });
+          });
 
-        console.log("Successfully authenticated as an unauthenticated user with Cognito");
-    } catch (error) {
-        console.error("Error in Cognito setup:", error);
-    }
-}
-        
+          console.log(
+            "Successfully authenticated as an unauthenticated user with Cognito"
+          );
+        } catch (error) {
+          console.error("Error in Cognito setup:", error);
+        }
+      }
 
+      window.onload = function () {
+        //window.translator = new AWS.Translate({ endpoint: ep, region: AWS.config.region });
+        window.audioPlayer = AudioPlayer();
 
-        window.onload = function () {
-           
+        message_function();
 
-            //window.translator = new AWS.Translate({ endpoint: ep, region: AWS.config.region });
-            window.audioPlayer = AudioPlayer();
+        if (norikittea) {
+          console.log("for kittea");
+          document.documentElement.style.setProperty(
+            "--border-color",
+            "#FF00FF"
+          );
+          document.documentElement.style.setProperty(
+            "--webkit-text-stroke-color",
+            "#FF00FF"
+          );
+          document.documentElement.style.setProperty("--border-radius", "45px");
+          document.getElementById("speech_text-imb").innerHTML =
+            "Norikittea Translator";
+          document.title = "Norikittea Translator";
+        }
+      };
 
-            message_function();
+      function wsKeepAlive() {
+        console.log("PING");
+        webSocket.send(JSON.stringify({ action: "PING" }));
+      }
 
-            if (norikittea) {
-                console.log("for kittea");
-                document.documentElement.style.setProperty("--border-color", "#FF00FF");
-                document.documentElement.style.setProperty("--webkit-text-stroke-color", "#FF00FF");
-                document.documentElement.style.setProperty("--border-radius", "45px");
-                document.getElementById('speech_text-imb').innerHTML = "Norikittea Translator";
-                document.title = "Norikittea Translator";
-            }
-
+      function message_function() {
+        if (getParam("recog") != null) {
+          arg_recog = getParam("recog");
+        }
+        if (getParam("trans") != null) {
+          arg_trans = getParam("trans");
+        }
+        if (getParam("src") != null) {
+          arg_recog = getParam("src");
+        }
+        if (getParam("dst") != null) {
+          arg_trans = getParam("dst");
+        }
+        if (getParam("dest") != null) {
+          arg_trans = getParam("dest");
+        }
+        if (getParam("source") != null) {
+          arg_recog = getParam("source");
+        }
+        if (getParam("destination") != null) {
+          arg_trans = getParam("destination");
+        }
+        if (getParam("norikittea") != null) {
+          norikittea = true;
+        }
+        if (getParam("bubble-timer") != null) {
+          bubble_timer = parseInt(getParam("bubble-timer"));
+        }
+        if (getParam("voice") != null) {
+          bubble_timer = getParam("voice");
+        }
+        if (getParam("voice_option") != null) {
+          bubble_timer = getParam("voice_option");
         }
 
-        function wsKeepAlive() {
-            console.log("PING");
-            webSocket.send(JSON.stringify({ "action": "PING" }));
+        if (arg_recog != null) {
+          recognition.lang = arg_recog;
+          trans_sourcelang = recognition.lang;
+        }
+        if (arg_trans != null) {
+          trans_destlang = arg_trans;
         }
 
-        function message_function() {
-
-            if (getParam('recog') != null) {
-                arg_recog = getParam('recog');
-            }
-            if (getParam('trans') != null) {
-                arg_trans = getParam('trans');
-            }
-            if (getParam('src') != null) {
-                arg_recog = getParam('src');
-            }
-            if (getParam('dst') != null) {
-                arg_trans = getParam('dst');
-            }
-            if (getParam('dest') != null) {
-                arg_trans = getParam('dest');
-            }
-            if (getParam('source') != null) {
-                arg_recog = getParam('source');
-            }
-            if (getParam('destination') != null) {
-                arg_trans = getParam('destination');
-            }
-            if (getParam('norikittea') != null) {
-                norikittea = true;
-            }
-            if (getParam('bubble-timer') != null) {
-                bubble_timer = parseInt(getParam('bubble-timer'));
-            }
-            if (getParam('voice') != null) {
-                bubble_timer = getParam('voice');
-            }
-            if (getParam('voice_option') != null) {
-                bubble_timer = getParam('voice_option');
-            }
-
-            if (arg_recog != null) {
-                recognition.lang = arg_recog;
-                trans_sourcelang = recognition.lang;
-            }
-            if (arg_trans != null) {
-                trans_destlang = arg_trans;
-            }
-
-            if (trans_sourcelang == trans_destlang) {
-                alert("ERROR! Please set different language between recog and trans!\nYou set both [" + trans_sourcelang + "]!");
-            }
-
-            if (getParam('channel') != null) {
-                channel = getParam('channel');
-            }
+        if (trans_sourcelang == trans_destlang) {
+          alert(
+            "ERROR! Please set different language between recog and trans!\nYou set both [" +
+              trans_sourcelang +
+              "]!"
+          );
         }
 
-        function connect() {
-            window.audioPlayer.Speak("lets go");
+        if (getParam("channel") != null) {
+          channel = getParam("channel");
+        }
+      }
 
-            var webSocket = new WebSocket("wss://ws.tts.bot/?channel=" + document.getElementById('channel').value);
+      function connect() {
+        window.audioPlayer.Speak("lets go");
+        if (document.getElementById("inputMicrophone")) {
+          vr_function();
+        } else {
+          var webSocket = new WebSocket(
+            "wss://ws.tts.bot/?channel=" +
+              document.getElementById("channel").value
+          );
 
-            webSocket.onopen = function () {
-                console.log("Connected to websocket backend.");
-                window.audioPlayer.Speak("Connected to " + document.getElementById('channel').value);
-                localStorage.setItem("channel", document.getElementById('channel').value);
-                var wsObject = {
-                    "action": "start",
-                    "channel": channel
+          webSocket.onopen = function () {
+            console.log("Connected to websocket backend.");
+            window.audioPlayer.Speak(
+              "Connected to " + document.getElementById("channel").value
+            );
+            localStorage.setItem(
+              "channel",
+              document.getElementById("channel").value
+            );
+            var wsObject = {
+              action: "start",
+              channel: channel,
+            };
+            webSocket.send(JSON.stringify(wsObject));
+          };
+
+          //setTimeout(function () { wsKeepAlive(); }, 30000);
+
+          webSocket.onmessage = function (event) {
+            //console.log("event:", event);
+            var wsObject = JSON.parse(event.data);
+            recog_text = wsObject.message;
+            let language = wsObject.language;
+            if (language) {
+              trans_sourcelang = language;
+            }
+
+            if (wsObject.isFinal) {
+              let request = new XMLHttpRequest();
+              document.getElementById("speech_text-imb").innerHTML = recog_text;
+
+              destlang = document.getElementById("systemLangSelect").value;
+              if (gas_key != null && trans_sourcelang != destlang) {
+                query =
+                  TRANS_URL +
+                  "?message=" +
+                  recog_text +
+                  "&srcLang=" +
+                  trans_sourcelang +
+                  "&dstLang=" +
+                  destlang;
+                request.open("GET", query, true);
+                //console.log("google translate url:", query);
+                request.onreadystatechange = function () {
+                  if (request.readyState === 4 && request.status === 200) {
+                    //window.audioPlayer.Speak(request.responseText);
+                    setTimeout(function () {
+                      window.audioPlayer.Speak(request.responseText);
+                    }, parseInt(document.getElementById("delay").value) * 1000);
+                    document.getElementById("result_text").style.visibility =
+                      "visible";
+                    if (recog_text)
+                      document.getElementById("speech_text-imb").innerHTML =
+                        recog_text;
+                    document.getElementById("trans_text-imb").innerHTML =
+                      request.responseText;
+                    setTimeout(function () {
+                      justWaitAMoment();
+                    }, bubble_timer);
+                    //console.log("recognition.onend() after setTimeout");
+                    streamerLastSpoke = Date.now();
+                  }
+                };
+                request.send(null);
+              } else if (recog_text) {
+                setTimeout(function () {
+                  window.audioPlayer.Speak(recog_text);
+                }, parseInt(document.getElementById("delay").value) * 1000);
+                document.getElementById("speech_text-imb").innerHTML =
+                  recog_text;
+              }
+            } else {
+              document.getElementById("result_text").style.visibility =
+                "visible";
+              document.getElementById("speech_text-imb").innerHTML =
+                "<< " + recog_text + " >>";
+              streamerLastSpoke = Date.now();
+            }
+          };
+        }
+      }
+
+      function vr_function() {
+        console.log("Start local Voice Recognition");
+        window.SpeechRecognition =
+          window.SpeechRecognition || webkitSpeechRecognition;
+
+        let recognition = new webkitSpeechRecognition();
+        recognition.lang = document.getElementById("micLangSelect").value;
+        recognition.interimResults = true;
+        recognition.continuous = true;
+
+        recognition.onerror = function () {
+          vr_function();
+        };
+
+        recognition.onspeechstart = function () {
+          streamerLastSpoke = Date.now();
+          document.getElementById("result_text").style.visibility = "visible";
+        };
+
+        recognition.onsoundend = function () {
+          recognition.stop();
+          vr_function();
+        };
+
+        recognition.onspeechend = function () {
+          recognition.stop();
+          vr_function();
+        };
+
+        recognition.onresult = function (event) {
+          processResults(event);
+
+        };
+
+        recognition.start();
+      }
+
+      function processResults(event) {
+        let request = new XMLHttpRequest();
+        var results = event.results;
+        for (var i = event.resultIndex; i < results.length; i++) {
+          if (results[i].isFinal) {
+            recog_text = results[i][0].transcript;
+
+            document.getElementById("speech_text-imb").innerHTML = recog_text;
+
+            if (gas_key != null) {
+              query =
+                TRANS_URL +
+                "?message=" +
+                recog_text +
+                "&srcLang=" +
+                document.getElementById("micLangSelect").value +
+                "&dstLang=" +
+                document.getElementById("systemLangSelect").value;
+              request.open("GET", query, true);
+
+              request.onreadystatechange = function () {
+                if (request.readyState === 4 && request.status === 200) {
+                  document.getElementById("speech_text-imb").innerHTML =
+                    recog_text;
+                  document.getElementById("trans_text-imb").innerHTML =
+                    request.responseText;
+                    setTimeout(function () {
+                      window.audioPlayer.Speak(request.responseText);
+                    }, parseInt(document.getElementById("delay").value) * 1000);                    
+                  setTimeout(function () {
+                    justWaitAMoment();
+                  }, bubble_timer);
+                  //console.log("recognition.onend() after setTimeout");
+                  streamerLastSpoke = Date.now();
                 }
-                webSocket.send(JSON.stringify(wsObject));
+                //if (!popup) {
+                //  vr_function();
+                //}
+              };
+              request.send(null);
+            } else {
+              console.log("gas key null");
+              document.getElementById("speech_text-imb").innerHTML = recog_text;
+              //if (!popup) {
+              //  vr_function();
+              //}
+            }
+          } else {
+            document.getElementById("speech_text-imb").innerHTML =
+              "<< " + results[i][0].transcript + " >>";
+            streamerLastSpoke = Date.now();
+          }
+        }
+      }
+
+      function justWaitAMoment() {
+        var lastSpokeDiff = Date.now() - streamerLastSpoke;
+        console.log("Last spoke diff: " + lastSpokeDiff);
+        if (lastSpokeDiff >= bubble_timer) {
+          document.getElementById("result_text").style.visibility = "hidden";
+          document.getElementById("speech_text-imb").innerHTML = "";
+          document.getElementById("trans_text-imb").innerHTML = "";
+        }
+      }
+
+      let params = [...window.location.href.matchAll(/([\w-]+)=/gm)];
+      console.log("query string params:");
+      params.forEach(function (value) {
+        console.log(value[1] + "=" + getParam(value[1]));
+        document.documentElement.style.setProperty(
+          "--" + value[1],
+          getParam(value[1])
+        );
+      });
+
+      function getParam(name, url) {
+        if (!url) url = window.location.href;
+        name = name.replace(/[\[\]]/g, "\\$&");
+        var regex = new RegExp("[?&]" + name + "(=([^&]*)|&|$)"),
+          results = regex.exec(url);
+        if (!results) return null;
+        if (!results[2]) return "";
+        return decodeURIComponent(results[2].replace(/\+/g, " "));
+      }
+
+      async function buildVoiceLookup() {
+        return new Promise(function (resolve, reject) {
+          //console.log('buildVoiceLookup()');
+
+          var polly = new AWS.Polly();
+          //console.log('pulling voices from AWS API');
+          var params = {};
+
+          polly.describeVoices(params, async function (err, data) {
+            if (err) {
+              console.log(err, err.stack); // an error occurred
+              reject(err);
+            } else {
+              voicesDesc = data;
+              for (var i = 0; i < voicesDesc.Voices.length; i++) {
+                var lcvoice = voicesDesc.Voices[i].Id.toLowerCase();
+                var idvoice = voicesDesc.Voices[i].Id;
+                voices[lcvoice] = {};
+                voices[lcvoice].engine =
+                  voicesDesc.Voices[i].SupportedEngines[0];
+                voices[lcvoice].voiceOptions =
+                  voicesDesc.Voices[i].SupportedEngines;
+                voices[lcvoice].name = idvoice;
+              }
+              voicesDesc.Voices.sort(function (a, b) {
+                if (a.LanguageCode === b.LanguageCode) {
+                  return b.Id - a.Id;
+                }
+                return a.LanguageCode > b.LanguageCode ? 1 : -1;
+              });
+              resolve();
+            }
+          });
+          //console.log(voices);
+        });
+      }
+
+      function loadAndSortLanguages() {
+        for (const key in supportedLanguages.en) {
+          var lang = supportedLanguages.en[key];
+          var tmp = {};
+          tmp.languageCode = key;
+          tmp.languageName = lang;
+          sortedLanguages.push(tmp);
+        }
+        sortedLanguages.sort(function (a, b) {
+          return a.languageName > b.languageName ? 1 : -1;
+        });
+      }
+
+      function voiceSelected(voice) {
+        var userVoiceOptionSource = document.getElementById(
+            "system-voice-option-template"
+          ).innerHTML,
+          userVoiceOptionTemplate = Handlebars.compile(userVoiceOptionSource),
+          userVoiceOptionPlaceholder = document.getElementById(
+            "systemVoiceOptionPlaceholder"
+          );
+        userVoiceOptionPlaceholder.innerHTML = userVoiceOptionTemplate(
+          voices[voice.toLowerCase()]
+        );
+        var voiceOption = document.getElementById("voice-option");
+        voiceOption.value = voices[voice.toLowerCase()].voiceOptions[0];
+
+        localStorage.setItem(
+          "systemVoice",
+          document.getElementById("systemVoice").value
+        );
+        localStorage.setItem(
+          "systemVoiceOption",
+          document.getElementById("systemVoiceOption").value
+        );
+      }
+
+      function voiceOptionSelected(voiceOption) {
+        var voiceOptionElement = document.getElementById("voice-option");
+        voiceOptionElement.value = voiceOption;
+
+        localStorage.setItem(
+          "systemVoice",
+          document.getElementById("systemVoice").value
+        );
+        localStorage.setItem(
+          "systemVoiceOption",
+          document.getElementById("systemVoiceOption").value
+        );
+      }
+
+      function saveLocalStorageLang(elementId) {
+        console.log("elementId:", elementId);
+        localStorage.setItem(
+          elementId,
+          document.getElementById(elementId).value
+        );
+      }
+
+      function saveLocalStorageMic(elementId) {
+        console.log("elementId:", elementId);
+        localStorage.setItem(
+          elementId,
+          document.getElementById(elementId).value
+        );
+      }
+
+      /**************************Audio player****************************/
+      function AudioPlayer(voiceId) {
+        var audioPlayer = document.createElement("audio");
+        audioPlayer.setAttribute("id", "audioPlayer");
+        document.body.appendChild(audioPlayer);
+
+        var isSpeaking = false;
+
+        var speaker = {
+          self: this,
+          playlist: [],
+
+          Speak: function (text) {
+            //If currently speaking a message, add new message to the playlist
+            if (isSpeaking) {
+              this.playlist.push(text);
+            } else {
+              speakTextMessage(text).then(speakNextTextMessage);
+            }
+          },
+        };
+
+        // Speak text message
+        function speakTextMessage(text) {
+          return new Promise(function (resolve, reject) {
+            isSpeaking = true;
+            getAudioStream(text).then(playAudioStream).then(resolve);
+          });
+        }
+
+        // Speak next message in the list
+        function speakNextTextMessage() {
+          var pl = speaker.playlist;
+          if (pl.length > 0) {
+            var txt = pl[0];
+            pl.splice(0, 1);
+            speakTextMessage(txt).then(speakNextTextMessage);
+          }
+        }
+
+        // Get synthesized speech from Amazon polly
+        function getAudioStream(textMessage) {
+          return new Promise(function (resolve, reject) {
+            var polly = new AWS.Polly();
+            var params = {
+              OutputFormat: "mp3",
+              Text: textMessage,
+              VoiceId: document.getElementById("systemVoice").value,
+              Engine: document.getElementById("systemVoiceOption").value,
             };
 
-            //setTimeout(function () { wsKeepAlive(); }, 30000);
-
-            webSocket.onmessage = function (event) {
-                //console.log("event:", event);
-                var wsObject = JSON.parse(event.data);
-                recog_text = wsObject.message;
-                let language = wsObject.language;
-                if(language) {
-                    trans_sourcelang = language;
-                }
-
-                if (wsObject.isFinal) {
-                    var request = new XMLHttpRequest();
-                    document.getElementById('speech_text-imb').innerHTML = recog_text;
-
-                    destlang = document.getElementById('systemLangSelect').value;
-                    if (gas_key != null && (trans_sourcelang != destlang)) {
-                        query = TRANS_URL + '?message=' + recog_text + '&srcLang=' + trans_sourcelang + '&dstLang=' + destlang;
-                        request.open('GET', query, true);
-                        console.log("google translate url:", query);
-                        request.onreadystatechange = function () {
-                            if (request.readyState === 4 && request.status === 200) {
-                                //window.audioPlayer.Speak(request.responseText);
-                                setTimeout(function () { window.audioPlayer.Speak(request.responseText); }, parseInt(document.getElementById('delay').value));
-                                document.getElementById('result_text').style.visibility = 'visible';
-                                if (recog_text)
-                                    document.getElementById('speech_text-imb').innerHTML = recog_text;
-                                document.getElementById('trans_text-imb').innerHTML = request.responseText;
-                                setTimeout(function () { justWaitAMoment(); }, bubble_timer);
-                                //console.log("recognition.onend() after setTimeout");
-                                streamerLastSpoke = Date.now();
-                            }
-                        }
-                        request.send(null);
-                    } else if (recog_text) {
-                        setTimeout(function () { window.audioPlayer.Speak(recog_text); }, parseInt(document.getElementById('delay').value));
-                        document.getElementById('speech_text-imb').innerHTML = recog_text;
-                    }
-                }
-                else {
-                    document.getElementById('result_text').style.visibility = 'visible';
-                    document.getElementById('speech_text-imb').innerHTML = "<< " + recog_text + " >>";
-                    streamerLastSpoke = Date.now();
-                }
-            }
-
-
+            polly.synthesizeSpeech(params, function (err, data) {
+              if (err) reject(err);
+              else resolve(data.AudioStream);
+            });
+          });
         }
 
-        function justWaitAMoment() {
-            var lastSpokeDiff = Date.now() - streamerLastSpoke;
-            console.log("Last spoke diff: " + lastSpokeDiff);
-            if (lastSpokeDiff >= bubble_timer) {
-                document.getElementById('result_text').style.visibility = 'hidden';
-                document.getElementById('speech_text-imb').innerHTML = "";
-                document.getElementById('trans_text-imb').innerHTML = "";
-            }
+        // Play audio stream
+        function playAudioStream(audioStream) {
+          return new Promise(function (resolve, reject) {
+            var uInt8Array = new Uint8Array(audioStream);
+            var arrayBuffer = uInt8Array.buffer;
+            var blob = new Blob([arrayBuffer]);
+
+            var url = URL.createObjectURL(blob);
+            audioPlayer.src = url;
+            audioPlayer.addEventListener("ended", function () {
+              isSpeaking = false;
+              resolve();
+            });
+            audioPlayer.play();
+          });
         }
 
-        let params = [...window.location.href.matchAll(/([\w-]+)=/gm)];
-        console.log("query string params:");
-        params.forEach(function (value) {
-            console.log(value[1] + "=" + getParam(value[1]));
-            document.documentElement.style.setProperty("--" + value[1], getParam(value[1]));
+        return speaker;
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        const inputWebSocket = document.getElementById("inputWebSocket");
+        const inputMicrophone = document.getElementById("inputMicrophone");
+        const micSelectionDiv = document.getElementById("micSelection");
+
+        const micList = document.getElementById("micList");
+
+        // Event listener for input source change
+        document
+          .querySelectorAll('input[name="inputSource"]')
+          .forEach((elem) => {
+            elem.addEventListener("change", function (event) {
+              if (event.target.value === "Microphone") {
+                micSelectionDiv.style.display = "block";
+                vr_function();
+                //populateMicrophoneList();
+              } else {
+                micSelectionDiv.style.display = "none";
+              }
+            });
+          });
+
+        // Function to populate microphone list
+        async function populateMicrophoneList() {
+          navigator.mediaDevices
+            .enumerateDevices()
+            .then(function (devices) {
+              micList.innerHTML = "";
+              devices.forEach(function (device) {
+                if (device.kind === "audioinput") {
+                  const option = document.createElement("option");
+                  option.value = device.deviceId;
+                  option.text =
+                    device.label || `Microphone ${micList.length + 1}`;
+                  micList.appendChild(option);
+                }
+              });
+            })
+            .catch(function (err) {
+              console.log(err.name + ": " + err.message);
+            });
+        }
+
+        // Initial population of microphones if microphone is pre-selected
+        if (inputMicrophone.checked) {
+          micSelectionDiv.style.display = "block";
+        }
+        populateMicrophoneList();
+      });
+
+      /**************************Audio player****************************/
+
+      (async function () {
+        //console.log('final load function()');
+        await cognitoSetup();
+        await buildVoiceLookup();
+        loadAndSortLanguages();
+
+        Handlebars.registerHelper(
+          "contains",
+          function (needle, haystack, options) {
+            //needle = Handlebars.escapeExpression(needle);
+            //haystack = Handlebars.escapeExpression(haystack);
+            return haystack.indexOf(needle) > -1
+              ? options.fn(this)
+              : options.inverse(this);
+          }
+        );
+
+        Handlebars.registerHelper("select", function (value, options) {
+          var $el = $("<select />").html(options.fn(this));
+          $el.find('[value="' + value + '"]').attr({ selected: "selected" });
+          return $el.html();
         });
 
-        function getParam(name, url) {
-            if (!url) url = window.location.href;
-            name = name.replace(/[\[\]]/g, "\\$&");
-            var regex = new RegExp("[?&]" + name + "(=([^&]*)|&|$)"),
-                results = regex.exec(url);
-            if (!results) return null;
-            if (!results[2]) return '';
-            return decodeURIComponent(results[2].replace(/\+/g, " "));
+        var data = {};
+
+        if (localStorage.getItem("systemVoice")) {
+          data.voice = localStorage.getItem("systemVoice");
+        } else {
+          data.voice = "Justin";
         }
 
-        async function buildVoiceLookup() {
-            return new Promise(function (resolve, reject) {
-                //console.log('buildVoiceLookup()');
+        data.voices = voicesDesc;
 
-                var polly = new AWS.Polly();
-                //console.log('pulling voices from AWS API');
-                var params = {};
+        var systemVoiceSource = document.getElementById(
+            "system-voice-template"
+          ).innerHTML,
+          systemVoiceTemplate = Handlebars.compile(systemVoiceSource),
+          systemVoicePlaceholder = document.getElementById(
+            "systemVoicePlaceholder"
+          );
 
-                polly.describeVoices(params, async function (err, data) {
-                    if (err) {
-                        console.log(err, err.stack); // an error occurred
-                        reject(err);
-                    } else {
-                        voicesDesc = data;
-                        for (var i = 0; i < voicesDesc.Voices.length; i++) {
-                            var lcvoice = voicesDesc.Voices[i].Id.toLowerCase();
-                            var idvoice = voicesDesc.Voices[i].Id;
-                            voices[lcvoice] = {};
-                            voices[lcvoice].engine = voicesDesc.Voices[i].SupportedEngines[0];
-                            voices[lcvoice].voiceOptions = voicesDesc.Voices[i].SupportedEngines;
-                            voices[lcvoice].name = idvoice;
-                        }
-                        voicesDesc.Voices.sort(function (a, b) {
-                            if (a.LanguageCode === b.LanguageCode) {
-                                return b.Id - a.Id;
-                            }
-                            return a.LanguageCode > b.LanguageCode ? 1 : -1;
-                        });
-                        resolve();
-                    }
-                });
-                //console.log(voices);
-            });
+        systemVoicePlaceholder.innerHTML = systemVoiceTemplate(data);
+
+        var systemVoiceOptionSource = document.getElementById(
+            "system-voice-option-template"
+          ).innerHTML,
+          systemVoiceOptionTemplate = Handlebars.compile(
+            systemVoiceOptionSource
+          ),
+          systemVoiceOptionPlaceholder = document.getElementById(
+            "systemVoiceOptionPlaceholder"
+          );
+
+        var optionData = {};
+
+        optionData.voiceOptions = voices[data.voice.toLowerCase()].voiceOptions;
+        optionData.voiceOption =
+          voices[data.voice.toLowerCase()].voiceOptions[0];
+
+        systemVoiceOptionPlaceholder.innerHTML =
+          systemVoiceOptionTemplate(optionData);
+
+        if (localStorage.getItem("systemVoice")) {
+          document.getElementById("systemVoice").value =
+            localStorage.getItem("systemVoice");
+        }
+        if (localStorage.getItem("systemVoiceOption")) {
+          document.getElementById("systemVoiceOption").value =
+            localStorage.getItem("systemVoiceOption");
         }
 
-        function loadAndSortLanguages() {
-            for (const key in supportedLanguages.en) {
-                var lang = supportedLanguages.en[key];
-                var tmp = {};
-                tmp.languageCode = key;
-                tmp.languageName = lang;
-                sortedLanguages.push(tmp);
-            }
-            sortedLanguages.sort(function (a, b) {
-                return a.languageName > b.languageName ? 1 : -1;
-            });
+        data = {};
+        data.name = "System";
+        data.elementId = "systemLangSelect";
+        data.langs = sortedLanguages;
+
+        var systemLangSource = document.getElementById(
+            "system-lang-template"
+          ).innerHTML,
+          systemLangTemplate = Handlebars.compile(systemLangSource),
+          systemLangPlaceholder = document.getElementById(
+            "systemLangPlaceholder"
+          );
+
+        systemLangPlaceholder.innerHTML = systemLangTemplate(data);
+
+        data = {};
+        data.name = "Mic";
+        data.elementId = "micLangSelect";
+        data.langs = sortedLanguages;
+
+        var micLangSource =
+            document.getElementById("mic-lang-template").innerHTML,
+          micLangTemplate = Handlebars.compile(micLangSource),
+          micLangPlaceholder = document.getElementById("micLangPlaceholder");
+
+        micLangPlaceholder.innerHTML = micLangTemplate(data);
+
+        if (localStorage.getItem("systemLangSelect")) {
+          document.getElementById("systemLangSelect").value =
+            localStorage.getItem("systemLangSelect");
         }
 
-        function voiceSelected(voice) {
-            var userVoiceOptionSource = document.getElementById('system-voice-option-template').innerHTML,
-                userVoiceOptionTemplate = Handlebars.compile(userVoiceOptionSource),
-                userVoiceOptionPlaceholder = document.getElementById('systemVoiceOptionPlaceholder');
-            userVoiceOptionPlaceholder.innerHTML = userVoiceOptionTemplate(voices[voice.toLowerCase()]);
-            var voiceOption = document.getElementById('voice-option');
-            voiceOption.value = voices[voice.toLowerCase()].voiceOptions[0];
-
-            localStorage.setItem('systemVoice', document.getElementById('systemVoice').value);
-            localStorage.setItem('systemVoiceOption', document.getElementById('systemVoiceOption').value);
+        if (localStorage.getItem("micLangSelect")) {
+          document.getElementById("micLangSelect").value =
+            localStorage.getItem("micLangSelect");
         }
 
-        function voiceOptionSelected(voiceOption) {
-            var voiceOptionElement = document.getElementById('voice-option');
-            voiceOptionElement.value = voiceOption;
-
-            localStorage.setItem('systemVoice', document.getElementById('systemVoice').value);
-            localStorage.setItem('systemVoiceOption', document.getElementById('systemVoiceOption').value);
+        if (localStorage.getItem("micList")) {
+          document.getElementById("micList").value =
+            localStorage.getItem("micList");
         }
-
-        function saveLocalStorageLang(elementId) {
-            console.log("elementId:", elementId);
-            localStorage.setItem(elementId, document.getElementById(elementId).value);
-        }
-
-        /**************************Audio player****************************/
-        function AudioPlayer(voiceId) {
-            var audioPlayer = document.createElement('audio');
-            audioPlayer.setAttribute("id", "audioPlayer");
-            document.body.appendChild(audioPlayer);
-
-            var isSpeaking = false;
-
-            var speaker = {
-                self: this,
-                playlist: [],
-
-                Speak: function (text) {
-                    //If currently speaking a message, add new message to the playlist
-                    if (isSpeaking) {
-                        this.playlist.push(text);
-                    } else {
-                        speakTextMessage(text).then(speakNextTextMessage)
-                    }
-                }
-            }
-
-            // Speak text message
-            function speakTextMessage(text) {
-                return new Promise(function (resolve, reject) {
-                    isSpeaking = true;
-                    getAudioStream(text).then(playAudioStream).then(resolve);
-                });
-            }
-
-            // Speak next message in the list
-            function speakNextTextMessage() {
-                var pl = speaker.playlist;
-                if (pl.length > 0) {
-                    var txt = pl[0];
-                    pl.splice(0, 1);
-                    speakTextMessage(txt).then(speakNextTextMessage);
-                }
-            }
-
-            // Get synthesized speech from Amazon polly
-            function getAudioStream(textMessage) {
-                return new Promise(function (resolve, reject) {
-                    var polly = new AWS.Polly();
-                    var params = {
-                        OutputFormat: 'mp3',
-                        Text: textMessage,
-                        VoiceId: document.getElementById('systemVoice').value,
-                        Engine: document.getElementById('systemVoiceOption').value
-                    };
-
-                    polly.synthesizeSpeech(params, function (err, data) {
-                        if (err)
-                            reject(err);
-                        else
-                            resolve(data.AudioStream);
-                    });
-                });
-            }
-
-            // Play audio stream
-            function playAudioStream(audioStream) {
-                return new Promise(function (resolve, reject) {
-                    var uInt8Array = new Uint8Array(audioStream);
-                    var arrayBuffer = uInt8Array.buffer;
-                    var blob = new Blob([arrayBuffer]);
-
-                    var url = URL.createObjectURL(blob);
-                    audioPlayer.src = url;
-                    audioPlayer.addEventListener("ended", function () {
-                        isSpeaking = false;
-                        resolve();
-                    });
-                    audioPlayer.play();
-                });
-            }
-
-            return speaker;
-        }
-        /**************************Audio player****************************/
-
-        (async function () {
-            //console.log('final load function()');
-            await cognitoSetup();
-            await buildVoiceLookup();
-            loadAndSortLanguages();
-
-            Handlebars.registerHelper('contains', function (needle, haystack, options) {
-                //needle = Handlebars.escapeExpression(needle);
-                //haystack = Handlebars.escapeExpression(haystack);
-                return haystack.indexOf(needle) > -1 ? options.fn(this) : options.inverse(this);
-            });
-
-            Handlebars.registerHelper('select', function (value, options) {
-                var $el = $('<select />').html(options.fn(this));
-                $el.find('[value="' + value + '"]').attr({ selected: 'selected' });
-                return $el.html();
-            });
-
-
-            var data = {};
-
-            if (localStorage.getItem('systemVoice')) {
-                data.voice = localStorage.getItem('systemVoice');
-            } else {
-                data.voice = 'Justin';
-            }
-
-            data.voices = voicesDesc;
-
-            var systemVoiceSource = document.getElementById('system-voice-template').innerHTML,
-                systemVoiceTemplate = Handlebars.compile(systemVoiceSource),
-                systemVoicePlaceholder = document.getElementById('systemVoicePlaceholder');
-
-            systemVoicePlaceholder.innerHTML = systemVoiceTemplate(data);
-
-            var systemVoiceOptionSource = document.getElementById('system-voice-option-template').innerHTML,
-                systemVoiceOptionTemplate = Handlebars.compile(systemVoiceOptionSource),
-                systemVoiceOptionPlaceholder = document.getElementById('systemVoiceOptionPlaceholder');
-
-            var optionData = {};
-
-            optionData.voiceOptions = voices[data.voice.toLowerCase()].voiceOptions;
-            optionData.voiceOption = voices[data.voice.toLowerCase()].voiceOptions[0];
-
-            systemVoiceOptionPlaceholder.innerHTML = systemVoiceOptionTemplate(optionData);
-
-            if (localStorage.getItem('systemVoice')) {
-                document.getElementById('systemVoice').value = localStorage.getItem('systemVoice');
-            }
-            if (localStorage.getItem('systemVoiceOption')) {
-                document.getElementById('systemVoiceOption').value = localStorage.getItem('systemVoiceOption');
-            }
-
-            data = {};
-            data.name = "System";
-            data.elementId = "systemLangSelect";
-            data.langs = sortedLanguages;
-
-            var systemLangSource = document.getElementById('lang-template').innerHTML,
-                systemLangTemplate = Handlebars.compile(systemLangSource),
-                systemLangPlaceholder = document.getElementById('systemLangPlaceholder');
-
-            systemLangPlaceholder.innerHTML = systemLangTemplate(data);
-
-            if (localStorage.getItem('systemLangSelect')) {
-                document.getElementById('systemLangSelect').value = localStorage.getItem('systemLangSelect');
-            }
-            //if (localStorage.getItem('channel')) {
-                document.getElementById('channel').value = channel; // localStorage.getItem('channel');
-            //}
-        })();
-
+        //if (localStorage.getItem('channel')) {
+        document.getElementById("channel").value = channel; // localStorage.getItem('channel');
+        //}
+      })();
     </script>
-</body>
-
+  </body>
 </html>
