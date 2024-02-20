@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
+<link href="https://fonts.googleapis.com/css?family=Poppins" rel="stylesheet">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@800&display=swap" rel="stylesheet">
@@ -27,8 +27,9 @@
 	.container {
 		text-align: center;
 	}
+
 	.logo {
-		font-family: "Poppins-Bold",
+		font-family: "Poppins-Bold";
 		margin-bottom: 20px;
 		font-size: 84px;
 		line-height: 80px;
@@ -36,6 +37,7 @@
 		font-weight: 900;
 		text-shadow: -6px 8px 12px #000;
 	}
+
 	.logo img {
 		height: 70px;
 		margin-bottom: -10px;
@@ -100,27 +102,83 @@
         <img src="media/profile_image-300x300.png">
 		tts.bot
     </div>
-    <h1>Login With <span style="color:#B36AFF">Twitch</span></h1>
+    <h1>Access requires a <span style="color:#B36AFF"><a style="color:#B36AFF" href="https://www.twitch.tv/signup" target="_blank">Twitch</a></span> account.</h1>
+
+    <dl class="login-options">
+		<div id="dstLangPlaceholder" class="form-group"></div>
+		<div id="systemVoicePlaceholder"></div>
+	</dl>	
+
 	<h2>Choose your desired capabilities and click authenticate.</h2>
     <dl class="login-options">
         <dd class="login-option">
-            <input type="radio" id="moderation" name="capability" value="moderation">
+            <input type="radio" id="moderation" name="capability" value="moderation" onclick="modcap()">
             <label for="moderation">Moderation Capabilities</label>
         </dd>
         <dd class="login-option">
-            <input type="radio" id="chat" name="capability" value="chat">
+            <input type="radio" id="chat" name="capability" value="chat" onclick="basiccap()">
             <label for="chat">Basic Chat Capabilities</label>
         </dd>
-        <dd class="login-option">
-            <input type="radio" id="anonymous" name="capability" value="anonymous">
-            <label for="anonymous">Anonymous</label>
-        </dd>
     </dl>
-    <button class="login-button btn">Authenticate</button>
+    <button id="loginButton" class="login-button btn">Authenticate</button>
     <div class="footer">
         <p>Super Secure Login<br>Like Banks Have</p>
-        Terms & Buy Now
     </div>
 </div>
+<script src="aws-sdk.js"></script>
+<script src="awsTranslateLanguages.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>
+<script src="https://code.jquery.com/jquery-1.10.1.min.js"></script>
+
+<script id="system-voice-template" type="text/x-handlebars-template">
+	<dt>System Voice Selection: </dt>
+	<dd class="clearfix">
+	  <select id="systemVoice" onchange="systemVoiceSelected(this.value)">
+		{{#select voice}}
+		  {{#each voices.Voices}}
+			<option value="{{Id}}">{{Id}}
+			  ({{LanguageCode}}
+			  --
+			  {{LanguageName}})</option>
+		  {{/each}}
+		{{/select}}
+	  </select>
+	  <input
+		type="hidden"
+		size="10"
+		name="voice-option"
+		id="voice-option"
+		value="{{voice_option}}"
+	  />
+	</dd>
+	<div id="systemVoiceOptionPlaceholder"></div>
+  </script>
+
+  <script id="system-voice-option-template" type="text/x-handlebars-template">
+	<select id="systemVoiceOption" onchange="systemVoiceOptionSelected(this.value)">
+	  {{#select voiceOption}}
+		{{#each voiceOptions}}
+		  <option value="{{this}}">{{this}}</option>
+		{{/each}}
+	  {{/select}}
+	</select>
+  </script>
+
+  <script id="system-lang-template" type="text/x-handlebars-template">
+	<dt>{{name}}</dt>
+	<dd class="clearfix">
+	  <select
+		id="{{elementId}}"
+		class="form-control"
+		onchange="saveLocalStorageLang('{{elementId}}')"
+	  >
+		{{#each langs}}
+		  <option value="{{@key}}">{{this}}</option>
+		{{/each}}
+	  </select>
+	</dd>
+  </script>
+
+<script src="js/login_script.js"></script>
 </body>
 </html>
