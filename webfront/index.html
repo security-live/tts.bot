@@ -26,11 +26,12 @@
   </head>
 
   <body>
-    <div class="main-container container-fluid">
+    <div id="loggedin" style="display: none" class="main-container container-fluid">
       <div class="topHeader row">
         <div class="col-md-2 text-left">
           <!-- Content for the left-aligned div -->
           <div id="title">tts.bot</div>
+          <div id="stsCurrentLang"></div>
         </div>
         <div class="col-8 text-center">
           <!-- Content for the center-aligned div -->
@@ -90,16 +91,7 @@
           <!-- Content for the right-aligned div -->
           <span id="status">Disconnected</span><br />
           <span id="queueCount">Messages Queued(0)</span>
-          <!--
-          <button
-            type="button"
-            id="user-settings-gear"
-            class="btn btn-default"
-            onclick="toggleUserSettingsMenu()"
-          >
-            <i class="fas fa-user-cog"></i>
-          </button>
--->
+
           <button
             type="button"
             id="cct-popup"
@@ -125,7 +117,7 @@
 
         <!-- The rest of your HTML code remains the same -->
 
-        <div id="loggedin" style="display: none">
+        <div>
           <div id="settings" class="container-fluid">
             <!-- Top Header -->
 
@@ -619,7 +611,7 @@
                     type="text"
                     id="txtCCTURL"
                     class="form-control"
-                    value="http://localhost:8080/tts.bot/webfront/translator.html?popup=true&src=en&dst=de&webkit-text-stroke-color=red&outline-color=red&shadow-color=red&border-color=red"
+                    value="/translator.html?popup=true&src=en&dst=de&webkit-text-stroke-color=red&outline-color=red&shadow-color=red&border-color=red"
                     placeholder="test"
                     oninput="saveOption(this)"
                 /></label>

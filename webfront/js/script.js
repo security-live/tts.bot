@@ -79,7 +79,7 @@ function getHashParams() {
   }
   return hashParams;
 }
-
+/*
 function showAuthButton() {
   let redirectURL =
     "https://securitylive.com/tts/safetokenXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.html";
@@ -119,6 +119,7 @@ function showAuthButton() {
   $("#loggedin").hide();
   $("#ttsinfo").show();
 }
+*/
 
 function sanitize(input) {
   return input.replace(/[^a-zA-Z0-9-_]/g, "");
@@ -210,12 +211,15 @@ $.ajax({
       console.log("afterSan:", channel);
       document.getElementById("channel").value = channel;
     }
+    else {
+      document.getElementById("channel").value = channel;
+    }
   },
 
   error: function (response) {
     localStorage.removeItem("access_token");
     access_token = null;
-    showAuthButton();
+    //showAuthButton();
   },
 });
 
@@ -404,8 +408,7 @@ async function loadOptions() {
       } else if (key.startsWith("txt")) {
         document.getElementById(key).value = value;
       }
-    }
-    catch(err) {
+    } catch (err) {
       console.log(err);
     }
   });
@@ -673,7 +676,7 @@ function onConnected(address, port) {
     document.getElementById("cbAutoTranslateChat").checked = true;
   }
 
-  getModerators();
+  //getModerators();
 }
 
 // Called every time the bot receives a whisper
@@ -1001,7 +1004,14 @@ async function readCopyBuffer() {
     const text = await navigator.clipboard.readText();
     console.log("Pasted content:", text);
     addSystemBubble(text, ++messageID);
-    window.audioPlayer.Speak("", text, "", "system", "text", messageID);
+    window.audioPlayer.Speak(
+      "",
+      text,
+      "",
+      { username: "system" },
+      "text",
+      messageID
+    );
   } catch (err) {
     console.error("Failed to read clipboard contents: ", err);
   }
@@ -1465,18 +1475,19 @@ async function onNotice(msgid, channel, tags, msg) {
 
 function selectRandomVoiceByLanguageCode(languageCode) {
   // Filter voices by language code
-  const matchingVoices = voicesDesc.Voices.filter(voice => voice.LanguageCode.startsWith(languageCode));
-  
+  const matchingVoices = voicesDesc.Voices.filter((voice) =>
+    voice.LanguageCode.startsWith(languageCode)
+  );
+
   // Check if we found any matching voices
   if (matchingVoices.length === 0) {
-      return null;
+    return null;
   }
-  
+
   // Select a random voice from the matching ones
   const randomIndex = Math.floor(Math.random() * matchingVoices.length);
   return matchingVoices[randomIndex];
 }
-
 
 async function onChat(channel, userstate, message, self) {
   if (self) return;
@@ -1502,7 +1513,7 @@ async function onChat(channel, userstate, message, self) {
   await loadVoice(userstate);
   userstate.tts_voice = chatters[userstate.username].voice;
   userstate.tts_voice_option = chatters[userstate.username].voice_option;
-  userstate.tts_spoken_name = chatters[userstate.username].spoken_name;  
+  userstate.tts_spoken_name = chatters[userstate.username].spoken_name;
   chatters[userstate.username].platform = userstate.platform;
 
   console.log("------------ onChat() ---------");
@@ -1799,18 +1810,22 @@ async function doChat(channel, userstate, message, self) {
                   ")"
               );
 
-              if(document.getElementById("cbSetLangFromLastChat").checked) {
+              if (document.getElementById("cbSetLangFromLastChat").checked) {
                 let stsLang = document.getElementById("stsLangSelect");
                 let stsVoice = document.getElementById("stsVoice");
+                document.getElementById("stsCurrentLang").innerHTML =
+                  "STS Language: " + stsLang.value;
 
-                let randomVoice = selectRandomVoiceByLanguageCode(data.SourceLanguageCode);
+                let randomVoice = selectRandomVoiceByLanguageCode(
+                  data.SourceLanguageCode
+                );
                 stsVoice.value = randomVoice.Id;
                 stsLang.value = data.SourceLanguageCode;
 
                 saveLocalStorageLang("stsLangSelect");
                 stsVoiceSelected(stsVoice.value);
-
-                
+              } else {
+                document.getElementById("stsCurrentLang").InnerText = "";
               }
             }
           }
@@ -2082,8 +2097,6 @@ async function doChat(channel, userstate, message, self) {
     );
   }
 }
-
-
 
 function addMessageBubble(
   username,
@@ -2830,6 +2843,7 @@ async function loadVoice(lvuserstate) {
           url: "https://api.tts.bot/tts/all/" + username,
           success: function (response) {
             //console.log("Data from all for:", response);
+
             if (response.hasOwnProperty("Item")) {
               //console.log('loadVoice(global): ' + response.Item.voice.toLowerCase() + ' from DynamoDB');
               chatters[username].voice = response.Item.voice.toLowerCase();
@@ -3529,8 +3543,6 @@ function AudioPlayer() {
     });
   }
 
-
-
   /**************************Voice Recognition****************************/
   function vr_function() {
     if (
@@ -3565,25 +3577,34 @@ function AudioPlayer() {
 
       var trans_sourcelang = document.getElementById("dstLangSelect").value;
 
-      var gas_key =                                                                                        "AKfycbwi_joFMoaC8-kiSnvNiIfUqABbVar5Mg0g2nxu2BxuPkQiHJ5WwzYAFg";
+      var gas_key =
+        "AKfycbwi_joFMoaC8-kiSnvNiIfUqABbVar5Mg0g2nxu2BxuPkQiHJ5WwzYAFg";
       var TRANS_URL = "https://script.google.com/macros/s/" + gas_key + "/exec";
       var query = "";
       var request = new XMLHttpRequest();
 
       let useSTS = document.getElementById("cbSTS").checked;
-      let useCustomWebsocket = document.getElementById("cbSendTextToWebsocket").checked;
-      let useAWSWebsocket = document.getElementById("cbSendTextToAWSWebsocket").checked;
-      let pauseTTSonSpeech = document.getElementById("cbPauseTTSOnSpeech").checked;
+      let useCustomWebsocket = document.getElementById(
+        "cbSendTextToWebsocket"
+      ).checked;
+      let useAWSWebsocket = document.getElementById(
+        "cbSendTextToAWSWebsocket"
+      ).checked;
+      let pauseTTSonSpeech =
+        document.getElementById("cbPauseTTSOnSpeech").checked;
 
       recognition.onresult = async function (event) {
-        if (!useSTS && !useCustomWebsocket && !useAWSWebsocket && !pauseTTSonSpeech) {
+        if (
+          !useSTS &&
+          !useCustomWebsocket &&
+          !useAWSWebsocket &&
+          !pauseTTSonSpeech
+        ) {
           return;
         }
         //console.log('recognition.onresult()');
         var results = event.results;
         var speechProcessingStart = window.performance.now();
-
-        let trans_destlang = document.getElementById("stsLangSelect").value;
 
         //sendEventToCCT(event);
 
@@ -3596,41 +3617,43 @@ function AudioPlayer() {
 
             //console.log("final spoke for:", Date.now() - speechStarted);
             //console.log("speechTimeQueue:", speechTimeQueue);
-            if(useCustomWebsocket) {
-            sendTextToCustomWebsocket(
-              text,
-              true,
-              speechStarted,
-              Date.now(),
-              confidence
-            );
+            if (useCustomWebsocket) {
+              sendTextToCustomWebsocket(
+                text,
+                true,
+                speechStarted,
+                Date.now(),
+                confidence
+              );
             }
 
-            if(useAWSWebsocket) {
-            sendTextToAWSWebsocket(
-              text,
-              true,
-              speechStarted,
-              Date.now(),
-              confidence
-            );
+            if (useAWSWebsocket) {
+              sendTextToAWSWebsocket(
+                text,
+                true,
+                speechStarted,
+                Date.now(),
+                confidence
+              );
             }
 
             if (!document.getElementById("cbSTS").checked) {
               return;
             }
+
+            let trans_destlang = document.getElementById("stsLangSelect").value;
+
             // If source and dest lang match don't translate just speak
             if (trans_sourcelang == trans_destlang) {
-              if (
-                document.getElementById("cbSendSpeechTranslation").checked
-              ) {
+              if (document.getElementById("cbSendSpeechTranslation").checked) {
                 window.client.say(con.channel, text);
               }
 
               let stsVoice = document.getElementById("stsVoice").value;
-              let stsVoiceOption = document.getElementById("stsVoiceOption").value;
+              let stsVoiceOption =
+                document.getElementById("stsVoiceOption").value;
 
-              chatters["sts"] = {}
+              chatters["sts"] = {};
               chatters["sts"].voice = stsVoice;
               chatters["sts"].voice_option = stsVoiceOption;
 
@@ -3650,13 +3673,14 @@ function AudioPlayer() {
                 //"<speak>" + getSpokenName(document.getElementById("twitch_username").value) + " says " + text + "</speak>",
                 text,
                 "",
-                { username: "sts",
+                {
+                  username: "sts",
                   tts_voice: stsVoice,
-                  tts_voice_option: stsVoiceOption },
+                  tts_voice_option: stsVoiceOption,
+                },
                 "text",
                 messageID
               );
-
             } else {
               if (gas_key != null) {
                 query =
@@ -3675,10 +3699,10 @@ function AudioPlayer() {
                     //document.getElementById('trans_text-imb').innerHTML = request.responseText;
                     //window.audioPlayer.Speak("<speak>" + getSpokenName(document.getElementById("twitch_username").value) + " says </speak>", 'system', 'ssml');
                     if (
-                      document.getElementById("cbSendSpeechTranslation")
-                        .checked
+                      document.getElementById("cbSendSpeechTranslation").checked
                     ) {
-                      window.client.say(con.channel,
+                      window.client.say(
+                        con.channel,
                         text +
                           " ( " +
                           request.responseText +
@@ -3688,9 +3712,10 @@ function AudioPlayer() {
                     }
 
                     let stsVoice = document.getElementById("stsVoice").value;
-                    let stsVoiceOption = document.getElementById("stsVoiceOption").value;
-      
-                    chatters["sts"] = {}
+                    let stsVoiceOption =
+                      document.getElementById("stsVoiceOption").value;
+
+                    chatters["sts"] = {};
                     chatters["sts"].spoken_name = con.channel;
                     chatters["sts"].voice = stsVoice;
                     chatters["sts"].voice_option = stsVoiceOption;
@@ -3709,9 +3734,11 @@ function AudioPlayer() {
                       "",
                       request.responseText,
                       "",
-                      { username: "sts",
-                      tts_voice: stsVoice,
-                      tts_voice_option: stsVoiceOption },
+                      {
+                        username: "sts",
+                        tts_voice: stsVoice,
+                        tts_voice_option: stsVoiceOption,
+                      },
                       "text",
                       messageID
                     );
@@ -4020,43 +4047,35 @@ async function finishSetup() {
   // STS voice selector
   // --------------------------------------------------------
 
-  var stsVoiceSource = document.getElementById(
-    "sts-voice-template"
-  ).innerHTML,
-  stsVoiceTemplate = Handlebars.compile(stsVoiceSource),
-  stsVoicePlaceholder = document.getElementById("stsVoicePlaceholder");
+  var stsVoiceSource = document.getElementById("sts-voice-template").innerHTML,
+    stsVoiceTemplate = Handlebars.compile(stsVoiceSource),
+    stsVoicePlaceholder = document.getElementById("stsVoicePlaceholder");
 
-stsVoicePlaceholder.innerHTML = stsVoiceTemplate(data);
+  stsVoicePlaceholder.innerHTML = stsVoiceTemplate(data);
 
-var stsVoiceOptionSource = document.getElementById(
-    "sts-voice-option-template"
-  ).innerHTML,
-  stsVoiceOptionTemplate = Handlebars.compile(stsVoiceOptionSource),
-  stsVoiceOptionPlaceholder = document.getElementById(
-    "stsVoiceOptionPlaceholder"
-  );
+  var stsVoiceOptionSource = document.getElementById(
+      "sts-voice-option-template"
+    ).innerHTML,
+    stsVoiceOptionTemplate = Handlebars.compile(stsVoiceOptionSource),
+    stsVoiceOptionPlaceholder = document.getElementById(
+      "stsVoiceOptionPlaceholder"
+    );
 
-var optionData = {};
+  var optionData = {};
 
-optionData.voiceOptions = voices[data.voice.toLowerCase()].voiceOptions;
-optionData.voiceOption = voices[data.voice.toLowerCase()].voiceOptions[0];
+  optionData.voiceOptions = voices[data.voice.toLowerCase()].voiceOptions;
+  optionData.voiceOption = voices[data.voice.toLowerCase()].voiceOptions[0];
 
-stsVoiceOptionPlaceholder.innerHTML = stsVoiceOptionTemplate(optionData);
+  stsVoiceOptionPlaceholder.innerHTML = stsVoiceOptionTemplate(optionData);
 
-if (localStorage.getItem("stsVoice")) {
-  document.getElementById("stsVoice").value =
-    localStorage.getItem("stsVoice");
-}
-if (localStorage.getItem("stsVoiceOption")) {
-  document.getElementById("stsVoiceOption").value =
-    localStorage.getItem("stsVoiceOption");
-}
-
-// ---------------------------------------------------------------------
-
-  // --------------------------------------------------------
-  // Chat voice selector
-  // --------------------------------------------------------
+  if (localStorage.getItem("stsVoice")) {
+    document.getElementById("stsVoice").value =
+      localStorage.getItem("stsVoice");
+  }
+  if (localStorage.getItem("stsVoiceOption")) {
+    document.getElementById("stsVoiceOption").value =
+      localStorage.getItem("stsVoiceOption");
+  }
 
   var chatVoiceSource = document.getElementById(
       "chat-voice-template"
@@ -4111,7 +4130,9 @@ if (localStorage.getItem("stsVoiceOption")) {
   data.elementId = "dstLangSelect";
   dstLangPlaceholder.innerHTML = dstLangTemplate(data);
 
-  var systemLangSource = document.getElementById("system-lang-template").innerHTML,
+  var systemLangSource = document.getElementById(
+      "system-lang-template"
+    ).innerHTML,
     systemLangTemplate = Handlebars.compile(systemLangSource),
     systemLangPlaceholder = document.getElementById("systemLangPlaceholder");
 
@@ -4134,10 +4155,6 @@ if (localStorage.getItem("stsVoiceOption")) {
   data.name = "";
   data.elementId = "chatLangSelect";
   chatLangPlaceholder.innerHTML = chatLangTemplate(data);
-
-
-
-
 
   if (localStorage.getItem("srcLangSelect")) {
     document.getElementById("srcLangSelect").value =
@@ -4168,16 +4185,16 @@ if (localStorage.getItem("stsVoiceOption")) {
   if (localStorage.getItem("stsLangSelect")) {
     document.getElementById("stsLangSelect").value =
       localStorage.getItem("stsLangSelect");
-  }  
+  }
 
   if (access_token) {
-    $("#login").hide();
-    $("#ttsinfo").hide();
+    //$("#login").hide();
+    //$("#ttsinfo").hide();
     $("#loggedin").show();
     if (autoconnect == "true") {
       connect();
     }
   } else {
-    showAuthButton();
+    window.location.href = "https://"+location.hostname+"/login.html";
   }
 }
