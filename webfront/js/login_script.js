@@ -143,18 +143,7 @@ async function finishSetup() {
     document.getElementById("dstLangSelect").value = "en";
   }
 
-  /*
-    if (access_token) {
-      $("#login").hide();
-      $("#ttsinfo").hide();
-      $("#loggedin").show();
-      if (autoconnect == "true") {
-        connect();
-      }
-    } else {
-      showAuthButton();
-    }
-    */
+  modcap();
 }
 
 // Function for basic capabilities

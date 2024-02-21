@@ -42,37 +42,29 @@
 		height: 70px;
 		margin-bottom: -10px;
 	}
-	.login-options {
-		margin: 20px 0;
-		margin-left: auto;
-		margin-right: auto;
-		width: 300px;
-	}
-	.login-option {
-		margin-left: auto;
-		margin-right: auto;
-		margin: 10px 0;
-		text-align: left;
-		width: 240px;
-	}
-	.login-button {
-		border: none;
-		color: white;
-		padding: 20px 20px;
-		text-align: center;
-		text-decoration: none;
-		display: inline-block;
-		font-size: 16px;
-		margin: 4px 2px;
-		cursor: pointer;
-		border-radius: 15px;
-
-		background: rgb(129,223,244);
-		background: -moz-linear-gradient(90deg, rgba(129,223,244,1) 0%, rgba(80,56,237,1) 100%);
-		background: -webkit-linear-gradient(90deg, rgba(129,223,244,1) 0%, rgba(80,56,237,1) 100%);
-		background: linear-gradient(90deg, rgba(129,223,244,1) 0%, rgba(80,56,237,1) 100%);
-		filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#81dff4",endColorstr="#5038ed",GradientType=1); 
-	}
+    .login-options {
+        width: 100%;
+        text-align: left;
+    }
+    .login-option {
+        margin: 10px 0;
+    }
+    .login-button {
+        border: none;
+        color: white;
+        padding: 20px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 15px;
+        background: rgb(129,223,244);
+        background: linear-gradient(90deg, rgba(129,223,244,1) 0%, rgba(80,56,237,1) 100%);
+        width: 100%; /* Full width */
+        box-sizing: border-box; /* Prevent size miscalculations */
+    }
 	.login-button:HOVER {
 		background: #FFF !important;
 		color: #000 !important;
@@ -100,7 +92,7 @@
 <div class="container">
     <div class="logo">
         <img src="media/profile_image-300x300.png">
-		tts.bot
+		tts.bot for <span style="color:#B36AFF">Twitch</span>
     </div>
     <h1>Access requires a <span style="color:#B36AFF"><a style="color:#B36AFF" href="https://www.twitch.tv/signup" target="_blank">Twitch</a></span> account.</h1>
 
@@ -112,17 +104,18 @@
 	<h2>Choose your desired capabilities and click authenticate.</h2>
     <dl class="login-options">
         <dd class="login-option">
-            <input type="radio" id="moderation" name="capability" value="moderation" onclick="modcap()">
-            <label for="moderation">Moderation Capabilities</label>
+            <input type="radio" id="moderation" name="capability" value="moderation" onclick="modcap()" checked>
+            <label for="moderation">Moderation (Recommended)</label>
         </dd>
         <dd class="login-option">
             <input type="radio" id="chat" name="capability" value="chat" onclick="basiccap()">
-            <label for="chat">Basic Chat Capabilities</label>
+            <label for="chat">Basic Chat</label>
         </dd>
     </dl>
     <button id="loginButton" class="login-button btn">Authenticate</button>
     <div class="footer">
         <p>Super Secure Login<br>Like Banks Have</p>
+		<p>*** Voice Recognition is only supported with Chrome ***</p>
     </div>
 </div>
 <script src="aws-sdk.js"></script>
@@ -155,13 +148,16 @@
   </script>
 
   <script id="system-voice-option-template" type="text/x-handlebars-template">
-	<select id="systemVoiceOption" onchange="systemVoiceOptionSelected(this.value)">
+	<dt>{{name}}</dt>
+	<dd class="clearfix">
+	<select id="systemVoiceOption" class="form-control" onchange="systemVoiceOptionSelected(this.value)">
 	  {{#select voiceOption}}
 		{{#each voiceOptions}}
 		  <option value="{{this}}">{{this}}</option>
 		{{/each}}
 	  {{/select}}
 	</select>
+	</dd>
   </script>
 
   <script id="system-lang-template" type="text/x-handlebars-template">
