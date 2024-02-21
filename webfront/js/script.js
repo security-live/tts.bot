@@ -79,47 +79,6 @@ function getHashParams() {
   }
   return hashParams;
 }
-/*
-function showAuthButton() {
-  let redirectURL =
-    "https://securitylive.com/tts/safetokenXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.html";
-  let subdomain = null;
-
-  if (hostname.includes("local.tts.bot")) {
-    subdomain = "local.";
-  } else if (hostname.includes("dev.tts.bot")) {
-    subdomain = "dev.";
-  } else if (hostname.includes("uat.tts.bot")) {
-    subdomain = "uat.";
-  } else if (hostname.includes("tts.bot")) {
-    subdomain = "root";
-  }
-
-  if (subdomain) {
-    if (subdomain === "root") {
-      subdomain = "";
-    }
-    redirectURL =
-      "https://" +
-      subdomain +
-      "tts.bot/safetokenXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.html";
-  }
-
-  var twitchURL =
-    '<a href="https://id.twitch.tv/oauth2/authorize?client_id=dan71ek0pct1u7b8ht5u4h55zlcxvq&redirect_uri=' +
-    redirectURL +
-    '&response_type=token&scope=moderation:read+moderator:manage:shoutouts+whispers:read+whispers:edit+user:manage:whispers+chat:read+chat:edit" class="btn btn-primary" > Authorize On Twitch with minimal permissions</a >' +
-    '<a href="https://id.twitch.tv/oauth2/authorize?client_id=dan71ek0pct1u7b8ht5u4h55zlcxvq&redirect_uri=' +
-    redirectURL +
-    '&response_type=token&scope=moderation:read+moderator:manage:shoutouts+whispers:read+whispers:edit+user:manage:whispers+chat:read+chat:edit+moderator:manage:banned_users+moderator:manage:chat_messages+channel:manage:moderators" class="btn btn-primary" > Authorize On Twitch with ban and chat delete permissions</a >';
-
-  $("#login").html(twitchURL);
-  $("#login").show();
-  $("#ttsinfo").show();
-  $("#loggedin").hide();
-  $("#ttsinfo").show();
-}
-*/
 
 function sanitize(input) {
   return input.replace(/[^a-zA-Z0-9-_]/g, "");
@@ -210,8 +169,7 @@ $.ajax({
       channel = sanitize(channel);
       console.log("afterSan:", channel);
       document.getElementById("channel").value = channel;
-    }
-    else {
+    } else {
       document.getElementById("channel").value = channel;
     }
   },
@@ -645,8 +603,6 @@ function onConnected(address, port) {
     "ssml",
     messageID
   );
-
-  //window.audioPlayer.Speak("Connected to channel " + con.channel, "justin");
 
   localStorage.setItem(
     "twitch_username",
@@ -1356,6 +1312,46 @@ function systemVoiceOptionSelected(voiceOption) {
   );
 }
 
+function defaultChatterVoiceSelected(voice) {
+  var userVoiceOptionSource = document.getElementById(
+      "default-chatter-voice-option-template"
+    ).innerHTML,
+    userVoiceOptionTemplate = Handlebars.compile(userVoiceOptionSource),
+    userVoiceOptionPlaceholder = document.getElementById(
+      "defaultChatterVoiceOptionPlaceholder"
+    );
+  userVoiceOptionPlaceholder.innerHTML = userVoiceOptionTemplate(
+    voices[voice.toLowerCase()]
+  );
+  var voiceOption = document.getElementById("default-chatter-voice-option");
+  voiceOption.value = voices[voice.toLowerCase()].voiceOptions[0];
+
+  localStorage.setItem(
+    "defaultChatterVoice",
+    document.getElementById("defaultChatterVoice").value
+  );
+  localStorage.setItem(
+    "defaultChatterVoiceOption",
+    document.getElementById("defaultChatterVoiceOption").value
+  );
+}
+
+function defaultChatterVoiceOptionSelected(voiceOption) {
+  var voiceOptionElement = document.getElementById(
+    "default-chatter-voice-option"
+  );
+  voiceOptionElement.value = voiceOption;
+
+  localStorage.setItem(
+    "defaultChatterVoice",
+    document.getElementById("defaultChatterVoice").value
+  );
+  localStorage.setItem(
+    "defaultChatterVoiceOption",
+    document.getElementById("defaultChatterVoiceOption").value
+  );
+}
+
 function stsVoiceSelected(voice) {
   var userVoiceOptionSource = document.getElementById(
       "sts-voice-option-template"
@@ -1472,7 +1468,7 @@ async function onAction(channel, userstate, message, self) {
 async function onNotice(msgid, channel, tags, msg) {
   console.log(arguments);
 }
-
+/*
 function selectRandomVoiceByLanguageCode(languageCode) {
   // Filter voices by language code
   const matchingVoices = voicesDesc.Voices.filter((voice) =>
@@ -1488,6 +1484,37 @@ function selectRandomVoiceByLanguageCode(languageCode) {
   const randomIndex = Math.floor(Math.random() * matchingVoices.length);
   return matchingVoices[randomIndex];
 }
+*/
+
+function selectRandomVoiceByLanguageCode(languageCode, gender) {
+  // Filter voices by language code
+  const matchingVoices = voicesDesc.Voices.filter((voice) =>
+    voice.LanguageCode.startsWith(languageCode)
+  );
+
+  // Initialize finalVoicesSelection with matchingVoices in case gender is not provided
+  let finalVoicesSelection = matchingVoices;
+
+  // If gender is provided, attempt to further filter by gender
+  if (gender !== undefined) {
+    const genderMatchingVoices = matchingVoices.filter((voice) => voice.Gender === gender);
+
+    // If there are any gender matching voices, use them as the final selection
+    if (genderMatchingVoices.length > 0) {
+      finalVoicesSelection = genderMatchingVoices;
+    }
+  }
+
+  // Check if we found any matching voices
+  if (finalVoicesSelection.length === 0) {
+    return null;
+  }
+
+  // Select a random voice from the final selection
+  const randomIndex = Math.floor(Math.random() * finalVoicesSelection.length);
+  return finalVoicesSelection[randomIndex];
+}
+
 
 async function onChat(channel, userstate, message, self) {
   if (self) return;
@@ -1562,6 +1589,8 @@ async function doChat(channel, userstate, message, self) {
 
   let speakEmotes = document.getElementById("cbSpeakEmotesTTS").checked;
   let dedupEmotes = document.getElementById("cbDedupEmotesTTS").checked;
+  let translateEmotes = document.getElementById("cbTranslateEmotesTTS").checked;
+
   let matchedEmotes = [];
   // Don't listen to my own messages..
   channel = channel.replace("#", "");
@@ -1659,22 +1688,9 @@ async function doChat(channel, userstate, message, self) {
     //console.log("found emotes:", matchedEmotes[0][0]);
 
     var time_diff = window.performance.now() - emoteParsingStart;
-    /*console.log(
-                                                    "processed emotes in:",
-                                                    parseFloat(time_diff).toFixed(2),
-                                                    "ms"
-                                                  );*/
+    console.log("processed emotes in:", parseFloat(time_diff).toFixed(2), "ms");
   }
-  /*
-  if (
-    username == "streamelements" ||
-    username == "pretzelrocks" ||
-    username.includes("welcome to my channel")
-  ) {
-    last_speaker = username;
-    return;
-  }
-*/
+
   ssmlTextType = "text";
   if (
     message.match(
@@ -1686,8 +1702,10 @@ async function doChat(channel, userstate, message, self) {
 
   if (!chatters.hasOwnProperty(username)) {
     chatters[username] = {};
-    chatters[username].voice = "justin";
-    chatters[username].voice_option = "standard";
+    chatters[username].voice = localStorage.getItem("defaultChatterVoice");
+    chatters[username].voice_option = localStorage.getItem(
+      "defaultChatterVoiceOption"
+    );
     chatters[username].spoken_name = username;
     chatters[username].ttsBanned = false;
     chatters[username].display_name = userstate["display-name"];
@@ -1750,9 +1768,9 @@ async function doChat(channel, userstate, message, self) {
       TargetLanguageCode: con.targetLanguage,
     };
 
-    window.translator.translateText(
+    await window.translator.translateText(
       params,
-      function onIncomingMessageTranslate(err, data) {
+      async function onIncomingMessageTranslate(err, data) {
         //console.log("Original Message  : " + message);
         //console.log("Translated Message: " + data.TranslatedText);
 
@@ -1787,16 +1805,20 @@ async function doChat(channel, userstate, message, self) {
           var targetLang = document.getElementById("dstLangSelect").value;
           var translatedFromMessage = "";
 
-          if (
-            document.getElementById("dstLangSelect").value !=
-            data.SourceLanguageCode
-          ) {
+          if (targetLang != data.SourceLanguageCode) {
             if (message.startsWith("~")) {
               spokenText = message.substring(1);
-            } else {
+            } else if (targetLang == "en") {
               translatedFromMessage =
                 "Translated from " +
                 supportedLanguages.en[data.SourceLanguageCode];
+            } else {
+              translatedFromMessage = await simpleTranslate(
+                "Translated from " +
+                  supportedLanguages.en[data.SourceLanguageCode],
+                "en",
+                targetLang
+              );
             }
 
             if (con.cbAutoTranslateChat.checked && !identicalTranslation) {
@@ -1805,8 +1827,8 @@ async function doChat(channel, userstate, message, self) {
                 chatters[username].display_name +
                   ": " +
                   data.TranslatedText +
-                  " (Translated from " +
-                  supportedLanguages.en[data.SourceLanguageCode] +
+                  " (" +
+                  translatedFromMessage +
                   ")"
               );
 
@@ -2060,6 +2082,24 @@ async function doChat(channel, userstate, message, self) {
               )}${platform_message} says </speak>`;
             }
 
+            if (
+              !message.startsWith("~") && document.getElementById("cbUseVoiceForSelectedLanguage").checked
+            ) {
+              let dstLang = document.getElementById("dstLangSelect").value;
+              let chatterVoice = voices[chatters[userstate.username].voice];
+              if (
+                chatterVoice &&
+                chatterVoice.languageCode.startsWith(dstLang)
+              ) {
+                console.log("Voice matches the language!:", chatterVoice);
+              } else {
+                let voice = selectRandomVoiceByLanguageCode(dstLang, chatterVoice.gender);
+                userstate.tts_voice = voice.Id;
+                userstate.tts_voice_option = voice.SupportedEngines[0];
+                console.log("PICKED THIS ONE:", userstate);
+              }
+            }
+
             audioPlayer.Speak(
               prefix,
               spokenText,
@@ -2096,6 +2136,39 @@ async function doChat(channel, userstate, message, self) {
       }
     );
   }
+}
+
+async function simpleTranslate(message, srcLangCode, dstLangCode) {
+  return new Promise((resolve, reject) => {
+    // Wrap the asynchronous call in a Promise
+    if (!message) {
+      reject("No message provided");
+      return;
+    }
+
+    var params = {
+      Text: message,
+      SourceLanguageCode: srcLangCode,
+      TargetLanguageCode: dstLangCode,
+    };
+
+    window.translator.translateText(
+      params,
+      function onIncomingMessageTranslate(err, data) {
+        if (err) {
+          console.log(
+            "Error calling simpleTranslate(): " + err.message + err.stack
+          );
+          reject("Error in translation: " + err.message); // Reject the promise on error
+        } else if (data) {
+          console.log("simpleTranslate():", data.TranslatedText);
+          resolve(data.TranslatedText); // Resolve the promise with the translated text
+        } else {
+          resolve(message + " not translated."); // Resolve with the original message if no data
+        }
+      }
+    );
+  });
 }
 
 function addMessageBubble(
@@ -2321,8 +2394,8 @@ function runChatCommand(channel, username, message, mod) {
 
   if (message.startsWith("!setvoice")) {
     parts = message.split(" ");
-    var voice = "justin";
-    var voice_option = "standard";
+    var voice = localStorage.getItem("defaultChatterVoice");
+    var voice_option = localStorage.getItem("defaultChatterVoiceOption");
 
     if (parts.length < 2) {
       return;
@@ -2342,7 +2415,7 @@ function runChatCommand(channel, username, message, mod) {
 
     voice = voice.toLowerCase();
     if (!voices.hasOwnProperty(voice)) {
-      voice = "justin";
+      voice = localStorage.getItem("defaultChatterVoice");
     }
 
     if (!voices[voice].voiceOptions.includes(voice_option)) {
@@ -2767,6 +2840,9 @@ async function buildVoiceLookup() {
           voices[lcvoice].engine = voicesDesc.Voices[i].SupportedEngines[0];
           voices[lcvoice].voiceOptions = voicesDesc.Voices[i].SupportedEngines;
           voices[lcvoice].name = idvoice;
+          voices[lcvoice].gender = voicesDesc.Voices[i].Gender;
+          voices[lcvoice].languageCode = voicesDesc.Voices[i].LanguageCode;
+          voices[lcvoice].languageName = voicesDesc.Voices[i].LanguageName;
         }
         voicesDesc.Voices.sort(function (a, b) {
           if (a.LanguageCode === b.LanguageCode) {
@@ -2854,15 +2930,23 @@ async function loadVoice(lvuserstate) {
               chatters[username].color = lvuserstate.color;
             } else if (chatters[username].hasOwnProperty("voice")) {
               //console.log('loadVoice() chatters[' + username + '].voice: ' + chatters[username].voice);
-              chatters[username].voice = "justin";
-              chatters[username].voice_option = "standard";
+              chatters[username].voice = localStorage.getItem(
+                "defaultChatterVoice"
+              );
+              chatters[username].voice_option = localStorage.getItem(
+                "defaultChatterVoiceOption"
+              );
               chatters[username].spoken_name = username;
               chatters[username].ttsBanned = false;
               chatters[username].display_name = lvuserstate["display-name"];
             } else {
-              //console.log('loadVoice() catchall: using Justin for ' + username);
-              chatters[username].voice = "justin";
-              chatters[username].voice_option = "standard";
+              //console.log('loadVoice() catchall: using default voice for ' + username);
+              chatters[username].voice = localStorage.getItem(
+                "defaultChatterVoice"
+              );
+              chatters[username].voice_option = localStorage.getItem(
+                "defaultChatterVoiceOption"
+              );
               chatters[username].spoken_name = username;
               chatters[username].ttsBanned = false;
               chatters[username].display_name = lvuserstate["display-name"];
@@ -4043,6 +4127,55 @@ async function finishSetup() {
       localStorage.getItem("systemVoiceOption");
   }
 
+  // ------------------------------------------------------------
+  // Default chatter voice
+
+  if (localStorage.getItem("defaultChatterVoice")) {
+    data.voice = localStorage.getItem("defaultChatterVoice");
+  } else {
+    data.voice = "Justin";
+  }
+
+  var defaultChatterVoiceSource = document.getElementById(
+      "default-chatter-voice-template"
+    ).innerHTML,
+    defaultChatterVoiceTemplate = Handlebars.compile(defaultChatterVoiceSource),
+    defaultChatterVoicePlaceholder = document.getElementById(
+      "defaultChatterVoicePlaceholder"
+    );
+
+  defaultChatterVoicePlaceholder.innerHTML = defaultChatterVoiceTemplate(data);
+
+  var defaultChatterVoiceOptionSource = document.getElementById(
+      "default-chatter-voice-option-template"
+    ).innerHTML,
+    defaultChatterVoiceOptionTemplate = Handlebars.compile(
+      defaultChatterVoiceOptionSource
+    ),
+    defaultChatterVoiceOptionPlaceholder = document.getElementById(
+      "defaultChatterVoiceOptionPlaceholder"
+    );
+
+  var optionData = {};
+
+  optionData.voiceOptions = voices[data.voice.toLowerCase()].voiceOptions;
+  optionData.voiceOption = voices[data.voice.toLowerCase()].voiceOptions[0];
+
+  defaultChatterVoiceOptionPlaceholder.innerHTML =
+    defaultChatterVoiceOptionTemplate(optionData);
+
+  if (localStorage.getItem("defaultChatterVoice")) {
+    document.getElementById("defaultChatterVoice").value = localStorage.getItem(
+      "defaultChatterVoice"
+    );
+  }
+  if (localStorage.getItem("defaultChatterVoiceOption")) {
+    document.getElementById("defaultChatterVoiceOption").value =
+      localStorage.getItem("defaultChatterVoiceOption");
+  }
+
+  // ------------------------------------------------------------------------
+
   // --------------------------------------------------------
   // STS voice selector
   // --------------------------------------------------------
@@ -4126,19 +4259,9 @@ async function finishSetup() {
     dstLangTemplate = Handlebars.compile(dstLangSource),
     dstLangPlaceholder = document.getElementById("dstLangPlaceholder");
 
-  data.name = "Dest Language Selection: (Language to translate to) ";
+  data.name = "Your Language Selection: (Translate chat to this language) ";
   data.elementId = "dstLangSelect";
   dstLangPlaceholder.innerHTML = dstLangTemplate(data);
-
-  var systemLangSource = document.getElementById(
-      "system-lang-template"
-    ).innerHTML,
-    systemLangTemplate = Handlebars.compile(systemLangSource),
-    systemLangPlaceholder = document.getElementById("systemLangPlaceholder");
-
-  data.name = "System";
-  data.elementId = "systemLangSelect";
-  systemLangPlaceholder.innerHTML = systemLangTemplate(data);
 
   var stsLangSource = document.getElementById("sts-lang-template").innerHTML,
     stsLangTemplate = Handlebars.compile(stsLangSource),
@@ -4195,6 +4318,6 @@ async function finishSetup() {
       connect();
     }
   } else {
-    window.location.href = "https://"+location.hostname+"/login.html";
+    window.location.href = "https://" + location.hostname + "/login.html";
   }
 }

@@ -18,6 +18,347 @@ let twitchURLFullPermissions =
   redirectURL +
   "&response_type=token&scope=moderation:read+moderator:manage:shoutouts+whispers:read+whispers:edit+user:manage:whispers+chat:read+chat:edit+moderator:manage:banned_users+moderator:manage:chat_messages+channel:manage:moderators";
 
+async function finishSetup() {
+  console.log("final load function()");
+  await buildVoiceLookup();
+
+  Handlebars.registerHelper("contains", function (needle, haystack, options) {
+    //needle = Handlebars.escapeExpression(needle);
+    //haystack = Handlebars.escapeExpression(haystack);
+    return haystack.indexOf(needle) > -1
+      ? options.fn(this)
+      : options.inverse(this);
+  });
+
+  Handlebars.registerHelper("select", function (value, options) {
+    var $el = $("<select />").html(options.fn(this));
+    $el.find('[value="' + value + '"]').attr({ selected: "selected" });
+    return $el.html();
+  });
+
+  var data = {};
+
+  if (localStorage.getItem("systemVoice")) {
+    data.voice = localStorage.getItem("systemVoice");
+  } else {
+    data.voice = "Gregory";
+  }
+
+  data.voices = voicesDesc;
+
+  // System voice -------------------------------------------------------------
+
+  var systemVoiceSource = document.getElementById(
+      "system-voice-template"
+    ).innerHTML,
+    systemVoiceTemplate = Handlebars.compile(systemVoiceSource),
+    systemVoicePlaceholder = document.getElementById("systemVoicePlaceholder");
+
+  systemVoicePlaceholder.innerHTML = systemVoiceTemplate(data);
+
+  var systemVoiceOptionSource = document.getElementById(
+      "system-voice-option-template"
+    ).innerHTML,
+    systemVoiceOptionTemplate = Handlebars.compile(systemVoiceOptionSource),
+    systemVoiceOptionPlaceholder = document.getElementById(
+      "systemVoiceOptionPlaceholder"
+    );
+
+  var optionData = {};
+
+  optionData.voiceOptions = voices[data.voice.toLowerCase()].voiceOptions;
+  optionData.voiceOption = voices[data.voice.toLowerCase()].voiceOptions[0];
+
+  systemVoiceOptionPlaceholder.innerHTML =
+    systemVoiceOptionTemplate(optionData);
+
+  if (localStorage.getItem("systemVoice")) {
+    document.getElementById("systemVoice").value =
+      localStorage.getItem("systemVoice");
+  }
+  if (localStorage.getItem("systemVoiceOption")) {
+    document.getElementById("systemVoiceOption").value =
+      localStorage.getItem("systemVoiceOption");
+  }
+
+  //if(!document.getElementById("systemVoiceOption").value) {
+  //  document.getElementById("systemVoiceOption").setItem()
+  //}
+
+  // ------------------------------------------------------------
+  // Default chatter voice
+
+  if (localStorage.getItem("defaultChatterVoice")) {
+    data.voice = localStorage.getItem("defaultChatterVoice");
+  } else {
+    data.voice = "Justin";
+  }
+
+  var defaultChatterVoiceSource = document.getElementById(
+      "default-chatter-voice-template"
+    ).innerHTML,
+    defaultChatterVoiceTemplate = Handlebars.compile(defaultChatterVoiceSource),
+    defaultChatterVoicePlaceholder = document.getElementById(
+      "defaultChatterVoicePlaceholder"
+    );
+
+  defaultChatterVoicePlaceholder.innerHTML = defaultChatterVoiceTemplate(data);
+
+  var defaultChatterVoiceOptionSource = document.getElementById(
+      "default-chatter-voice-option-template"
+    ).innerHTML,
+    defaultChatterVoiceOptionTemplate = Handlebars.compile(
+      defaultChatterVoiceOptionSource
+    ),
+    defaultChatterVoiceOptionPlaceholder = document.getElementById(
+      "defaultChatterVoiceOptionPlaceholder"
+    );
+
+  var optionData = {};
+
+  optionData.voiceOptions = voices[data.voice.toLowerCase()].voiceOptions;
+  optionData.voiceOption = voices[data.voice.toLowerCase()].voiceOptions[0];
+
+  defaultChatterVoiceOptionPlaceholder.innerHTML =
+    defaultChatterVoiceOptionTemplate(optionData);
+
+  if (localStorage.getItem("defaultChatterVoice")) {
+    document.getElementById("defaultChatterVoice").value = localStorage.getItem(
+      "defaultChatterVoice"
+    );
+  }
+  if (localStorage.getItem("defaultChatterVoiceOption")) {
+    document.getElementById("defaultChatterVoiceOption").value =
+      localStorage.getItem("defaultChatterVoiceOption");
+  }
+
+  // ------------------------------------------------------------------------
+
+  data = {};
+  data.name = "Choose your language.";
+  data.elementId = "dstLangSelect";
+  data.langs = supportedLanguages;
+
+  var dstLangSource = document.getElementById("system-lang-template").innerHTML,
+    dstLangTemplate = Handlebars.compile(dstLangSource),
+    dstLangPlaceholder = document.getElementById("dstLangPlaceholder");
+
+  dstLangPlaceholder.innerHTML = dstLangTemplate(data);
+
+  if (localStorage.getItem("dstLangSelect")) {
+    document.getElementById("dstLangSelect").value =
+      localStorage.getItem("dstLangSelect");
+  } else {
+    document.getElementById("dstLangSelect").value = getUserLanguage();
+    console.log("User language:",getUserLanguage());
+    saveLocalStorageLang("dstLangSelect");
+  }
+
+  modcap();
+}
+
+function getUserLanguage() {
+  var language = navigator.language || navigator.userLanguage;
+  return language.substring(0, 2);
+}
+
+function saveSettings() {
+  localStorage.setItem(
+    "dstLangSelect",
+    document.getElementById("dstLangSelect").value
+  );
+
+  localStorage.setItem(
+    "systemVoice",
+    document.getElementById("systemVoice").value
+  );
+
+  localStorage.setItem(
+    "systemVoiceOption",
+    document.getElementById("systemVoiceOption").value
+  );
+
+  localStorage.setItem(
+    "defaultChatterVoice",
+    document.getElementById("defaultChatterVoice").value
+  );
+
+  localStorage.setItem(
+    "defaultChatterVoiceOption",
+    document.getElementById("defaultChatterVoiceOption").value
+  );
+}
+
+// Function for basic capabilities
+function basiccap() {
+  var loginButton = document.getElementById("loginButton");
+  loginButton.onclick = function () {
+    saveSettings();
+    window.location.href = twitchURLMinimalPermissions;
+  };
+  //loginButton.textContent = "Authorize On Twitch with minimal permissions";
+}
+
+// Function for moderator capabilities
+function modcap() {
+  var loginButton = document.getElementById("loginButton");
+  loginButton.onclick = function () {
+    saveSettings();
+    window.location.href = twitchURLFullPermissions;
+  };
+  //loginButton.textContent =
+  // "Authorize On Twitch with ban and chat delete permissions";
+}
+
+async function buildVoiceLookup() {
+  return new Promise(function (resolve, reject) {
+    //console.log('buildVoiceLookup()');
+
+    var polly = new AWS.Polly();
+    //console.log('pulling voices from AWS API');
+    var params = {};
+
+    polly.describeVoices(params, async function (err, data) {
+      if (err) {
+        console.log(err, err.stack); // an error occurred
+        reject(err);
+      } else {
+        voicesDesc = data;
+        for (var i = 0; i < voicesDesc.Voices.length; i++) {
+          var lcvoice = voicesDesc.Voices[i].Id.toLowerCase();
+          var idvoice = voicesDesc.Voices[i].Id;
+          voices[lcvoice] = {};
+          voices[lcvoice].engine = voicesDesc.Voices[i].SupportedEngines[0];
+          voices[lcvoice].voiceOptions = voicesDesc.Voices[i].SupportedEngines;
+          voices[lcvoice].name = idvoice;
+        }
+        voicesDesc.Voices.sort(function (a, b) {
+          if (a.LanguageCode === b.LanguageCode) {
+            return b.Id - a.Id;
+          }
+          return a.LanguageCode > b.LanguageCode ? 1 : -1;
+        });
+        resolve();
+      }
+    });
+    //console.log(voices);
+  });
+}
+
+function saveLocalStorageLang(elementId) {
+  console.log("elementId:", elementId);
+  localStorage.setItem(elementId, document.getElementById(elementId).value);
+
+  let systemVoiceSelect = document.getElementById("systemVoice");
+  let defaultChatterVoiceSelect = document.getElementById(
+    "defaultChatterVoice"
+  );
+
+  systemVoiceSelect.value = selectRandomVoiceByLanguageCode(
+    document.getElementById(elementId).value
+  ).Id;
+  systemVoiceSelected(systemVoiceSelect.value);
+
+  defaultChatterVoiceSelect.value = selectRandomVoiceByLanguageCode(
+    document.getElementById(elementId).value
+  ).Id;
+  defaultChatterVoiceSelected(defaultChatterVoiceSelect.value);
+}
+
+function selectRandomVoiceByLanguageCode(languageCode) {
+  // Filter voices by language code
+  const matchingVoices = voicesDesc.Voices.filter((voice) =>
+    voice.LanguageCode.startsWith(languageCode)
+  );
+
+  // Check if we found any matching voices
+  if (matchingVoices.length === 0) {
+    return { Id: "Justin" };
+  }
+
+  // Select a random voice from the matching ones
+  const randomIndex = Math.floor(Math.random() * matchingVoices.length);
+  return matchingVoices[randomIndex];
+}
+
+function systemVoiceSelected(voice) {
+  var userVoiceOptionSource = document.getElementById(
+      "system-voice-option-template"
+    ).innerHTML,
+    userVoiceOptionTemplate = Handlebars.compile(userVoiceOptionSource),
+    userVoiceOptionPlaceholder = document.getElementById(
+      "systemVoiceOptionPlaceholder"
+    );
+  userVoiceOptionPlaceholder.innerHTML = userVoiceOptionTemplate(
+    voices[voice.toLowerCase()]
+  );
+  var voiceOption = document.getElementById("system-voice-option");
+  voiceOption.value = voices[voice.toLowerCase()].voiceOptions[0];
+
+  localStorage.setItem(
+    "systemVoice",
+    document.getElementById("systemVoice").value
+  );
+  localStorage.setItem(
+    "systemVoiceOption",
+    document.getElementById("systemVoiceOption").value
+  );
+}
+
+function systemVoiceOptionSelected(voiceOption) {
+  var voiceOptionElement = document.getElementById("system-voice-option");
+  voiceOptionElement.value = voiceOption;
+
+  localStorage.setItem(
+    "systemVoice",
+    document.getElementById("systemVoice").value
+  );
+  localStorage.setItem(
+    "systemVoiceOption",
+    document.getElementById("systemVoiceOption").value
+  );
+}
+
+function defaultChatterVoiceSelected(voice) {
+  var userVoiceOptionSource = document.getElementById(
+      "default-chatter-voice-option-template"
+    ).innerHTML,
+    userVoiceOptionTemplate = Handlebars.compile(userVoiceOptionSource),
+    userVoiceOptionPlaceholder = document.getElementById(
+      "defaultChatterVoiceOptionPlaceholder"
+    );
+  userVoiceOptionPlaceholder.innerHTML = userVoiceOptionTemplate(
+    voices[voice.toLowerCase()]
+  );
+  var voiceOption = document.getElementById("default-chatter-voice-option");
+  voiceOption.value = voices[voice.toLowerCase()].voiceOptions[0];
+
+  localStorage.setItem(
+    "defaultChatterVoice",
+    document.getElementById("defaultChatterVoice").value
+  );
+  localStorage.setItem(
+    "defaultChatterVoiceOption",
+    document.getElementById("defaultChatterVoiceOption").value
+  );
+}
+
+function defaultChatterVoiceOptionSelected(voiceOption) {
+  var voiceOptionElement = document.getElementById(
+    "default-chatter-voice-option"
+  );
+  voiceOptionElement.value = voiceOption;
+
+  localStorage.setItem(
+    "defaultChatterVoice",
+    document.getElementById("defaultChatterVoice").value
+  );
+  localStorage.setItem(
+    "defaultChatterVoiceOption",
+    document.getElementById("defaultChatterVoiceOption").value
+  );
+}
+
 (async function () {
   // Create a CognitoIdentity service object
   AWS.config.region = "us-west-2";
@@ -63,201 +404,3 @@ let twitchURLFullPermissions =
     }
   );
 })();
-
-async function finishSetup() {
-  console.log("final load function()");
-  await buildVoiceLookup();
-
-  Handlebars.registerHelper("contains", function (needle, haystack, options) {
-    //needle = Handlebars.escapeExpression(needle);
-    //haystack = Handlebars.escapeExpression(haystack);
-    return haystack.indexOf(needle) > -1
-      ? options.fn(this)
-      : options.inverse(this);
-  });
-
-  Handlebars.registerHelper("select", function (value, options) {
-    var $el = $("<select />").html(options.fn(this));
-    $el.find('[value="' + value + '"]').attr({ selected: "selected" });
-    return $el.html();
-  });
-
-  var data = {};
-
-  if (localStorage.getItem("systemVoice")) {
-    data.voice = localStorage.getItem("systemVoice");
-  } else {
-    data.voice = "Justin";
-  }
-
-  data.voices = voicesDesc;
-
-  var systemVoiceSource = document.getElementById(
-      "system-voice-template"
-    ).innerHTML,
-    systemVoiceTemplate = Handlebars.compile(systemVoiceSource),
-    systemVoicePlaceholder = document.getElementById("systemVoicePlaceholder");
-
-  systemVoicePlaceholder.innerHTML = systemVoiceTemplate(data);
-
-  var systemVoiceOptionSource = document.getElementById(
-      "system-voice-option-template"
-    ).innerHTML,
-    systemVoiceOptionTemplate = Handlebars.compile(systemVoiceOptionSource),
-    systemVoiceOptionPlaceholder = document.getElementById(
-      "systemVoiceOptionPlaceholder"
-    );
-
-  var optionData = {};
-
-  optionData.voiceOptions = voices[data.voice.toLowerCase()].voiceOptions;
-  optionData.voiceOption = voices[data.voice.toLowerCase()].voiceOptions[0];
-
-  systemVoiceOptionPlaceholder.innerHTML =
-    systemVoiceOptionTemplate(optionData);
-
-  if (localStorage.getItem("systemVoice")) {
-    document.getElementById("systemVoice").value =
-      localStorage.getItem("systemVoice");
-  }
-  if (localStorage.getItem("systemVoiceOption")) {
-    document.getElementById("systemVoiceOption").value =
-      localStorage.getItem("systemVoiceOption");
-  }
-
-  data = {};
-  data.name = "Choose your language.";
-  data.elementId = "dstLangSelect";
-  data.langs = supportedLanguages;
-
-  var dstLangSource = document.getElementById("system-lang-template").innerHTML,
-    dstLangTemplate = Handlebars.compile(dstLangSource),
-    dstLangPlaceholder = document.getElementById("dstLangPlaceholder");
-
-  dstLangPlaceholder.innerHTML = dstLangTemplate(data);
-
-  if (localStorage.getItem("dstLangSelect")) {
-    document.getElementById("dstLangSelect").value =
-      localStorage.getItem("dstLangSelect");
-  } else {
-    document.getElementById("dstLangSelect").value = "en";
-  }
-
-  modcap();
-}
-
-// Function for basic capabilities
-function basiccap() {
-  var loginButton = document.getElementById("loginButton");
-  loginButton.onclick = function () {
-    window.location.href = twitchURLMinimalPermissions;
-  };
-  //loginButton.textContent = "Authorize On Twitch with minimal permissions";
-}
-
-// Function for moderator capabilities
-function modcap() {
-  var loginButton = document.getElementById("loginButton");
-  loginButton.onclick = function () {
-    window.location.href = twitchURLFullPermissions;
-  };
-  //loginButton.textContent =
-   // "Authorize On Twitch with ban and chat delete permissions";
-}
-
-async function buildVoiceLookup() {
-  return new Promise(function (resolve, reject) {
-    //console.log('buildVoiceLookup()');
-
-    var polly = new AWS.Polly();
-    //console.log('pulling voices from AWS API');
-    var params = {};
-
-    polly.describeVoices(params, async function (err, data) {
-      if (err) {
-        console.log(err, err.stack); // an error occurred
-        reject(err);
-      } else {
-        voicesDesc = data;
-        for (var i = 0; i < voicesDesc.Voices.length; i++) {
-          var lcvoice = voicesDesc.Voices[i].Id.toLowerCase();
-          var idvoice = voicesDesc.Voices[i].Id;
-          voices[lcvoice] = {};
-          voices[lcvoice].engine = voicesDesc.Voices[i].SupportedEngines[0];
-          voices[lcvoice].voiceOptions = voicesDesc.Voices[i].SupportedEngines;
-          voices[lcvoice].name = idvoice;
-        }
-        voicesDesc.Voices.sort(function (a, b) {
-          if (a.LanguageCode === b.LanguageCode) {
-            return b.Id - a.Id;
-          }
-          return a.LanguageCode > b.LanguageCode ? 1 : -1;
-        });
-        resolve();
-      }
-    });
-    //console.log(voices);
-  });
-}
-
-function saveLocalStorageLang(elementId) {
-  console.log("elementId:", elementId);
-  localStorage.setItem(elementId, document.getElementById(elementId).value);
-  selectRandomVoiceByLanguageCode(document.getElementById(elementId).value);
-}
-
-function selectRandomVoiceByLanguageCode(languageCode) {
-  // Filter voices by language code
-  const matchingVoices = voicesDesc.Voices.filter((voice) =>
-    voice.LanguageCode.startsWith(languageCode)
-  );
-
-  // Check if we found any matching voices
-  if (matchingVoices.length === 0) {
-    return null;
-  }
-
-  // Select a random voice from the matching ones
-  const randomIndex = Math.floor(Math.random() * matchingVoices.length);
-  document.getElementById("systemVoice").value = matchingVoices[randomIndex].Id;
-  systemVoiceSelected(matchingVoices[randomIndex].Id);
-  return matchingVoices[randomIndex];
-}
-
-function systemVoiceSelected(voice) {
-  var userVoiceOptionSource = document.getElementById(
-      "system-voice-option-template"
-    ).innerHTML,
-    userVoiceOptionTemplate = Handlebars.compile(userVoiceOptionSource),
-    userVoiceOptionPlaceholder = document.getElementById(
-      "systemVoiceOptionPlaceholder"
-    );
-  userVoiceOptionPlaceholder.innerHTML = userVoiceOptionTemplate(
-    voices[voice.toLowerCase()]
-  );
-  var voiceOption = document.getElementById("voice-option");
-  voiceOption.value = voices[voice.toLowerCase()].voiceOptions[0];
-
-  localStorage.setItem(
-    "systemVoice",
-    document.getElementById("systemVoice").value
-  );
-  localStorage.setItem(
-    "systemVoiceOption",
-    document.getElementById("systemVoiceOption").value
-  );
-}
-
-function systemVoiceOptionSelected(voiceOption) {
-  var voiceOptionElement = document.getElementById("voice-option");
-  voiceOptionElement.value = voiceOption;
-
-  localStorage.setItem(
-    "systemVoice",
-    document.getElementById("systemVoice").value
-  );
-  localStorage.setItem(
-    "systemVoiceOption",
-    document.getElementById("systemVoiceOption").value
-  );
-}

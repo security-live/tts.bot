@@ -143,6 +143,9 @@
 
                 <div id="dstLangPlaceholder" class="form-group"></div>
 
+                <div id="systemVoicePlaceholder" class="form-group"></div>                
+                <div id="defaultChatterVoicePlaceholder" class="form-group"></div> 
+
                 <div class="form-check">
                   <input
                     class="form-check-input"
@@ -169,6 +172,18 @@
                     will send translations to any channel connected)
                   </label>
                 </div>
+
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="cbUseVoiceForSelectedLanguage"
+                    onchange="saveOption(this)"
+                  />
+                  <label class="form-check-label" for="cbUseVoiceForSelectedLanguage">
+                    If the chatter's voice does not match the language a voice will be selected randomly according to gender for selected language if possible.
+                  </label>
+                </div>                
 
                 <div class="form-check">
                   <input
@@ -271,6 +286,7 @@
                     Speak emotes
                   </label>
                 </div>
+
                 <div class="form-check d-inline-block">
                   <input
                     class="form-check-input"
@@ -283,6 +299,18 @@
                     Dedup emotes
                   </label>
                 </div>
+
+                <div class="form-check d-inline-block">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="cbTranslateEmotesTTS"
+                    onchange="saveOption(this)"
+                  />
+                  <label class="form-check-label" for="cbTranslateEmotesTTS">
+                    Translate emotes
+                  </label>
+                </div>                
 
                 <div class="form-check">
                   <input
@@ -603,8 +631,6 @@
                   >
                 </div>
 
-                <div id="systemLangPlaceholder"></div>
-                <div id="systemVoicePlaceholder"></div>
                 <br />
                 <label class="d-block mb-4"
                   ><input
@@ -1070,7 +1096,7 @@
     <script id="system-voice-template" type="text/x-handlebars-template">
       <dt>System Voice Selection: </dt>
       <dd class="clearfix">
-        <select id="systemVoice" onchange="systemVoiceSelected(this.value)">
+        <select id="systemVoice" class="form-control" onchange="systemVoiceSelected(this.value)">
           {{#select voice}}
             {{#each voices.Voices}}
               <option value="{{Id}}">{{Id}}
@@ -1092,7 +1118,7 @@
     </script>
 
     <script id="system-voice-option-template" type="text/x-handlebars-template">
-      <select id="systemVoiceOption" onchange="systemVoiceOptionSelected(this.value)">
+      <select id="systemVoiceOption" class="form-control" onchange="systemVoiceOptionSelected(this.value)">
         {{#select voiceOption}}
           {{#each voiceOptions}}
             <option value="{{this}}">{{this}}</option>
@@ -1100,6 +1126,42 @@
         {{/select}}
       </select>
     </script>
+
+
+    <script id="default-chatter-voice-template" type="text/x-handlebars-template">
+      <dt>Default Chatter Voice Selection: </dt>
+      <dd class="clearfix">
+        <select id="defaultChatterVoice" class="form-control" onchange="defaultChatterVoiceSelected(this.value)">
+        {{#select voice}}
+          {{#each voices.Voices}}
+          <option value="{{Id}}">{{Id}}
+            ({{LanguageCode}}
+            --
+            {{LanguageName}})</option>
+          {{/each}}
+        {{/select}}
+        </select>
+        <input
+        type="hidden"
+        size="10"
+        name="default-chatter-voice-option"
+        id="default-chatter-voice-option"
+        value="{{voice_option}}"
+        />
+      </dd>
+      <div id="defaultChatterVoiceOptionPlaceholder"></div>
+      </script>
+    
+      <script id="default-chatter-voice-option-template" type="text/x-handlebars-template">
+
+      <select id="defaultChatterVoiceOption" class="form-control" onchange="defaultChatterVoiceOptionSelected(this.value)">
+        {{#select voiceOption}}
+        {{#each voiceOptions}}
+          <option value="{{this}}">{{this}}</option>
+        {{/each}}
+        {{/select}}
+      </select>
+      </script>    
 
 
     <script id="sts-voice-template" type="text/x-handlebars-template">
