@@ -1,6 +1,7 @@
 "use strict";
 
 // GLOBALS YAY
+var DEBUG = false;
 var streamerIsSpeaking = false;
 var waitingAMoment = false;
 var waitingIntervalID = 0;
@@ -165,9 +166,7 @@ $.ajax({
 
     if (localStorage.getItem("channel")) {
       let channel = localStorage.getItem("channel");
-      console.log("beforeSan:", channel);
       channel = sanitize(channel);
-      console.log("afterSan:", channel);
       document.getElementById("channel").value = channel;
     } else {
       document.getElementById("channel").value = channel;
@@ -192,7 +191,6 @@ if (localStorage.getItem("twitch_channel")) {
 }
 if (localStorage.getItem("chatters")) {
   chatters = JSON.parse(localStorage.getItem("chatters"));
-  //console.log(chatters);
 }
 
 if (localStorage.getItem("websocketURL")) {
@@ -240,7 +238,6 @@ async function loadFFZEmotes() {
       "https://api.frankerfacez.com/v1/_room/" +
       document.getElementById("twitch_username").value,
     success: function (response) {
-      //console.log("response:", response);
       twitch_id = response.room.twitch_id;
       set_id = response.room.set;
       console.log("set_id:", set_id);
@@ -444,7 +441,6 @@ async function getColorStyles() {
 }
 
 async function updatePreview() {
-  //console.log("updatePreview()");
   let srcLang;
 
   if (document.getElementById("dstLangSelect")) {
@@ -575,7 +571,6 @@ async function updatePreview() {
   //popupDragger.draggable = true;
   document.addEventListener("dragstart", (e) => {
     //dragged = e.target;
-    console.log("drag started");
     // Customize the visible 'thumbnail' while dragging
     //e.dataTransfer.setDragImage(document.querySelector('#dragImage'), pos, pos);
     // Set the data type, and the value. You specifically want text/uri-list.
@@ -1108,7 +1103,7 @@ function websocketCustomConnect() {
   };
 
   websocketCustom.onmessage = function (event) {
-    console.log("websocketCustom.message:", event);
+    //console.log("websocketCustom.message:", event);
 
     let command = JSON.parse(event.data);
 
@@ -1134,7 +1129,7 @@ function websocketCustomConnect() {
         command.voice_option
       );
     } else if (command.topic == "GPT-Moderated") {
-      console.log(command);
+      //console.log(command);
       doChat(con.channel, command.userstate, command.message, false);
     } else {
       window.audioPlayer.SpeakNow(
@@ -1466,7 +1461,7 @@ async function onAction(channel, userstate, message, self) {
 }
 
 async function onNotice(msgid, channel, tags, msg) {
-  console.log(arguments);
+  console.log("onNotice:",arguments);
 }
 /*
 function selectRandomVoiceByLanguageCode(languageCode) {
@@ -1543,9 +1538,12 @@ async function onChat(channel, userstate, message, self) {
   userstate.tts_spoken_name = chatters[userstate.username].spoken_name;
   chatters[userstate.username].platform = userstate.platform;
 
-  console.log("------------ onChat() ---------");
-  console.log(userstate);
-  console.log("message:", message);
+
+  if(DEBUG) {
+    console.log("------------ onChat() ---------");
+    console.log("userstate:",userstate);
+    console.log("message:", message);
+  }
 
   if (message.match("(^s*!)")) {
     runChatCommand(channel, userstate.username, message, userstate.mod);
@@ -1581,6 +1579,8 @@ async function onChat(channel, userstate, message, self) {
 }
 
 async function doChat(channel, userstate, message, self) {
+  if (self) return;
+
   let translatedRegex = /\(Translated from.*\)$/;
   if (message.match(translatedRegex)) {
     console.log("Ignore translated chat messages:", message);
@@ -1599,7 +1599,7 @@ async function doChat(channel, userstate, message, self) {
   //console.log("chatters:", chatters);
 
   if (userstate["custom-reward-id"]) {
-    console.log(userstate);
+    console.log("custom-reward-id:",userstate);
   }
 
   if (userstate["custom-reward-id"] == "9914796b-d33c-4317-bb9e-e66b5d372ac2") {
@@ -1607,11 +1607,6 @@ async function doChat(channel, userstate, message, self) {
     deleteTwitchChatMessage(twitch_id, userstate.id);
     return;
   }
-
-  // TODO delete messages with injection stuffs
-  // || message.match('(?!<\w+>.*</\w+>)')
-
-  if (self) return;
 
   //console.log("userstate:", userstate);
   let username = userstate["username"];
@@ -1687,8 +1682,8 @@ async function doChat(channel, userstate, message, self) {
     }
     //console.log("found emotes:", matchedEmotes[0][0]);
 
-    var time_diff = window.performance.now() - emoteParsingStart;
-    console.log("processed emotes in:", parseFloat(time_diff).toFixed(2), "ms");
+    //var time_diff = window.performance.now() - emoteParsingStart;
+    //console.log("processed emotes in:", parseFloat(time_diff).toFixed(2), "ms");
   }
 
   ssmlTextType = "text";
@@ -1720,35 +1715,34 @@ async function doChat(channel, userstate, message, self) {
     userstate.hasOwnProperty("action") &&
     userstate.gpt_type == "moderation"
   ) {
-    console.log("moderation:");
-    console.log(message);
-    console.log(userstate);
+    console.log("gpt_type:",userstate.gpt_type, "action:",userstate.action, "moderation:", message);
+
     let reason = userstate.action.match(/\s(.*)/);
     if (reason) {
-      console.log("REASON:");
-      console.log(reason);
+      console.log("REASON:",reason," gpt_result:",userstate.gpt_result);
       if (userstate.gpt_result == "BAN") {
-        allowTTSmessage += reason[1] + " - ";
+        allowTTSmessage += reason[1] + " BAN - ";
         allowTTS = false;
         message = "THIS MESSAGE INTENTIONALLY LEFT BLANK BY AI (BAN)";
       } else if (userstate.gpt_result == "TIMEOUT") {
-        allowTTSmessage += reason[1] + " - ";
+        allowTTSmessage += reason[1] + " TIMEOUT SHOULD NOT HAPPEN!!! - ";
         allowTTS = false;
         message = "THIS MESSAGE INTENTIONALLY LEFT BLANK BY AI (TIMEOUT)";
       } else if (userstate.gpt_result == "DOWNVOTE") {
-        allowTTSmessage += reason[1] + " - ";
+        allowTTSmessage += reason[1] + " ↓ - ";
         allowTTS = true;
       } else if (userstate.gpt_result == "UPVOTE") {
-        allowTTSmessage += reason[1] + " - ";
+        allowTTSmessage += reason[1] + " ↑ - ";
         allowTTS = true;
       } else if (userstate.gpt_result == "ONLY") {
-        allowTTSmessage += reason[1] + " - ";
+        allowTTSmessage += reason[1] + " WTF ONLY THIS SHOULD NOT HAPPEN! - ";
         allowTTS = true;
       }
+    } else {
+      console.log("NO REASON!!!");
     }
   } else if (userstate.gpt_type == "comical") {
-    console.log(message);
-    console.log(userstate);
+    console.log("comic releif:",message, userstate);
     allowTTSmessage += " Speak Comic Relief - ";
     message = `@${userstate["display-name"]} ${userstate.action}`;
     username = "gpt";
@@ -1771,8 +1765,10 @@ async function doChat(channel, userstate, message, self) {
     await window.translator.translateText(
       params,
       async function onIncomingMessageTranslate(err, data) {
-        console.log("Original Message  : " + message);
-        console.log("Translated Message: " + data.TranslatedText);
+        if(DEBUG) {
+          console.log("Original Message  : " + message);
+          console.log("Translated Message: " + data.TranslatedText);
+        }
 
         var translatedMessage = data.TranslatedText;
         var identicalTranslation = false;
@@ -2004,8 +2000,6 @@ async function doChat(channel, userstate, message, self) {
           ) {
             allowTTS = false;
             allowTTSmessage += "Commented out - ";
-          } else {
-            console.log("MESSAGE:", message);
           }
 
           if (chatters[username]?.ttsBanned) {
@@ -2027,7 +2021,7 @@ async function doChat(channel, userstate, message, self) {
           if (con.cbSpeak.checked && allowTTS) {
             var longnumex = /\d{6,}/;
 
-            let tldRegexStart = window.performance.now();
+            //let tldRegexStart = window.performance.now();
 
             var regex = /_/gi;
             spokenText = spokenText.replace(regex, " ");
@@ -2051,12 +2045,8 @@ async function doChat(channel, userstate, message, self) {
               console.log("web link replace error:", e);
             }
 
-            var time_diff = window.performance.now() - tldRegexStart;
-            console.log(
-              "Weblink and 1500+ TLDs checked in:",
-              parseFloat(time_diff).toFixed(2),
-              "ms"
-            );
+            //var time_diff = window.performance.now() - tldRegexStart;
+            //console.log("Weblink and 1500+ TLDs checked in:",parseFloat(time_diff).toFixed(2),"ms");
 
             //spokenText = spokenText.replace(longnumex, " (Long number) ");
             //spokenText = spokenText.replace(longex, ' (long word) ');
@@ -2100,6 +2090,15 @@ async function doChat(channel, userstate, message, self) {
               }
             }
 
+            if (!localChattersData[username]) {
+              localChattersData[username] = {};
+              localChattersData[username].lastMessages = [];
+              console.log(
+                `A new chatter has entered the ring: ${username} --  ${spokenText} -- ${similarity}`
+              );
+              loadVoice(userstate);
+            }
+
             audioPlayer.Speak(
               prefix,
               spokenText,
@@ -2108,14 +2107,6 @@ async function doChat(channel, userstate, message, self) {
               ssmlTextType,
               messageID
             );
-
-            if (!localChattersData[username]) {
-              localChattersData[username] = {};
-              localChattersData[username].lastMessages = [];
-              console.log(
-                `A new chatter has entered the ring: ${username} --  ${spokenText} -- ${similarity}`
-              );
-            }
 
             let tmpMessage = {
               message: spokenText,
@@ -2127,7 +2118,7 @@ async function doChat(channel, userstate, message, self) {
 
             last_speaker = username;
           } else {
-            console.log("DENIED TTS:", userstate);
+            console.log("DENIED TTS:",allowTTSmessage, userstate);
           }
 
           con.liveChatUIContainer.scrollTop =
@@ -2161,7 +2152,7 @@ async function simpleTranslate(message, srcLangCode, dstLangCode) {
           );
           reject("Error in translation: " + err.message); // Reject the promise on error
         } else if (data) {
-          console.log("simpleTranslate():", data.TranslatedText);
+          //console.log("simpleTranslate():", data.TranslatedText);
           resolve(data.TranslatedText); // Resolve the promise with the translated text
         } else {
           resolve(message + " not translated."); // Resolve with the original message if no data
@@ -2214,7 +2205,7 @@ function addMessageBubble(
     color = GetColorForUsername(username);
   }
 
-  console.log(chatters[username]);
+  //console.log(chatters[username]);
 
   con.liveChatUI.innerHTML += `<div id="message-id${messageID}" class="chat-bubble">
                                           <div class="username-container" id="message-user-id${messageID}">
@@ -2390,7 +2381,7 @@ function runChatCommand(channel, username, message, mod) {
     chatters[username] = {};
   }
 
-  console.log("channel:" + channel + ":" + username + ":");
+  console.log("channel:",channel,"username:",username,"message:",message);
 
   if (message.startsWith("!setvoice")) {
     parts = message.split(" ");
@@ -3008,8 +2999,10 @@ function sendMessage() {
         if (data) {
           var translatedMessage = data.TranslatedText;
 
-          console.log("M: " + message);
-          console.log("T: " + translatedMessage);
+          if(DEBUG) {
+            console.log("Message:",message);
+            console.log("Translation:",translatedMessage);
+          }
 
           //Send message to chat
           window.client.say(con.channel, translatedMessage);
@@ -3553,8 +3546,8 @@ function AudioPlayer() {
 
   // Get synthesized speech from Amazon polly
   async function getPollyAudioStream(message) {
-    console.log("getPollyAudioStream:");
-    console.log(message);
+    //console.log("getPollyAudioStream:");
+    //console.log(message);
 
     return new Promise(function (resolve, reject) {
       var polly = new AWS.Polly();
@@ -3568,7 +3561,7 @@ function AudioPlayer() {
         voice = message.voice.toLowerCase();
         engine = message.engine;
       }
-      console.log("getPollyAudioStream() voice:", voice);
+      //console.log("getPollyAudioStream() voice:", voice);
       voice = voices[voice.toLowerCase()].name;
 
       var params = {
@@ -3578,7 +3571,9 @@ function AudioPlayer() {
         Text: message.text,
         VoiceId: voice,
       };
-      console.log("Speaking with:", params);
+      if(DEBUG) {
+        console.log("Speaking with:", params);
+      }
 
       polly.synthesizeSpeech(params, function (err, data) {
         if (err) {
