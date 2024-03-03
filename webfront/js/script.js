@@ -1760,9 +1760,9 @@ async function doChat(channel, userstate, message, self) {
 
   if (message) {
     var params = {
-      //Settings: {
-      //  Profanity: "MASK"
-      //},
+      Settings: {
+        Profanity: "MASK"
+      },
       Text: message,
       SourceLanguageCode: con.sourceLanguage,
       TargetLanguageCode: con.targetLanguage,
@@ -1771,8 +1771,8 @@ async function doChat(channel, userstate, message, self) {
     await window.translator.translateText(
       params,
       async function onIncomingMessageTranslate(err, data) {
-        //console.log("Original Message  : " + message);
-        //console.log("Translated Message: " + data.TranslatedText);
+        console.log("Original Message  : " + message);
+        console.log("Translated Message: " + data.TranslatedText);
 
         var translatedMessage = data.TranslatedText;
         var identicalTranslation = false;

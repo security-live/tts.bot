@@ -1,6 +1,7 @@
 let voices = {};
 let voicesDesc = {};
 let sortedLanguages = [];
+let voiceRecognitionSupport = false;
 
 let redirectURL =
   "https://" +
@@ -150,7 +151,7 @@ async function finishSetup() {
       localStorage.getItem("dstLangSelect");
   } else {
     document.getElementById("dstLangSelect").value = getUserLanguage();
-    console.log("User language:",getUserLanguage());
+    console.log("User language:", getUserLanguage());
     saveLocalStorageLang("dstLangSelect");
   }
 
@@ -359,6 +360,27 @@ function defaultChatterVoiceOptionSelected(voiceOption) {
   );
 }
 
+function testVR() {
+  let recognition = new webkitSpeechRecognition();
+  recognition.continuous = true; // Recognize continuously
+  recognition.interimResults = true; // Allows results to be returned before the user has finished speaking
+
+  recognition.onstart = () => {
+    console.log("Voice recognition started. Speak into the microphone.");
+  };
+
+  recognition.onresult = (event) => {
+    let transcript = "";
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      transcript += event.results[i][0].transcript;
+    }
+    console.log(transcript); // Process the results here
+    //document.getElementById('output').innerText = transcript;
+  };
+
+  recognition.start();
+}
+
 (async function () {
   // Create a CognitoIdentity service object
   AWS.config.region = "us-west-2";
@@ -403,4 +425,26 @@ function defaultChatterVoiceOptionSelected(voiceOption) {
       });
     }
   );
+
+  if ("webkitSpeechRecognition" in window) {
+    // Speech Recognition is supported, proceed with the logic
+    voiceRecognitionSupport = true;
+    var recognition = new webkitSpeechRecognition();
+    let vrOptions = document.getElementById("vrOptions");
+    let cbEnableVR = document.getElementById("cbVoiceRecognition");
+    vrOptions.style.display = "block";
+
+    var testVRButton = document.getElementById("testVR");
+    testVRButton.onclick = function () {
+      testVR();
+    };
+
+    // Do your speech recognition set up here
+  } else {
+    // Speech Recognition not supported
+    // Here, you can either fall back to another technique or inform the user
+    alert(
+      "Your browser does not support speech recognition. Please try Google Chrome."
+    );
+  }
 })();
