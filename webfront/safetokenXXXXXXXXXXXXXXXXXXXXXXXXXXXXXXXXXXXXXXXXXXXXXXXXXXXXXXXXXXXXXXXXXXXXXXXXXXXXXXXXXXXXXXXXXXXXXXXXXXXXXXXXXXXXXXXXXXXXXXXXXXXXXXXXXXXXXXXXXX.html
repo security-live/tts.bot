@@ -9,7 +9,8 @@
       var access_token = url.hash.match(/access_token=(\w+)/)[1];
       if (access_token) {
         localStorage.setItem("access_token", access_token);
-        window.location.href = "https://"+location.hostname+"/index.html";
+        //window.location.href = "https://"+location.hostname+"/index.html";
+        window.location.href = "https://"+location.hostname+"/index.html?autoconnect=false";
       }
     </script>
   </body>

@@ -252,10 +252,10 @@ async function loadFFZEmotes() {
     url: "https://api.frankerfacez.com/v1/set/" + set_id,
     success: function (response) {
       for (const emote of response.set.emoticons) {
-        ffzEmotes.push(emote.name);
+        ffzEmotes.push(" "+emote.code+" ");
       }
-      for (const emote of ffzEmotes) {
-      }
+      //for (const emote of ffzEmotes) {
+      //}
     },
     error: function (request, status, error) {
       console.log("loadFFZEmotes set error:", error);
@@ -275,10 +275,10 @@ async function loadBTTVEmotes() {
     if (request.readyState === 4 && request.status === 200) {
       var responseJSON = JSON.parse(request.responseText);
       for (const emote of responseJSON.channelEmotes) {
-        bttvEmotes.push(emote.code);
+        bttvEmotes.push(" "+emote.code+" ");
       }
       for (const emote of responseJSON.sharedEmotes) {
-        bttvEmotes.push(emote.code);
+        bttvEmotes.push(" "+emote.code+" ");
       }
     }
   };
@@ -292,7 +292,7 @@ async function loadBTTVGlobalEmotes() {
     if (request.readyState === 4 && request.status === 200) {
       var responseJSON = JSON.parse(request.responseText);
       for (const emote of responseJSON) {
-        bttvEmotes.push(emote.code);
+        bttvEmotes.push(" "+emote.code+" ");
       }
     }
   };
@@ -584,11 +584,14 @@ function onConnecting(address, port) {
   document.getElementById("status").innerHTML = " [ Connecting...]";
 }
 
-function onConnected(address, port) {
+async function onConnected(address, port) {
   con.channel = document.getElementById("channel").value;
   document.getElementById("status").innerHTML = " [ Connected ]";
+  var targetLang = document.getElementById("dstLangSelect").value;
   let message =
-    "<speak>Connected to channel " + getSpokenName(con.channel) + ".</speak>";
+  "<speak>Connected to channel " + getSpokenName(con.channel) + ".</speak>";
+  message = await simpleTranslate(message,"en",targetLang);
+
   addSystemBubble(message, ++messageID);
   window.audioPlayer.Speak(
     "",
@@ -1594,7 +1597,7 @@ async function doChat(channel, userstate, message, self) {
   let matchedEmotes = [];
   // Don't listen to my own messages..
   channel = channel.replace("#", "");
-  message = message.trim();
+  message = message.trim()+" ";
 
   //console.log("chatters:", chatters);
 
@@ -1942,12 +1945,13 @@ async function doChat(channel, userstate, message, self) {
           ) {
             let color = "#00FF00";
 
+            console.log("usernames:",usernames);
             try {
               for (let username of usernames) {
                 if (username) {
                   // Iterate through unique usernames
                   let user = username.toLowerCase();
-                  if (chatters[user]) {
+                  if (chatters.hasOwnProperty(user)) {
                     let spokenName = chatters[user].spoken_name;
                     if (chatters[user].hasOwnProperty("color")) {
                       color = chatters[user].color;
@@ -2067,9 +2071,11 @@ async function doChat(channel, userstate, message, self) {
               last_speaker = "Unset-by-action";
               prefix = `<speak> ${getSpokenName(username)} </speak>`;
             } else if (last_speaker != username) {
-              prefix = `<speak> ${getSpokenName(
-                username
-              )}${platform_message} says </speak>`;
+              let prefix_string = `${getSpokenName(username)}${platform_message} says`;
+              let targetLang = document.getElementById("dstLangSelect").value;
+              let translatedSaysMessage = await simpleTranslate(prefix_string,"en",targetLang);
+              console.log("says message:",translatedSaysMessage);              
+              prefix = `<speak> ${translatedSaysMessage} </speak>`;
             }
 
             if (

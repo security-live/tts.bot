@@ -1,3 +1,5 @@
+"use strict";
+
 let voices = {};
 let voicesDesc = {};
 let sortedLanguages = [];
@@ -246,6 +248,29 @@ async function buildVoiceLookup() {
   });
 }
 
+function saveOption(element) {
+  if (element.type === "checkbox") {
+    localStorage.setItem(element.id, element.checked);
+  } else if (
+    element.type === "number" ||
+    element.type === "text" ||
+    element.type === "range"
+  ) {
+    localStorage.setItem(element.id, element.value);
+  } else if (element.type === "color") {
+    let ele = element.id.slice(2);
+    ele = ele.charAt(0).toLowerCase() + ele.slice(1);
+    let opacityRange = document.getElementById(ele + "Opacity");
+    if (opacityRange) {
+      localStorage.setItem(element.id, rgba(element.value, opacityRange.value));
+    } else {
+      localStorage.setItem(element.id, rgba(element.value, 1));
+    }
+  } else {
+    console.log("Unknown element type:" + element.type);
+  }
+}
+
 function saveLocalStorageLang(elementId) {
   console.log("elementId:", elementId);
   localStorage.setItem(elementId, document.getElementById(elementId).value);
@@ -360,6 +385,14 @@ function defaultChatterVoiceOptionSelected(voiceOption) {
   );
 }
 
+function isChrome() {
+  var userAgent = navigator.userAgent;
+  var isChrome = userAgent.includes("Chrome") || userAgent.includes("CriOS"); // CriOS is for Chrome on iOS
+  var isEdge = userAgent.includes("Edg"); // Note: Old Edge does not include "Edg", but the old Edge is based on EdgeHTML, not Chromium.
+
+  return isChrome && !isEdge;
+}
+
 function testVR() {
   let recognition = new webkitSpeechRecognition();
   recognition.continuous = true; // Recognize continuously
@@ -380,6 +413,7 @@ function testVR() {
 
   recognition.start();
 }
+
 
 (async function () {
   // Create a CognitoIdentity service object
@@ -432,7 +466,9 @@ function testVR() {
     var recognition = new webkitSpeechRecognition();
     let vrOptions = document.getElementById("vrOptions");
     let cbEnableVR = document.getElementById("cbVoiceRecognition");
-    vrOptions.style.display = "block";
+    if(isChrome()) {
+      vrOptions.style.display = "block";
+    }
 
     var testVRButton = document.getElementById("testVR");
     testVRButton.onclick = function () {
@@ -444,7 +480,31 @@ function testVR() {
     // Speech Recognition not supported
     // Here, you can either fall back to another technique or inform the user
     alert(
-      "Your browser does not support speech recognition. Please try Google Chrome."
+      "Your browser does not support speech recognition. Please use Google Chrome for voice recognition."
     );
   }
+
 })();
+
+function saveOption(element) {
+  if (element.type === "checkbox") {
+    localStorage.setItem(element.id, element.checked);
+  } else if (
+    element.type === "number" ||
+    element.type === "text" ||
+    element.type === "range"
+  ) {
+    localStorage.setItem(element.id, element.value);
+  } else if (element.type === "color") {
+    let ele = element.id.slice(2);
+    ele = ele.charAt(0).toLowerCase() + ele.slice(1);
+    let opacityRange = document.getElementById(ele + "Opacity");
+    if (opacityRange) {
+      localStorage.setItem(element.id, rgba(element.value, opacityRange.value));
+    } else {
+      localStorage.setItem(element.id, rgba(element.value, 1));
+    }
+  } else {
+    console.log("Unknown element type:" + element.type);
+  }
+}
