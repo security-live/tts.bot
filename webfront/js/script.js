@@ -30,7 +30,7 @@ var messageID = 1;
 var currentSpeakingMessageID = 0;
 var audioPlayerNew = new Audio();
 var con = {};
-var backendEnabled = true;
+var backendEnabled = false;
 
 const DEFAULT_COLORS = [
   "#b52d2d",
