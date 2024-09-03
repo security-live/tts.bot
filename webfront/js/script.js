@@ -2970,6 +2970,9 @@ async function loadVoice(lvuserstate) {
     chatters[username].voice = "justin";
     chatters[username].voice_option = "standard";
     chatters[username].ttsBanned = false;
+    chatters[username].display_name = lvuserstate["display-name"];
+    chatters[username].spoken_name = lvuserstate["display-name"];
+    chatters[username].color = lvuserstate.color;
    }
 }
 
