@@ -2964,7 +2964,12 @@ async function loadVoice(lvuserstate) {
         console.log(err);
       }
     }
-  }
+  } else {
+    console.log("loadVoice(global) backend disabled: using Brian");
+    chatters[username].voice = "justin";
+    chatters[username].voice_option = "standard";
+    chatters[username].ttsBanned = false;
+   }
 }
 
 function getSpokenName(username) {
