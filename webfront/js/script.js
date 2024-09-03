@@ -2966,6 +2966,7 @@ async function loadVoice(lvuserstate) {
     }
   } else {
     console.log("loadVoice(global) backend disabled: using Brian");
+    chatters[username] = {};
     chatters[username].voice = "justin";
     chatters[username].voice_option = "standard";
     chatters[username].ttsBanned = false;
