@@ -32,7 +32,7 @@ var messageID = 1;
 var currentSpeakingMessageID = 0;
 var audioPlayerNew = new Audio();
 var con = {};
-var backendEnabled = false;
+var backendEnabled = true;
 
 const DEFAULT_COLORS = [
   "#b52d2d",
@@ -226,8 +226,8 @@ chatters["system"].spoken_name = "System";
 chatters["gpt"] = {};
 chatters["gpt"].voice = "gregory";
 chatters["gpt"].voice_option = "neural";
-chatters["gpt"].display_name = "GPT";
-chatters["gpt"].spoken_name = "GPT";
+chatters["gpt"].display_name = "ChatGPT";
+chatters["gpt"].spoken_name = "ChatGPT 4o Mini";
 
 async function loadFFZEmotes() {
   var request = new XMLHttpRequest();
@@ -4309,12 +4309,12 @@ async function finishSetup() {
     document.getElementById("chatLangSelect").value =
       document.getElementById("dstLangSelect").value;
   }
-
+/*
   if (localStorage.getItem("systemLangSelect")) {
     document.getElementById("systemLangSelect").value =
       localStorage.getItem("systemLangSelect");
   }
-
+*/
   if (localStorage.getItem("stsLangSelect")) {
     document.getElementById("stsLangSelect").value =
       localStorage.getItem("stsLangSelect");
