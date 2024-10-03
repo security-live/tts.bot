@@ -770,7 +770,7 @@ async function onCheer() {
 }
 
 async function onSub() {
-  targuments = arguments;
+  let targuments = arguments;
 
   //console.log();
   console.log("onSub:", targuments);
