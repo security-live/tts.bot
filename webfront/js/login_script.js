@@ -417,14 +417,13 @@ function testVR() {
 
 (async function () {
   // Create a CognitoIdentity service object
-  AWS.config.region = "us-west-2";
+  AWS.config.region = "us-east-1";
   const cognitoIdentity = new AWS.CognitoIdentity();
 
   // Get a Cognito Identity ID
   await cognitoIdentity.getId(
     {
-      IdentityPoolId: "us-west-2:906a8430-e48a-4084-9513-dcf502e5e58a",
-      //IdentityPoolId: "us-west-2:74292e8b-5888-4e9c-930d-a6379a9a4398",
+      IdentityPoolId: "us-east-1:e9babc40-c043-4729-91be-de6c1d22b919",
     },
     async (err, data) => {
       if (err) {
@@ -434,8 +433,7 @@ function testVR() {
 
       // Configure the Identity Pool ID and the Identity ID
       AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-        IdentityPoolId: "us-west-2:906a8430-e48a-4084-9513-dcf502e5e58a",
-        //IdentityPoolId: "us-west-2:74292e8b-5888-4e9c-930d-a6379a9a4398",
+        IdentityPoolId: "us-east-1:e9babc40-c043-4729-91be-de6c1d22b919",
         IdentityId: data.IdentityId,
       });
 
@@ -444,7 +442,7 @@ function testVR() {
         if (error) {
           console.error("Error getting credentials", error);
         } else {
-          let ep = new AWS.Endpoint("translate.us-west-2.amazonaws.com");
+          let ep = new AWS.Endpoint("translate.us-east-1.amazonaws.com");
           window.translator = new AWS.Translate({
             endpoint: ep,
             region: AWS.config.region,
