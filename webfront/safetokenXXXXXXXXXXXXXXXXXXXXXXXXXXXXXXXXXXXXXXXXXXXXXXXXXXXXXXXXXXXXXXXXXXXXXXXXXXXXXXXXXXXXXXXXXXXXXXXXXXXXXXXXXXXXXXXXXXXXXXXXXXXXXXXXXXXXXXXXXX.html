@@ -7,10 +7,22 @@
     <script>
       let url = new URL(window.location.href);
       var access_token = url.hash.match(/access_token=(\w+)/)[1];
+      let page = localStorage.getItem("page");
+      localStorage.setItem("access_token", access_token);
       if (access_token) {
-        localStorage.setItem("access_token", access_token);
-        //window.location.href = "https://"+location.hostname+"/index.html";
-        window.location.href = "https://"+location.hostname+"/index.html?autoconnect=false";
+          if(page == "streamer") {
+          //window.location.href = "https://"+location.hostname+"/index.html";
+            window.location.href = "https://"+location.hostname+"/index.html?autoconnect=false";
+          }
+          else if(page == "viewer") {
+            window.location.href = "https://"+location.hostname+"/viewer.html";
+          }
+          else if(page == "moderator"){
+            window.location.href = "https://"+location.hostname+"/moderator.html";
+          }
+          else {
+            alert("should not happen");
+          }
       }
     </script>
   </body>

@@ -4,6 +4,9 @@ let voices = {};
 let voicesDesc = {};
 let sortedLanguages = [];
 let voiceRecognitionSupport = false;
+var global_access_token = '';
+var hostname = window.location.hostname;
+
 
 let redirectURL =
   "https://" +
@@ -194,6 +197,7 @@ function saveSettings() {
 
 // Function for basic capabilities
 function basiccap() {
+  localStorage.setItem("page","streamer");
   var loginButton = document.getElementById("loginButton");
   loginButton.onclick = function () {
     saveSettings();
@@ -204,6 +208,7 @@ function basiccap() {
 
 // Function for moderator capabilities
 function modcap() {
+  localStorage.setItem("page","streamer");
   var loginButton = document.getElementById("loginButton");
   loginButton.onclick = function () {
     saveSettings();
@@ -464,9 +469,9 @@ function testVR() {
     var recognition = new webkitSpeechRecognition();
     let vrOptions = document.getElementById("vrOptions");
     let cbEnableVR = document.getElementById("cbVoiceRecognition");
-    if(isChrome()) {
-      vrOptions.style.display = "block";
-    }
+    //if(isChrome()) {
+    //  vrOptions.style.display = "block";
+    //}
 
     var testVRButton = document.getElementById("testVR");
     testVRButton.onclick = function () {
@@ -482,27 +487,5 @@ function testVR() {
     );
   }
 
-})();
 
-function saveOption(element) {
-  if (element.type === "checkbox") {
-    localStorage.setItem(element.id, element.checked);
-  } else if (
-    element.type === "number" ||
-    element.type === "text" ||
-    element.type === "range"
-  ) {
-    localStorage.setItem(element.id, element.value);
-  } else if (element.type === "color") {
-    let ele = element.id.slice(2);
-    ele = ele.charAt(0).toLowerCase() + ele.slice(1);
-    let opacityRange = document.getElementById(ele + "Opacity");
-    if (opacityRange) {
-      localStorage.setItem(element.id, rgba(element.value, opacityRange.value));
-    } else {
-      localStorage.setItem(element.id, rgba(element.value, 1));
-    }
-  } else {
-    console.log("Unknown element type:" + element.type);
-  }
-}
+})();

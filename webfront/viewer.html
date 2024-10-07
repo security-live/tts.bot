@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+
+<head>
+  <meta charset="UTF-8" />
+  <link href="https://fonts.googleapis.com/css?family=Poppins" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@800&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login with Twitch</title>
+
+  <style>
+    body {
+      background-color: #000;
+      background-image: url("media/bg.jpg");
+      background-position: center center;
+      background-size: cover;
+      font-family: "Poppins", "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+      font-weight: 300;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      max-width: 550px;
+      text-align: center;
+    }
+
+    .logo {
+      font-family: "Poppins-Bold";
+      margin-bottom: 20px;
+      font-size: 84px;
+      line-height: 80px;
+      vertical-align: middle;
+      font-weight: 900;
+      text-shadow: -6px 8px 12px #000;
+    }
+
+    .logo img {
+      height: 70px;
+      margin-bottom: -10px;
+    }
+
+    .login-options {
+      width: 100%;
+      text-align: left;
+    }
+
+    .login-option {
+      margin: 10px 0;
+    }
+
+    .login-button {
+      border: none;
+      color: white;
+      padding: 20px 20px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 4px 2px;
+      cursor: pointer;
+      border-radius: 15px;
+      background: rgb(129, 223, 244);
+      background: linear-gradient(90deg, rgba(129, 223, 244, 1) 0%, rgba(80, 56, 237, 1) 100%);
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .login-button:hover {
+      background: #fff !important;
+      color: #000 !important;
+    }
+
+    .footer {
+      font-size: 10px;
+    }
+
+    h1 {
+      text-shadow: 6px 8px 4px rgba(0, 0, 0, 0.25);
+    }
+
+    h2 {
+      font-weight: 100;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    #login,
+    #loggedin {
+      display: none;
+    }
+
+    .text-overflow {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 500px;
+    }
+
+    .play_second_part .grid_child {
+      padding: 0.8vw;
+      border: 1px solid #000;
+      width: 8vmax;
+      height: 8vmax;
+    }
+
+    .flex_center {
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -webkit-box-align: center;
+      -ms-flex-align: center;
+      align-items: center;
+      -webkit-box-pack: center;
+      -ms-flex-pack: center;
+      justify-content: center;
+    }
+
+    .play_second_part .grid_child {
+      width: 14vmax;
+      height: 14vmax;
+    }
+
+    .font_size_pt_122 {
+      font-family: barlow_condensed_regular !important;
+      font-size: 2.2vmax !important;
+    }
+
+    .text-uppercase {
+      text-transform: uppercase !important;
+    }
+
+    .text-center {
+      text-align: center !important;
+    }
+
+    .play_second_part {
+      /* margin-top: 7.5vh; */
+      display: grid;
+      grid-gap: 0.3vw;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="logo">
+      <img src="media/profile_image-300x300.png" />
+      tts.bot <span style="color: #b36aff">Viewer Settings</span>
+    </div>
+
+    <div id="viewerOptions">
+      <h2>Viewer Options</h2>
+      <div id="login"></div>
+      <div id="loggedin">
+        <div id="user-profile"></div>
+        <div id="tts-config"></div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>Super Secure Login<br />Like Banks Have</p>
+      <p>
+        <a style="color: #b36aff" href="https://aws.amazon.com/polly/" target="_blank">Powered by Amazon Web Services
+          (AWS) API Gateway, Lambda, DynamoDB,
+          Polly and Translate</a>
+      </p>
+    </div>
+  </div>
+
+  <script src="aws-sdk.js"></script>
+  <script src="awsTranslateLanguages.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>
+  <script src="https://code.jquery.com/jquery-1.10.1.min.js"></script>
+
+  <script id="user-profile-template" type="text/x-handlebars-template">
+    <h2>Logged in as {{display_name}}</h2>
+    <div class="media">
+      <div class="pull-left">
+        <img class="media-object" width="150" src="{{profile_image_url}}" />
+      </div>
+      <div class="media-body">
+        <dl class="dl-horizontal">
+          <dt>Login Name: </dt><dd class="clearfix">{{login}}</dd>
+          <dt>Display name: </dt><dd class="clearfix">{{display_name}}</dd>
+
+          <dt>Voice Name: </dt>
+          <dd class="clearfix">
+            <select id="selectedVoice" onchange="voiceSelected(this.value)">
+              {{#select voice}}
+              {{#each voices.Voices}}
+                <option value="{{Id}}">{{Id}} ({{LanguageCode}} -- {{LanguageName}})</option>
+              {{/each}}
+              {{/select}}
+            </select>
+            <div id="selected-voice-option-div"></div>
+            <input type="hidden" size="10" name="voice-option" id="voice-option" value="{{voice_option}}">
+          </dd>
+          <dt>Spoken Name: </dt><dd class="clearfix"><input type="text" size="30" name="spoken-name" id="spoken-name" value="{{spoken_name}}"></dd><br>
+          <dd class="clearfix"><button class="login-button btn" id="save-config" onclick="saveConfig('{{login}}')">Save</button></dd>
+        </dl>
+      </div>
+    </div>
+  </script>
+
+  <script id="user-voice-option-template" type="text/x-handlebars-template">
+    <select id="selectedVoiceOption" onchange="voiceOptionSelected(this.value)">
+      {{#select voiceOption}}
+      {{#each voiceOptions}}
+        <option value="{{this}}">{{this}}</option>
+      {{/each}}
+      {{/select}}
+    </select>     
+  </script>
+
+  <script id="system-voice-template" type="text/x-handlebars-template">
+    <dt>System Voice Selection: </dt>
+    <dd class="clearfix">
+      <select id="systemVoice" class="form-control" onchange="systemVoiceSelected(this.value)">
+        {{#select voice}}
+          {{#each voices.Voices}}
+            <option value="{{Id}}">{{Id}} ({{LanguageCode}} -- {{LanguageName}})</option>
+          {{/each}}
+        {{/select}}
+      </select>
+      <input type="hidden" size="10" name="system-voice-option" id="system-voice-option" value="{{voice_option}}" />
+    </dd>
+    <div id="systemVoiceOptionPlaceholder"></div>
+  </script>
+
+  <script id="system-voice-option-template" type="text/x-handlebars-template">
+    <dt></dt>
+    <dd class="clearfix">
+      <select id="systemVoiceOption" class="form-control" onchange="systemVoiceOptionSelected(this.value)">
+        {{#select voiceOption}}
+          {{#each voiceOptions}}
+            <option value="{{this}}">{{this}}</option>
+          {{/each}}
+        {{/select}}
+      </select>
+    </dd>
+  </script>
+
+  <script>
+
+    "use strict";
+
+    let voices = {};
+    let voicesDesc = {};
+    let sortedLanguages = [];
+
+    async function buildVoiceLookup() {
+      return new Promise(function (resolve, reject) {
+        //console.log('buildVoiceLookup()');
+
+        var polly = new AWS.Polly();
+        //console.log('pulling voices from AWS API');
+        var params = {};
+
+        polly.describeVoices(params, async function (err, data) {
+          if (err) {
+            console.log(err, err.stack); // an error occurred
+            reject(err);
+          } else {
+            voicesDesc = data;
+            for (var i = 0; i < voicesDesc.Voices.length; i++) {
+              var lcvoice = voicesDesc.Voices[i].Id.toLowerCase();
+              var idvoice = voicesDesc.Voices[i].Id;
+              voices[lcvoice] = {};
+              voices[lcvoice].engine = voicesDesc.Voices[i].SupportedEngines[0];
+              voices[lcvoice].voiceOptions = voicesDesc.Voices[i].SupportedEngines;
+              voices[lcvoice].name = idvoice;
+            }
+            voicesDesc.Voices.sort(function (a, b) {
+              if (a.LanguageCode === b.LanguageCode) {
+                return b.Id - a.Id;
+              }
+              return a.LanguageCode > b.LanguageCode ? 1 : -1;
+            });
+            resolve();
+          }
+        });
+        //console.log(voices);
+      });
+    }
+
+    function voiceSelected(voice) {
+      var userVoiceOptionSource = document.getElementById('user-voice-option-template').innerHTML,
+        userVoiceOptionTemplate = Handlebars.compile(userVoiceOptionSource),
+        userVoiceOptionPlaceholder = document.getElementById('selected-voice-option-div');
+      userVoiceOptionPlaceholder.innerHTML = userVoiceOptionTemplate(voices[voice.toLowerCase()]);
+      var voiceOption = document.getElementById('voice-option');
+      voiceOption.value = voices[voice.toLowerCase()].voiceOptions[0];
+    }
+
+    function voiceOptionSelected(voiceOption) {
+      var voiceOptionElement = document.getElementById('voice-option');
+      voiceOptionElement.value = voiceOption;
+    }
+
+    function saveConfig(login) {
+      var voice = document.getElementById('selectedVoice').value;
+      var voiceOption = document.getElementById('voice-option').value;
+      var spokenName = document.getElementById('spoken-name').value;
+
+      var data = {};
+      var response = {};
+      data.login = login;
+      data.voice = voice;
+      data.voice_option = voiceOption;
+      data.spoken_name = spokenName;
+      data.bsvalue = "garbage";
+      data.access_token = localStorage.getItem("access_token");
+      response.data = [];
+      response.data.push(data);
+      $.ajax({
+        url: 'https://api.securitylive.com/tts',
+        type: 'PUT',
+        dataType: 'json',
+        contentType: 'application/json',
+        data: JSON.stringify(response),
+        success: function (response) {
+          console.log("Config Saved Successfully");
+          console.log(response);
+          alert("Save Much Success!");
+        },
+        error: function (response) {
+          console.log("Config Save Failed: DynamoDB");
+          return;
+        }
+      });
+    }
+
+    (async function () {
+
+      // Create a CognitoIdentity service object
+      AWS.config.region = "us-east-1";
+      const cognitoIdentity = new AWS.CognitoIdentity();
+
+      // Get a Cognito Identity ID
+      await cognitoIdentity.getId(
+        {
+          IdentityPoolId: "us-east-1:e9babc40-c043-4729-91be-de6c1d22b919",
+        },
+        async (err, data) => {
+          if (err) {
+            console.error("Error getting Cognito Identity ID", err);
+            return;
+          }
+
+          // Configure the Identity Pool ID and the Identity ID
+          AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+            IdentityPoolId: "us-east-1:e9babc40-c043-4729-91be-de6c1d22b919",
+            IdentityId: data.IdentityId,
+          });
+
+          // Get the temporary AWS credentials
+          await AWS.config.credentials.get((error) => {
+            if (error) {
+              console.error("Error getting credentials", error);
+            } else {
+              let ep = new AWS.Endpoint("translate.us-east-1.amazonaws.com");
+              window.translator = new AWS.Translate({
+                endpoint: ep,
+                region: AWS.config.region,
+              });
+
+              buildVoiceLookup();
+
+              console.log(
+                "Successfully authenticated as an unauthenticated user with Cognito"
+              );
+            }
+          });
+        }
+      );
+
+
+
+      Handlebars.registerHelper('contains', function (needle, haystack, options) {
+        return (haystack.indexOf(needle) > -1) ? options.fn(this) : options.inverse(this);
+      });
+
+      Handlebars.registerHelper('select', function (value, options) {
+        var $el = $('<select />').html(options.fn(this));
+        $el.find('[value="' + value + '"]').attr({ 'selected': 'selected' });
+        return $el.html();
+      });
+
+      var userProfileSource = document.getElementById('user-profile-template').innerHTML,
+        userProfileTemplate = Handlebars.compile(userProfileSource),
+        userProfilePlaceholder = document.getElementById('user-profile');
+
+      let access_token = localStorage.getItem("access_token");
+
+      if (access_token) {
+        var request = {};
+        request.data = [];
+        var tmp = {};
+        tmp.access_token = access_token;
+        request.data.push(tmp);
+        console.log(request);
+        $.ajax({
+          url: 'https://api.securitylive.com/tts',
+          type: 'PUT',
+          dataType: 'json',
+          contentType: 'application/json',
+          data: JSON.stringify(request),
+          success: function (response) {
+            response.voices = voicesDesc;
+            userProfilePlaceholder.innerHTML = userProfileTemplate(response);
+
+            var userVoiceOptionSource = document.getElementById('user-voice-option-template').innerHTML,
+              userVoiceOptionTemplate = Handlebars.compile(userVoiceOptionSource),
+              userVoiceOptionPlaceholder = document.getElementById('selected-voice-option-div');
+
+            var optionData = {};
+            optionData.voiceOptions = voices[response.voice.toLowerCase()].voiceOptions;
+            optionData.voiceOption = response.voice_option;
+            userVoiceOptionPlaceholder.innerHTML = userVoiceOptionTemplate(optionData);
+
+            $('#login').hide();
+            $('#loggedin').show();
+          },
+          error: function (error) {
+            console.log(error);
+          }
+        });
+      }
+    })();
+  </script>
+</body>
+
+</html>

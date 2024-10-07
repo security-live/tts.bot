@@ -11,7 +11,7 @@
   integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login with Twitch</title>
-  <!-- Special thanks to VainSoftGames and RNOGumby on Twitch for the new login page -->
+  
   <style>
     body {
       background-color: #000;
@@ -71,9 +71,7 @@
       background: rgb(129, 223, 244);
       background: linear-gradient(90deg, rgba(129, 223, 244, 1) 0%, rgba(80, 56, 237, 1) 100%);
       width: 100%;
-      /* Full width */
       box-sizing: border-box;
-      /* Prevent size miscalculations */
     }
 
     .login-button:hover {
@@ -93,108 +91,72 @@
       font-weight: 100;
     }
 
-    .copy_logo {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 60px;
-      height: 60px;
-    }
-
-    .popup {
-      position: fixed;
-      z-index: 9;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      overflow: auto;
-      background-color: rgb(0, 0, 0);
-      background-color: rgba(0, 0, 0, 0.4);
-    }
-
-    .popup-content {
-      background-color: #fefefe;
-      margin: 15% auto;
-      padding: 20px;
-      border: 1px solid #888;
-      width: 80%;
-    }
-
-    .close-btn {
-      color: #aaa;
-      float: right;
-      font-size: 28px;
-      font-weight: bold;
-    }
-
-    .close-btn:hover,
-    .close-btn:focus {
-      color: black;
-      text-decoration: none;
-      cursor: pointer;
+    .hidden {
+      display: none;
     }
   </style>
 </head>
 
 <body>
-  <img class="copy_logo" src="media/profile_image-300x300.png" />
-
-  <div id="voiceRecognitionPopup" class="popup" style="display: none">
-    <div class="popup-content">
-      <span class="close-btn" onclick="closePopup()">&times;</span>
-      <h2>Voice Recognition Test</h2>
-      <textarea id="voiceText" placeholder="Start speaking..."></textarea>
-    </div>
-  </div>
-
   <div class="container">
     <div class="logo">
       <img src="media/profile_image-300x300.png" />
       tts.bot for <span style="color: #b36aff">Twitch</span>
     </div>
 
-    <h1>
-      Access requires a
+    <h1>Access requires a
       <span style="color: #b36aff"><a style="color: #b36aff" href="https://www.twitch.tv/signup"
-          target="_blank">Twitch</a></span>
-      account.
+          target="_blank">Twitch</a></span> account.
     </h1>
 
-    <dl class="login-options">
-      <div id="dstLangPlaceholder" class="form-group"></div>
-      <div id="systemVoicePlaceholder"></div>
-      <div id="defaultChatterVoicePlaceholder"></div>
-    </dl>
+    <div id="userSelection">
+      <button class="login-button btn" onclick="showStreamerOptions()">Streamer</button>
+      <button class="login-button btn" onclick="launchViewerOptions()">Viewer</button>
+    </div>
 
-    <h2>Choose your desired capabilities and click authenticate.</h2>
-    <dl class="login-options">
-      <dd class="login-option">
-        <input type="radio" id="moderation" name="capability" value="moderation" onclick="modcap()" checked />
-        <label for="moderation">Moderation (Recommended)</label>
-      </dd>
-      <dd class="login-option">
-        <input type="radio" id="chat" name="capability" value="chat" onclick="basiccap()" />
-        <label for="chat">Basic Chat</label>
-      </dd>
-    </dl>
+    <div id="streamerOptions" class="hidden">
+      <h2>Streamer Options</h2>
+      <dl class="login-options">
+        <div id="dstLangPlaceholder" class="form-group"></div>
+        <div id="systemVoicePlaceholder"></div>
+        <div id="defaultChatterVoicePlaceholder"></div>
+      </dl>
 
-    
-    <div id="vrOptions" style="display: none">
-      <h2>Voice Recognition</h2>
+      <h2>Choose your desired capabilities and click authenticate.</h2>
       <dl class="login-options">
         <dd class="login-option">
-          <input type="checkbox" id="cbVoiceRecogntion" onclick="saveOption(this)" />
-          <label for="cbVoiceRecogntion">Enable Voice Recognition</label>
+          <input type="radio" id="moderation" name="capability" value="moderation" onclick="modcap()" checked />
+          <label for="moderation">Moderation (Recommended)</label>
         </dd>
-        <button id="testVR" class="login-button btn">
-          Test Voice Recognition
-        </button>
+        <dd class="login-option">
+          <input type="radio" id="chat" name="capability" value="chat" onclick="basiccap()" />
+          <label for="chat">Basic Chat</label>
+        </dd>
       </dl>
-    </div>
-    
+      
+      <div id="vrOptions" style="display: none">
+        <h2>Voice Recognition</h2>
+        <dl class="login-options">
+          <dd class="login-option">
+            <input type="checkbox" id="cbVoiceRecogntion" onclick="saveOption(this)" />
+            <label for="cbVoiceRecogntion">Enable Voice Recognition</label>
+          </dd>
+          <button id="testVR" class="login-button btn">Test Voice Recognition</button>
+        </dl>
+      </div>
 
-    <button id="loginButton" class="login-button btn">Authenticate</button>
+      <button id="loginButton" class="login-button btn">Authenticate</button>
+    </div>
+
+    <div id="viewerOptions" class="hidden">
+      <h2>Viewer Options</h2>
+      <div id="login"></div>
+      <div id="loggedin">
+        <div id="user-profile"></div>
+        <div id="tts-config"></div>
+      </div>
+    </div>
+
     <div class="footer">
       <p>Super Secure Login<br />Like Banks Have</p>
       <p>*** Voice Recognition is only supported with Chrome ***</p>
@@ -205,125 +167,138 @@
       </p>
     </div>
   </div>
+
+  <script>
+    function showStreamerOptions() {
+      document.getElementById("userSelection").classList.add("hidden");
+      document.getElementById("streamerOptions").classList.remove("hidden");
+    }
+
+    function launchViewerOptions() {
+      localStorage.setItem("page","viewer");
+      var redirectURL = "https://dev.tts.bot/safetokenXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.html";
+      if (location.hostname.includes("local.tts.bot")) {
+        redirectURL = "https://local.tts.bot/safetokenXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.html";
+      }
+
+      window.location.href = "https://id.twitch.tv/oauth2/authorize?client_id=dan71ek0pct1u7b8ht5u4h55zlcxvq&redirect_uri=" + redirectURL + "&response_type=token";
+    }
+  </script>
+
   <script src="aws-sdk.js"></script>
   <script src="awsTranslateLanguages.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>
   <script src="https://code.jquery.com/jquery-1.10.1.min.js"></script>
- 
+
+  <script id="user-profile-template" type="text/x-handlebars-template">
+    <h2>Logged in as {{display_name}}</h2>
+    <h4>{{description}}</h4>
+    <div class="media">
+      <div class="pull-left">
+        <img class="media-object" width="150" src="{{profile_image_url}}" />
+      </div>
+      <div class="media-body">
+        <dl class="dl-horizontal">
+          <dt>Login Name: </dt><dd class="clearfix">{{login}}</dd>
+          <dt>Display name: </dt><dd class="clearfix">{{display_name}}</dd>
+
+          <dt>Voice Name: </dt>
+          <dd class="clearfix">
+            <select id="selectedVoice" onchange="voiceSelected(this.value)">
+              {{#select voice}}
+              {{#each voices.Voices}}
+                <option value="{{Id}}">{{Id}} ({{LanguageCode}} -- {{LanguageName}})</option>
+              {{/each}}
+              {{/select}}
+            </select>
+            <div id="selected-voice-option-div"></div>
+            <input type="hidden" size="10" name="voice-option" id="voice-option" value="{{voice_option}}">
+          </dd>
+          <dt>Spoken Name: </dt><dd class="clearfix"><input type="text" size="60" name="spoken-name" id="spoken-name" value="{{spoken_name}}"></dd><br>
+          <dd class="clearfix"><button class="btn btn-default" id="save-config" onclick="saveConfig('{{login}}')">Save</button></dd>
+        </dl>
+      </div>
+    </div>
+  </script>
+
+  <script id="user-voice-option-template" type="text/x-handlebars-template">
+    <select id="selectedVoiceOption" onchange="voiceOptionSelected(this.value)">
+      {{#select voiceOption}}
+      {{#each voiceOptions}}
+        <option value="{{this}}">{{this}}</option>
+      {{/each}}
+      {{/select}}
+    </select>     
+  </script>
+
   <script id="system-voice-template" type="text/x-handlebars-template">
-      <dt>System Voice Selection: </dt>
-      <dd class="clearfix">
-        <select
-          id="systemVoice"
-          class="form-control"
-          onchange="systemVoiceSelected(this.value)"
-        >
-          {{#select voice}}
-            {{#each voices.Voices}}
-              <option value="{{Id}}">{{Id}}
-                ({{LanguageCode}}
-                --
-                {{LanguageName}})</option>
-            {{/each}}
-          {{/select}}
-        </select>
-        <input
-          type="hidden"
-          size="10"
-          name="system-voice-option"
-          id="system-voice-option"
-          value="{{voice_option}}"
-        />
-      </dd>
-      <div id="systemVoiceOptionPlaceholder"></div>
-    </script>
+    <dt>System Voice Selection: </dt>
+    <dd class="clearfix">
+      <select id="systemVoice" class="form-control" onchange="systemVoiceSelected(this.value)">
+        {{#select voice}}
+          {{#each voices.Voices}}
+            <option value="{{Id}}">{{Id}} ({{LanguageCode}} -- {{LanguageName}})</option>
+          {{/each}}
+        {{/select}}
+      </select>
+      <input type="hidden" size="10" name="system-voice-option" id="system-voice-option" value="{{voice_option}}" />
+    </dd>
+    <div id="systemVoiceOptionPlaceholder"></div>
+  </script>
 
   <script id="system-voice-option-template" type="text/x-handlebars-template">
-      <dt></dt>
-      <dd class="clearfix">
-        <select
-          id="systemVoiceOption"
-          class="form-control"
-          onchange="systemVoiceOptionSelected(this.value)"
-        >
-          {{#select voiceOption}}
-            {{#each voiceOptions}}
-              <option value="{{this}}">{{this}}</option>
-            {{/each}}
-          {{/select}}
-        </select>
-      </dd>
-    </script>
+    <dt></dt>
+    <dd class="clearfix">
+      <select id="systemVoiceOption" class="form-control" onchange="systemVoiceOptionSelected(this.value)">
+        {{#select voiceOption}}
+          {{#each voiceOptions}}
+            <option value="{{this}}">{{this}}</option>
+          {{/each}}
+        {{/select}}
+      </select>
+    </dd>
+  </script>
 
   <script id="default-chatter-voice-template" type="text/x-handlebars-template">
-      <dt>Default Chatter Voice Selection: </dt>
-      <dd class="clearfix">
-        <select
-          id="defaultChatterVoice"
-          class="form-control"
-          onchange="defaultChatterVoiceSelected(this.value)"
-        >
-          {{#select voice}}
-            {{#each voices.Voices}}
-              <option value="{{Id}}">{{Id}}
-                ({{LanguageCode}}
-                --
-                {{LanguageName}})</option>
-            {{/each}}
-          {{/select}}
-        </select>
-        <input
-          type="hidden"
-          size="10"
-          name="default-chatter-voice-option"
-          id="default-chatter-voice-option"
-          value="{{voice_option}}"
-        />
-      </dd>
-      <div id="defaultChatterVoiceOptionPlaceholder"></div>
-
-      <!--<dd class="restrict-default-chatter-option">
-        <input type="checkbox" id="cbRestrictDefaultChatterVoice" onclick="saveOption(this)" />
-        <label for="cbRestrictDefaultChatterVoice">Restrict chatter voices to selected language.</label>
-      </dd>
-      -->
-
-    </script>
+    <dt>Default Chatter Voice Selection: </dt>
+    <dd class="clearfix">
+      <select id="defaultChatterVoice" class="form-control" onchange="defaultChatterVoiceSelected(this.value)">
+        {{#select voice}}
+          {{#each voices.Voices}}
+            <option value="{{Id}}">{{Id}} ({{LanguageCode}} -- {{LanguageName}})</option>
+          {{/each}}
+        {{/select}}
+      </select>
+      <input type="hidden" size="10" name="default-chatter-voice-option" id="default-chatter-voice-option" value="{{voice_option}}" />
+    </dd>
+    <div id="defaultChatterVoiceOptionPlaceholder"></div>
+  </script>
 
   <script id="default-chatter-voice-option-template" type="text/x-handlebars-template">
-      <dt></dt>
-      <dd class="clearfix">
-        <select
-          id="defaultChatterVoiceOption"
-          class="form-control"
-          onchange="defaultChatterVoiceOptionSelected(this.value)"
-        >
-          {{#select voiceOption}}
-            {{#each voiceOptions}}
-              <option value="{{this}}">{{this}}</option>
-            {{/each}}
-          {{/select}}
-        </select>
-      </dd>
-    </script>
+    <dt></dt>
+    <dd class="clearfix">
+      <select id="defaultChatterVoiceOption" class="form-control" onchange="defaultChatterVoiceOptionSelected(this.value)">
+        {{#select voiceOption}}
+          {{#each voiceOptions}}
+            <option value="{{this}}">{{this}}</option>
+          {{/each}}
+        {{/select}}
+      </select>
+    </dd>
+  </script>
 
   <script id="system-lang-template" type="text/x-handlebars-template">
-      <dt>{{name}}</dt>
-      <dd class="clearfix">
-        <select
-          id="{{elementId}}"
-          class="form-control"
-          onchange="saveLocalStorageLang('{{elementId}}')"
-        >
-          {{#each langs}}
-            <option value="{{@key}}">{{this}}</option>
-          {{/each}}
-        </select>
-      </dd>
-    </script>
+    <dt>{{name}}</dt>
+    <dd class="clearfix">
+      <select id="{{elementId}}" class="form-control" onchange="saveLocalStorageLang('{{elementId}}')">
+        {{#each langs}}
+          <option value="{{@key}}">{{this}}</option>
+        {{/each}}
+      </select>
+    </dd>
+  </script>
 
   <script src="js/login_script.js"></script>
-
 </body>
 
 </html>
