@@ -10,17 +10,11 @@
       let page = localStorage.getItem("page");
       localStorage.setItem("access_token", access_token);
       if (access_token) {
-          if(page == "streamer") {
-            window.location.href = "https://"+location.hostname+"/app";
-          }
-          else if(page == "viewer") {
-            window.location.href = "https://"+location.hostname+"/viewer";
-          }
-          else if(page == "moderator"){
-            window.location.href = "https://"+location.hostname+"/app";
+          if(page == "viewer") {
+            window.location.href = "https://"+location.hostname+"/#/viewer";
           }
           else {
-            window.location.href = "https://"+location.hostname+"/app";
+            window.location.href = "https://"+location.hostname+"/#/app";
           }
       }
     </script>

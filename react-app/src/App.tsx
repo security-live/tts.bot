@@ -1,9 +1,8 @@
 import React, { Suspense, lazy, useEffect } from 'react';
-import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
+import { createHashRouter, RouterProvider, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store';
 
 const LoginPage = lazy(() => import('./pages/LoginPage'));
-const CallbackPage = lazy(() => import('./pages/CallbackPage'));
 const StreamerDashboard = lazy(() => import('./pages/StreamerDashboard'));
 const CCTOverlay = lazy(() => import('./pages/CCTOverlay'));
 const ViewerPage = lazy(() => import('./pages/ViewerPage'));
@@ -22,11 +21,9 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-const router = createBrowserRouter([
+const router = createHashRouter([
   { path: '/', element: <Navigate to="/login" replace /> },
-  { path: '/index.html', element: <Navigate to="/app" replace /> },
   { path: '/login', element: <LoginPage /> },
-  { path: '/callback', element: <CallbackPage /> },
   {
     path: '/app',
     element: (
@@ -37,7 +34,6 @@ const router = createBrowserRouter([
   },
   { path: '/cct', element: <CCTOverlay /> },
   { path: '/viewer', element: <ViewerPage /> },
-  { path: '/viewer-callback', element: <ViewerPage /> },
 ]);
 
 export default function App() {
