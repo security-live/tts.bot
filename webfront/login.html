@@ -94,6 +94,59 @@
     .hidden {
       display: none;
     }
+
+    #viewerOptions {
+      text-align: left;
+    }
+
+    #viewerOptions .viewer-form {
+      background-color: #444;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.8);
+      margin-top: 20px;
+      width: 100%;
+      box-sizing: border-box;
+      border: 3px solid #b36aff;
+      color: white;
+    }
+
+    #viewerOptions .viewer-form h2 {
+      text-align: left;
+      font-size: 24px;
+      color: #b36aff;
+      margin-bottom: 20px;
+    }
+
+    #viewerOptions .viewer-form #loggedin {
+      text-align: left;
+    }
+
+    #viewerOptions .viewer-form #user-profile,
+    #viewerOptions .viewer-form #tts-config {
+      margin-bottom: 15px;
+    }
+
+    #viewerOptions input, #viewerOptions select, #viewerOptions button {
+      width: 100%;
+      margin-bottom: 15px;
+      padding: 12px;
+      border-radius: 10px;
+      border: 2px solid #b36aff;
+      box-sizing: border-box;
+      background-color: #666;
+      color: white;
+    }
+
+    #viewerOptions input:focus, #viewerOptions select:focus, #viewerOptions button:focus {
+      outline: none;
+      border: 2px solid #80b3ff;
+      box-shadow: 0 0 10px #80b3ff;
+    }
+
+    .media-body {
+      text-align: left !important;
+    }
   </style>
 </head>
 
@@ -106,7 +159,7 @@
 
     <h1>Access requires a
       <span style="color: #b36aff"><a style="color: #b36aff" href="https://www.twitch.tv/signup"
-          target="_blank">Twitch</a></span> account.
+          target="_blank">TwiTch</a></span> account.
     </h1>
 
     <div id="userSelection">
@@ -149,11 +202,13 @@
     </div>
 
     <div id="viewerOptions" class="hidden">
-      <h2>Viewer Options</h2>
-      <div id="login"></div>
-      <div id="loggedin">
-        <div id="user-profile"></div>
-        <div id="tts-config"></div>
+      <div class="viewer-form">
+        <h2>Viewer Options</h2>
+        <div id="login"></div>
+        <div id="loggedin">
+          <div id="user-profile"></div>
+          <div id="tts-config"></div>
+        </div>
       </div>
     </div>
 
@@ -175,13 +230,8 @@
     }
 
     function launchViewerOptions() {
-      localStorage.setItem("page","viewer");
-      var redirectURL = "https://dev.tts.bot/safetokenXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.html";
-      if (location.hostname.includes("local.tts.bot")) {
-        redirectURL = "https://local.tts.bot/safetokenXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.html";
-      }
-
-      window.location.href = "https://id.twitch.tv/oauth2/authorize?client_id=dan71ek0pct1u7b8ht5u4h55zlcxvq&redirect_uri=" + redirectURL + "&response_type=token";
+      document.getElementById("userSelection").classList.add("hidden");
+      document.getElementById("viewerOptions").classList.remove("hidden");
     }
   </script>
 

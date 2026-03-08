@@ -259,88 +259,6 @@
     let voicesDesc = {};
     let sortedLanguages = [];
 
-    async function buildVoiceLookup() {
-      return new Promise(function (resolve, reject) {
-        //console.log('buildVoiceLookup()');
-
-        var polly = new AWS.Polly();
-        //console.log('pulling voices from AWS API');
-        var params = {};
-
-        polly.describeVoices(params, async function (err, data) {
-          if (err) {
-            console.log(err, err.stack); // an error occurred
-            reject(err);
-          } else {
-            voicesDesc = data;
-            for (var i = 0; i < voicesDesc.Voices.length; i++) {
-              var lcvoice = voicesDesc.Voices[i].Id.toLowerCase();
-              var idvoice = voicesDesc.Voices[i].Id;
-              voices[lcvoice] = {};
-              voices[lcvoice].engine = voicesDesc.Voices[i].SupportedEngines[0];
-              voices[lcvoice].voiceOptions = voicesDesc.Voices[i].SupportedEngines;
-              voices[lcvoice].name = idvoice;
-            }
-            voicesDesc.Voices.sort(function (a, b) {
-              if (a.LanguageCode === b.LanguageCode) {
-                return b.Id - a.Id;
-              }
-              return a.LanguageCode > b.LanguageCode ? 1 : -1;
-            });
-            resolve();
-          }
-        });
-        //console.log(voices);
-      });
-    }
-
-    function voiceSelected(voice) {
-      var userVoiceOptionSource = document.getElementById('user-voice-option-template').innerHTML,
-        userVoiceOptionTemplate = Handlebars.compile(userVoiceOptionSource),
-        userVoiceOptionPlaceholder = document.getElementById('selected-voice-option-div');
-      userVoiceOptionPlaceholder.innerHTML = userVoiceOptionTemplate(voices[voice.toLowerCase()]);
-      var voiceOption = document.getElementById('voice-option');
-      voiceOption.value = voices[voice.toLowerCase()].voiceOptions[0];
-    }
-
-    function voiceOptionSelected(voiceOption) {
-      var voiceOptionElement = document.getElementById('voice-option');
-      voiceOptionElement.value = voiceOption;
-    }
-
-    function saveConfig(login) {
-      var voice = document.getElementById('selectedVoice').value;
-      var voiceOption = document.getElementById('voice-option').value;
-      var spokenName = document.getElementById('spoken-name').value;
-
-      var data = {};
-      var response = {};
-      data.login = login;
-      data.voice = voice;
-      data.voice_option = voiceOption;
-      data.spoken_name = spokenName;
-      data.bsvalue = "garbage";
-      data.access_token = localStorage.getItem("access_token");
-      response.data = [];
-      response.data.push(data);
-      $.ajax({
-        url: 'https://api.securitylive.com/tts',
-        type: 'PUT',
-        dataType: 'json',
-        contentType: 'application/json',
-        data: JSON.stringify(response),
-        success: function (response) {
-          console.log("Config Saved Successfully");
-          console.log(response);
-          alert("Save Much Success!");
-        },
-        error: function (response) {
-          console.log("Config Save Failed: DynamoDB");
-          return;
-        }
-      });
-    }
-
     (async function () {
 
       // Create a CognitoIdentity service object
@@ -365,7 +283,7 @@
           });
 
           // Get the temporary AWS credentials
-          await AWS.config.credentials.get((error) => {
+          await AWS.config.credentials.get(async (error) => {
             if (error) {
               console.error("Error getting credentials", error);
             } else {
@@ -375,7 +293,9 @@
                 region: AWS.config.region,
               });
 
-              buildVoiceLookup();
+              finishSetup();
+
+
 
               console.log(
                 "Successfully authenticated as an unauthenticated user with Cognito"
@@ -386,57 +306,146 @@
       );
 
 
+      async function buildVoiceLookup() {
+        return new Promise(function (resolve, reject) {
+          //console.log('buildVoiceLookup()');
 
-      Handlebars.registerHelper('contains', function (needle, haystack, options) {
-        return (haystack.indexOf(needle) > -1) ? options.fn(this) : options.inverse(this);
-      });
+          var polly = new AWS.Polly();
+          //console.log('pulling voices from AWS API');
+          var params = {};
 
-      Handlebars.registerHelper('select', function (value, options) {
-        var $el = $('<select />').html(options.fn(this));
-        $el.find('[value="' + value + '"]').attr({ 'selected': 'selected' });
-        return $el.html();
-      });
-
-      var userProfileSource = document.getElementById('user-profile-template').innerHTML,
-        userProfileTemplate = Handlebars.compile(userProfileSource),
-        userProfilePlaceholder = document.getElementById('user-profile');
-
-      let access_token = localStorage.getItem("access_token");
-
-      if (access_token) {
-        var request = {};
-        request.data = [];
-        var tmp = {};
-        tmp.access_token = access_token;
-        request.data.push(tmp);
-        console.log(request);
-        $.ajax({
-          url: 'https://api.securitylive.com/tts',
-          type: 'PUT',
-          dataType: 'json',
-          contentType: 'application/json',
-          data: JSON.stringify(request),
-          success: function (response) {
-            response.voices = voicesDesc;
-            userProfilePlaceholder.innerHTML = userProfileTemplate(response);
-
-            var userVoiceOptionSource = document.getElementById('user-voice-option-template').innerHTML,
-              userVoiceOptionTemplate = Handlebars.compile(userVoiceOptionSource),
-              userVoiceOptionPlaceholder = document.getElementById('selected-voice-option-div');
-
-            var optionData = {};
-            optionData.voiceOptions = voices[response.voice.toLowerCase()].voiceOptions;
-            optionData.voiceOption = response.voice_option;
-            userVoiceOptionPlaceholder.innerHTML = userVoiceOptionTemplate(optionData);
-
-            $('#login').hide();
-            $('#loggedin').show();
-          },
-          error: function (error) {
-            console.log(error);
-          }
+          polly.describeVoices(params, async function (err, data) {
+            if (err) {
+              console.log(err, err.stack); // an error occurred
+              reject(err);
+            } else {
+              voicesDesc = data;
+              for (var i = 0; i < voicesDesc.Voices.length; i++) {
+                var lcvoice = voicesDesc.Voices[i].Id.toLowerCase();
+                var idvoice = voicesDesc.Voices[i].Id;
+                voices[lcvoice] = {};
+                voices[lcvoice].engine = voicesDesc.Voices[i].SupportedEngines[0];
+                voices[lcvoice].voiceOptions = voicesDesc.Voices[i].SupportedEngines;
+                voices[lcvoice].name = idvoice;
+              }
+              voicesDesc.Voices.sort(function (a, b) {
+                if (a.LanguageCode === b.LanguageCode) {
+                  return b.Id - a.Id;
+                }
+                return a.LanguageCode > b.LanguageCode ? 1 : -1;
+              });
+              resolve();
+            }
+          });
+          //console.log(voices);
         });
       }
+
+      async function finishSetup() {
+        await buildVoiceLookup();
+
+
+        function voiceSelected(voice) {
+          var userVoiceOptionSource = document.getElementById('user-voice-option-template').innerHTML,
+            userVoiceOptionTemplate = Handlebars.compile(userVoiceOptionSource),
+            userVoiceOptionPlaceholder = document.getElementById('selected-voice-option-div');
+          userVoiceOptionPlaceholder.innerHTML = userVoiceOptionTemplate(voices[voice.toLowerCase()]);
+          var voiceOption = document.getElementById('voice-option');
+          voiceOption.value = voices[voice.toLowerCase()].voiceOptions[0];
+        }
+
+        function voiceOptionSelected(voiceOption) {
+          var voiceOptionElement = document.getElementById('voice-option');
+          voiceOptionElement.value = voiceOption;
+        }
+
+        function saveConfig(login) {
+          var voice = document.getElementById('selectedVoice').value;
+          var voiceOption = document.getElementById('voice-option').value;
+          var spokenName = document.getElementById('spoken-name').value;
+
+          var data = {};
+          var response = {};
+          data.login = login;
+          data.voice = voice;
+          data.voice_option = voiceOption;
+          data.spoken_name = spokenName;
+          data.bsvalue = "garbage";
+          data.access_token = localStorage.getItem("access_token");
+          response.data = [];
+          response.data.push(data);
+          $.ajax({
+            url: 'https://api.securitylive.com/tts',
+            type: 'PUT',
+            dataType: 'json',
+            contentType: 'application/json',
+            data: JSON.stringify(response),
+            success: function (response) {
+              console.log("Config Saved Successfully");
+              console.log(response);
+              alert("Save Much Success!");
+            },
+            error: function (response) {
+              console.log("Config Save Failed: DynamoDB");
+              return;
+            }
+          });
+        }
+
+
+
+        Handlebars.registerHelper('contains', function (needle, haystack, options) {
+          return (haystack.indexOf(needle) > -1) ? options.fn(this) : options.inverse(this);
+        });
+
+        Handlebars.registerHelper('select', function (value, options) {
+          var $el = $('<select />').html(options.fn(this));
+          $el.find('[value="' + value + '"]').attr({ 'selected': 'selected' });
+          return $el.html();
+        });
+
+        var userProfileSource = document.getElementById('user-profile-template').innerHTML,
+          userProfileTemplate = Handlebars.compile(userProfileSource),
+          userProfilePlaceholder = document.getElementById('user-profile');
+
+        let access_token = localStorage.getItem("access_token");
+
+        if (access_token) {
+          var request = {};
+          request.data = [];
+          var tmp = {};
+          tmp.access_token = access_token;
+          request.data.push(tmp);
+          console.log(request);
+          $.ajax({
+            url: 'https://api.securitylive.com/tts',
+            type: 'PUT',
+            dataType: 'json',
+            contentType: 'application/json',
+            data: JSON.stringify(request),
+            success: function (response) {
+              response.voices = voicesDesc;
+              userProfilePlaceholder.innerHTML = userProfileTemplate(response);
+
+              var userVoiceOptionSource = document.getElementById('user-voice-option-template').innerHTML,
+                userVoiceOptionTemplate = Handlebars.compile(userVoiceOptionSource),
+                userVoiceOptionPlaceholder = document.getElementById('selected-voice-option-div');
+
+              var optionData = {};
+              optionData.voiceOptions = voices[response.voice.toLowerCase()].voiceOptions;
+              optionData.voiceOption = response.voice_option;
+              userVoiceOptionPlaceholder.innerHTML = userVoiceOptionTemplate(optionData);
+
+              $('#login').hide();
+              $('#loggedin').show();
+            },
+            error: function (error) {
+              console.log(error);
+            }
+          });
+        }
+      }
+
     })();
   </script>
 </body>
