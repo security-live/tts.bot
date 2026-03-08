@@ -1,0 +1,176 @@
+/* ── CSS custom properties for CCT overlay ─────────────────────────── */
+:root {
+  --font-family: Arial, sans-serif;
+  --font-weight: 900;
+  --font-color: rgba(255, 255, 255, 1);
+  --font-size: 48px;
+  --webkit-text-stroke-size: 2px;
+  --webkit-text-stroke-color: rgba(0, 0, 0, 1);
+  --bubble-background-color: rgba(0, 0, 0, 0);
+  --border-color: rgba(255, 255, 255, 1);
+  --border-width: 0px;
+  --border-line-style: solid;
+  --border-radius: 0px;
+  --hr-color: rgba(255, 255, 255, 0.3);
+  --outline-color: rgba(0, 0, 0, 1);
+  --outline-offset: 0px;
+  --shadow-color: rgba(0, 0, 0, 1);
+  --shadow-offset-horizontal: 2px;
+  --shadow-offset-vertical: 2px;
+  --shadow-blur: 4px;
+}
+
+/* ── Global resets ──────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: #1a1a2e;
+  color: #fff;
+  font-family: system-ui, sans-serif;
+}
+
+/* ── Chat feed ──────────────────────────────────────────────────────── */
+.chat-bubble {
+  border-radius: 4px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  transition: background-color 0.2s;
+}
+
+.chat-bubble.system-bubble {
+  font-style: italic;
+}
+
+.message-at-reference {
+  font-size: 0.75em;
+  opacity: 0.7;
+  margin-left: 2px;
+}
+
+.overflow-y-auto { overflow-y: auto; }
+
+/* ── CCT overlay ────────────────────────────────────────────────────── */
+.cct-overlay {
+  background: transparent !important;
+}
+
+.cct-display {
+  text-align: center;
+}
+
+.cct-text {
+  font-family: var(--font-family);
+  font-weight: var(--font-weight);
+  font-size: var(--font-size);
+  color: var(--font-color);
+  -webkit-text-stroke: var(--webkit-text-stroke-size) var(--webkit-text-stroke-color);
+  text-shadow:
+    var(--shadow-offset-horizontal) var(--shadow-offset-vertical) var(--shadow-blur) var(--shadow-color);
+  background-color: var(--bubble-background-color);
+  border: var(--border-width) var(--border-line-style) var(--border-color);
+  border-radius: var(--border-radius);
+  outline-color: var(--outline-color);
+  outline-offset: var(--outline-offset);
+  padding: 0.25em 0.5em;
+  margin-bottom: 0.5em;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.cct-text.translated {
+  opacity: 0.85;
+  font-size: calc(var(--font-size) * 0.8);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Settings panel ─────────────────────────────────────────────────── */
+.settings-panel {
+  height: 100%;
+}
+
+/* ── Top bar ────────────────────────────────────────────────────────── */
+.topbar {
+  background: #111;
+  min-height: 48px;
+}
+
+/* ── Chat bubble structure ───────────────────────────────────────────── */
+.chat-bubble .username-container {
+  font-size: 0.82rem;
+}
+
+.chat-bubble .voice-name {
+  font-size: 0.72rem;
+  opacity: 0.7;
+}
+
+.chat-bubble .message {
+  word-break: break-word;
+}
+
+.chat-bubble .translated-message {
+  font-size: 0.8em;
+  opacity: 0.75;
+  font-style: italic;
+}
+
+.btn-xs {
+  font-size: 0.7rem;
+  padding: 1px 5px;
+}
+
+/* ── Top header ──────────────────────────────────────────────────────── */
+.topHeader {
+  background-color: BlueViolet;
+  color: white;
+  padding: 6px 12px;
+}
+
+/* ── Panel styles ────────────────────────────────────────────────────── */
+.panelHeading {
+  background: #2a2a3e;
+  border-bottom: 1px solid #444;
+  padding: 6px 12px;
+  font-weight: bold;
+}
+
+.panelBody {
+  background: #1e1e2e;
+  padding: 10px;
+}
+
+/* ── Translator / CCT layout ─────────────────────────────────────────── */
+.translatorAlign {
+  text-align: center;
+}
+
+.translatorText {
+  font-family: var(--font-family);
+  font-weight: var(--font-weight);
+  font-size: var(--font-size);
+  color: var(--font-color);
+  -webkit-text-stroke: var(--webkit-text-stroke-size) var(--webkit-text-stroke-color);
+  text-shadow:
+    var(--shadow-offset-horizontal) var(--shadow-offset-vertical) var(--shadow-blur) var(--shadow-color);
+}
+
+/* ── Outline / shadow utilities ──────────────────────────────────────── */
+.outline {
+  -webkit-text-stroke: 2px black;
+}
+
+.shadow {
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+/* ── Bootstrap dark overrides ───────────────────────────────────────── */
+.form-control:focus, .form-select:focus {
+  border-color: #6c757d;
+  box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.25);
+}
+
+select option { background: #212529; }
