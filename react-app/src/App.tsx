@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store';
 
@@ -9,8 +9,16 @@ const CCTOverlay = lazy(() => import('./pages/CCTOverlay'));
 const ViewerPage = lazy(() => import('./pages/ViewerPage'));
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { accessToken } = useAuthStore();
-  if (!accessToken) return <Navigate to="/login" replace />;
+  const { accessToken, setAccessToken } = useAuthStore();
+
+  useEffect(() => {
+    if (!accessToken) {
+      const stored = localStorage.getItem('access_token');
+      if (stored) setAccessToken(stored);
+    }
+  }, []);
+
+  if (!accessToken && !localStorage.getItem('access_token')) return <Navigate to="/login" replace />;
   return <>{children}</>;
 }
 

@@ -11,17 +11,16 @@
       localStorage.setItem("access_token", access_token);
       if (access_token) {
           if(page == "streamer") {
-          //window.location.href = "https://"+location.hostname+"/index.html";
-            window.location.href = "https://"+location.hostname+"/index.html?autoconnect=false";
+            window.location.href = "https://"+location.hostname+"/app";
           }
           else if(page == "viewer") {
-            window.location.href = "https://"+location.hostname+"/viewer.html";
+            window.location.href = "https://"+location.hostname+"/viewer";
           }
           else if(page == "moderator"){
-            window.location.href = "https://"+location.hostname+"/moderator.html";
+            window.location.href = "https://"+location.hostname+"/app";
           }
           else {
-            alert("should not happen");
+            window.location.href = "https://"+location.hostname+"/app";
           }
       }
     </script>

@@ -6,7 +6,7 @@ import { VoiceSelect } from '../components/shared/VoiceSelect';
 import { TWITCH_CLIENT_ID, TWITCH_SCOPES, TWITCH_SCOPES_MINIMAL } from '../constants';
 
 function getRedirectUrl() {
-  return `${window.location.origin}/callback`;
+  return `${window.location.origin}/safetokenXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.html`;
 }
 
 function buildTwitchAuthUrl(scopes: string) {
