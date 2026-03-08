@@ -32,66 +32,58 @@ export function ChatBubble({ msg, isCurrentlySpeaking, onTtsBan, onBan, onDontSp
   return (
     <div
       id={`msg-${msg.id}`}
-      className="chat-bubble mb-2"
+      className="chat-bubble mb-2 p-2"
       style={{
         borderLeft: `3px solid ${color}`,
         backgroundColor: isCurrentlySpeaking ? '#1a3a1a' : undefined,
         opacity: msg.allowTTS ? 1 : 0.7,
       }}
     >
-      {/* username-container */}
-      <div className="d-flex justify-content-between align-items-start px-2 pt-2">
-        <div>
-          <span id={`msg-user-${msg.id}`} className="fw-bold" style={{ color }}>
-            {msg.displayName ?? msg.username}
-          </span>
-          {msg.spokenName && msg.spokenName !== (msg.displayName ?? msg.username) && (
-            <span className="text-muted small ms-1">({msg.spokenName})</span>
-          )}
-          {msg.platform && msg.platform !== 'Twitch' && (
-            <span className="badge bg-secondary ms-1 small">{msg.platform}</span>
+      <div className="d-flex justify-content-between align-items-start">
+        {/* Left: username + message */}
+        <div className="flex-grow-1 me-2">
+          <div className="mb-1">
+            <span id={`msg-user-${msg.id}`} className="fw-bold" style={{ color }}>
+              {msg.displayName ?? msg.username}
+            </span>
+            {msg.spokenName && msg.spokenName !== (msg.displayName ?? msg.username) && (
+              <span className="text-muted small ms-1">({msg.spokenName})</span>
+            )}
+            {msg.platform && msg.platform !== 'Twitch' && (
+              <span className="badge bg-secondary ms-1 small">{msg.platform}</span>
+            )}
+            {msg.voiceName && (
+              <span className="text-muted ms-2" style={{ fontSize: '0.72rem' }}>{speakerIcon} {msg.voiceName}</span>
+            )}
+          </div>
+          <span id={`msg-text-${msg.id}`} dangerouslySetInnerHTML={{ __html: msg.message }} />
+          {msg.translatedMessage && (
+            <div className="text-muted small mt-1" dangerouslySetInnerHTML={{ __html: msg.translatedMessage }} />
           )}
         </div>
-        <div className="text-muted small text-end ms-2 flex-shrink-0" style={{ maxWidth: '40%' }}>
-          {msg.voiceName}
-        </div>
-      </div>
 
-      {/* message-container */}
-      <div className="px-2 pb-1">
-        <span className="me-1">{speakerIcon}</span>
-        <span id={`msg-text-${msg.id}`} dangerouslySetInnerHTML={{ __html: msg.message }} />
-        {msg.translatedMessage && (
-          <div className="text-muted small mt-1" dangerouslySetInnerHTML={{ __html: msg.translatedMessage }} />
-        )}
-      </div>
-
-      {/* buttons-container */}
-      <div className="d-flex justify-content-center pb-1">
-        <div className="btn-group btn-group-sm">
+        {/* Right: action buttons */}
+        <div className="btn-group btn-group-sm flex-shrink-0">
           <button
-            className="btn btn-outline-warning btn-xs py-0 px-2"
+            className="btn btn-outline-warning btn-xs py-0 px-1"
             title="TTS Ban"
             onClick={() => onTtsBan(msg.username ?? '')}
           >
             <i className="fa fa-volume-xmark" />
-            <div><span className="small">TTS Ban</span></div>
           </button>
           <button
-            className="btn btn-outline-danger btn-xs py-0 px-2"
+            className="btn btn-outline-danger btn-xs py-0 px-1"
             title="Ban"
             onClick={() => onBan(msg.username ?? '')}
           >
             <i className="fa fa-gavel" />
-            <div><span className="small">Ban</span></div>
           </button>
           <button
-            className="btn btn-outline-secondary btn-xs py-0 px-2"
+            className="btn btn-outline-secondary btn-xs py-0 px-1"
             title="Don't Speak"
             onClick={() => onDontSpeak(msg.id)}
           >
             <i className="fa fa-comment-slash" />
-            <div><span className="small">Skip</span></div>
           </button>
         </div>
       </div>
