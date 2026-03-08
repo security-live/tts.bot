@@ -24,6 +24,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 const router = createBrowserRouter([
   { path: '/', element: <Navigate to="/login" replace /> },
+  { path: '/index.html', element: <Navigate to="/app" replace /> },
   { path: '/login', element: <LoginPage /> },
   { path: '/callback', element: <CallbackPage /> },
   {
