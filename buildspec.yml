@@ -2,4 +2,4 @@ version: 0.2
 artifacts:
   files:
     - '**/*'
-  base-directory: 'react-app/dist'
+  base-directory: 'webfront'
