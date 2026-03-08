@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head><title>Safe Frontend Redirect</title></head>
+  <body>
+    Please wait, if this does not redirect in a short period of time something
+    went wrong.
+    <script>
+      let url = new URL(window.location.href);
+      var access_token = url.hash.match(/access_token=(\w+)/)[1];
+      let page = localStorage.getItem("page");
+      localStorage.setItem("access_token", access_token);
+      if (access_token) {
+          if(page == "streamer") {
+            window.location.href = "https://"+location.hostname+"/app";
+          }
+          else if(page == "viewer") {
+            window.location.href = "https://"+location.hostname+"/viewer";
+          }
+          else if(page == "moderator"){
+            window.location.href = "https://"+location.hostname+"/app";
+          }
+          else {
+            window.location.href = "https://"+location.hostname+"/app";
+          }
+      }
+    </script>
+  </body>
+</html>
