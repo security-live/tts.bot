@@ -1,16 +1,4 @@
 version: 0.2
-
-phases:
-  install:
-    runtime-versions:
-      nodejs: 20
-    commands:
-      - cd react-app
-      - npm ci
-  build:
-    commands:
-      - npm run build
-
 artifacts:
   files:
     - '**/*'
