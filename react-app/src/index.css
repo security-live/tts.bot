@@ -92,6 +92,33 @@ body {
   height: 100%;
 }
 
+/* ── Login page gradient button ─────────────────────────────────────── */
+.login-button {
+  border: none;
+  color: white;
+  padding: 20px;
+  text-align: center;
+  display: block;
+  font-size: 16px;
+  margin: 4px 0;
+  cursor: pointer;
+  border-radius: 15px;
+  background: linear-gradient(90deg, rgba(129, 223, 244, 1) 0%, rgba(80, 56, 237, 1) 100%);
+  width: 100%;
+  box-sizing: border-box;
+  transition: background 0.2s, color 0.2s;
+}
+
+.login-button:hover, .login-button:focus {
+  background: #fff !important;
+  color: #000 !important;
+}
+
+.login-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* ── Top bar ────────────────────────────────────────────────────────── */
 .topbar {
   background: #111;
