@@ -24,11 +24,12 @@ export function SettingsPanel({ channel, onClose }: SettingsPanelProps) {
     />
   );
 
-  const txt = (key: keyof typeof settings, type: 'text' | 'number' = 'text') => (
+  const txt = (key: keyof typeof settings, type: 'text' | 'number' = 'text', placeholder?: string) => (
     <input
       type={type}
       className="form-control form-control-sm bg-dark text-white"
       value={settings[key] as string | number}
+      placeholder={placeholder}
       onChange={(e) =>
         settings.setSetting(key as any, type === 'number' ? Number(e.target.value) : e.target.value)
       }
@@ -101,12 +102,12 @@ export function SettingsPanel({ channel, onClose }: SettingsPanelProps) {
           <div>
             <label className="form-label small">Source Language (auto = detect)</label>
             <input className="form-control form-control-sm bg-dark text-white" value={voice.srcLangSelect}
-              onChange={(e) => voice.setVoice('srcLangSelect', e.target.value)} />
+              placeholder="auto" onChange={(e) => voice.setVoice('srcLangSelect', e.target.value)} />
           </div>
           <div>
             <label className="form-label small">Target Language</label>
             <input className="form-control form-control-sm bg-dark text-white" value={voice.dstLangSelect}
-              onChange={(e) => voice.setVoice('dstLangSelect', e.target.value)} />
+              placeholder="en" onChange={(e) => voice.setVoice('dstLangSelect', e.target.value)} />
           </div>
           <div className="form-check">
             {cb('cbSpeakTranslation')}
@@ -150,11 +151,11 @@ export function SettingsPanel({ channel, onClose }: SettingsPanelProps) {
           <div className="row g-2">
             <div className="col-6">
               <label className="form-label small">Similarity %</label>
-              {txt('txtUserLevPct', 'number')}
+              {txt('txtUserLevPct', 'number', '75')}
             </div>
             <div className="col-6">
               <label className="form-label small">Time window (s)</label>
-              {txt('txtUserLevTime', 'number')}
+              {txt('txtUserLevTime', 'number', '300')}
             </div>
           </div>
           <div className="form-check">
@@ -164,11 +165,11 @@ export function SettingsPanel({ channel, onClose }: SettingsPanelProps) {
           <div className="row g-2">
             <div className="col-6">
               <label className="form-label small">Similarity %</label>
-              {txt('txtChatLevPct', 'number')}
+              {txt('txtChatLevPct', 'number', '75')}
             </div>
             <div className="col-6">
               <label className="form-label small">Time window (s)</label>
-              {txt('txtChatLevTime', 'number')}
+              {txt('txtChatLevTime', 'number', '300')}
             </div>
           </div>
         </div>
@@ -256,7 +257,7 @@ export function SettingsPanel({ channel, onClose }: SettingsPanelProps) {
             {cb('cbSendTextToWebsocket')}
             <label className="form-check-label ms-2">Custom WebSocket</label>
           </div>
-          {txt('txtWebsocketURL')}
+          {txt('txtWebsocketURL', 'text', 'wss://your-websocket-url')}
           <div className="form-check">
             {cb('cbRouteChatThroughWebsocket')}
             <label className="form-check-label ms-2">Route chat through WebSocket</label>
@@ -266,7 +267,7 @@ export function SettingsPanel({ channel, onClose }: SettingsPanelProps) {
             {cb('cbSendTextToAWSWebsocket')}
             <label className="form-check-label ms-2">AWS WebSocket</label>
           </div>
-          {txt('txtAWSWebsocketURL')}
+          {txt('txtAWSWebsocketURL', 'text', 'wss://your-aws-websocket-url')}
         </div>
       )}
 
@@ -283,7 +284,7 @@ export function SettingsPanel({ channel, onClose }: SettingsPanelProps) {
           </div>
           <div>
             <label className="form-label small">TTS Wait Time (seconds after speech ends)</label>
-            {txt('txtTTSWaitTime', 'number')}
+            {txt('txtTTSWaitTime', 'number', '2')}
           </div>
           <hr />
           <div className="form-check">
@@ -292,7 +293,7 @@ export function SettingsPanel({ channel, onClose }: SettingsPanelProps) {
           </div>
           <div>
             <label className="form-label small">Poof Regex</label>
-            {txt('txtPoofRegex')}
+            {txt('txtPoofRegex', 'text', 'poof|pop|skip')}
           </div>
           <hr />
           <div className="form-check">
@@ -301,11 +302,11 @@ export function SettingsPanel({ channel, onClose }: SettingsPanelProps) {
           </div>
           <div>
             <label className="form-label small">Ban Regex</label>
-            {txt('txtBanRegex')}
+            {txt('txtBanRegex', 'text', 'ban hammer')}
           </div>
           <div>
             <label className="form-label small">Ban Confirm Regex</label>
-            {txt('txtBanConfirmRegex')}
+            {txt('txtBanConfirmRegex', 'text', 'confirm ban')}
           </div>
           <hr />
           <div className="form-check">
@@ -321,6 +322,7 @@ export function SettingsPanel({ channel, onClose }: SettingsPanelProps) {
             <input
               className="form-control form-control-sm bg-dark text-white"
               value={voice.stsLang}
+              placeholder="es"
               onChange={(e) => voice.setVoice('stsLang', e.target.value)}
             />
           </div>
@@ -329,6 +331,7 @@ export function SettingsPanel({ channel, onClose }: SettingsPanelProps) {
             <input
               className="form-control form-control-sm bg-dark text-white"
               value={settings.chatLangSelect}
+              placeholder="en"
               onChange={(e) => settings.setSetting('chatLangSelect', e.target.value)}
             />
           </div>
