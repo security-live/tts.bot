@@ -34,6 +34,7 @@ const router = createHashRouter([
   },
   { path: '/cct', element: <CCTOverlay /> },
   { path: '/viewer', element: <ViewerPage /> },
+  { path: '*', element: <Navigate to="/login" replace /> },
 ]);
 
 export default function App() {
