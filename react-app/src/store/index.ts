@@ -127,7 +127,7 @@ interface VoicesDataState {
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
-      accessToken: '',
+      accessToken: localStorage.getItem('access_token') ?? '',
       twitchUsername: '',
       setAccessToken: (token) => set({ accessToken: token }),
       setTwitchUsername: (username) => set({ twitchUsername: username }),
