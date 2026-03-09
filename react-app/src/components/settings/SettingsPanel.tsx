@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { useSettingsStore, useVoiceStore, useAppearanceStore } from '../../store';
+import { useSettingsStore, useVoiceStore, useAppearanceStore, useAuthStore } from '../../store';
 import { VoiceSelect } from '../shared/VoiceSelect';
+import { loadSettingsFromApi, saveSettingsToApi } from '../../services/settingsApiService';
 
 interface SettingsPanelProps {
   channel: string;
@@ -11,9 +12,34 @@ type Tab = 'general' | 'voices' | 'translation' | 'filters' | 'appearance' | 'we
 
 export function SettingsPanel({ channel, onClose }: SettingsPanelProps) {
   const [tab, setTab] = useState<Tab>('general');
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'loading' | 'ok' | 'err'>('idle');
   const settings = useSettingsStore();
   const voice = useVoiceStore();
   const appearance = useAppearanceStore();
+  const { accessToken, twitchUsername } = useAuthStore();
+
+  const handleSave = async () => {
+    setSaveStatus('saving');
+    const payload = { ...settings, ...voice };
+    const ok = await saveSettingsToApi(twitchUsername || channel, payload as Record<string, unknown>, accessToken);
+    setSaveStatus(ok ? 'ok' : 'err');
+    setTimeout(() => setSaveStatus('idle'), 2000);
+  };
+
+  const handleLoad = async () => {
+    setSaveStatus('loading');
+    const data = await loadSettingsFromApi(twitchUsername || channel);
+    if (data) {
+      Object.entries(data).forEach(([k, v]) => {
+        if (k in settings) settings.setSetting(k as any, v as any);
+        else if (k in voice) voice.setVoice(k as any, v as any);
+      });
+      setSaveStatus('ok');
+    } else {
+      setSaveStatus('err');
+    }
+    setTimeout(() => setSaveStatus('idle'), 2000);
+  };
 
   const cb = (key: keyof typeof settings) => (
     <input
@@ -42,7 +68,27 @@ export function SettingsPanel({ channel, onClose }: SettingsPanelProps) {
     <div className="settings-panel bg-dark text-white p-3 overflow-y-auto h-100">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h5 className="mb-0">Settings</h5>
-        <button className="btn btn-sm btn-outline-secondary" onClick={onClose}>✕</button>
+        <div className="d-flex gap-1 align-items-center">
+          {saveStatus === 'ok' && <span className="text-success small">✓</span>}
+          {saveStatus === 'err' && <span className="text-danger small">✗</span>}
+          <button
+            className="btn btn-sm btn-outline-info"
+            onClick={handleLoad}
+            disabled={saveStatus === 'saving' || saveStatus === 'loading'}
+            title="Load settings from cloud"
+          >
+            {saveStatus === 'loading' ? '…' : '↓ Load'}
+          </button>
+          <button
+            className="btn btn-sm btn-outline-success"
+            onClick={handleSave}
+            disabled={saveStatus === 'saving' || saveStatus === 'loading'}
+            title="Save settings to cloud"
+          >
+            {saveStatus === 'saving' ? '…' : '↑ Save'}
+          </button>
+          <button className="btn btn-sm btn-outline-secondary" onClick={onClose}>✕</button>
+        </div>
       </div>
 
       <ul className="nav nav-pills nav-fill mb-3 flex-wrap gap-1">
