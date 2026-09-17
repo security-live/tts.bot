@@ -5,7 +5,7 @@
 import { translateText, selectRandomVoiceByLanguageCode } from './awsService';
 import { getBttvEmotes, getFfzEmotes } from './emoteService';
 import type { ChatterConfig, TwitchUserstate, VoiceLookup, PollyVoice, ChatMessage, AudioMessage } from '../types';
-import { DEFAULT_COLORS, INJECT_SCRIPT_REWARD_ID } from '../constants';
+import { DEFAULT_COLORS, INJECT_SCRIPT_REWARD_ID, LANGUAGE_NAMES } from '../constants';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -306,13 +306,14 @@ export async function doChat(
       identicalTranslation = msg.trim() === translatedText.trim();
 
       if (ctx.targetLanguage !== sourceLangCode) {
+        const langName = LANGUAGE_NAMES[sourceLangCode] ?? sourceLangCode;
         if (ctx.targetLanguage === 'en') {
-          translatedFromMessage = `Translated from ${sourceLangCode}`;
+          translatedFromMessage = `Translated from ${langName}`;
         } else {
           try {
-            const t = await translateText(`Translated from ${sourceLangCode}`, 'en', ctx.targetLanguage);
+            const t = await translateText(`Translated from ${langName}`, 'en', ctx.targetLanguage);
             translatedFromMessage = t.translatedText;
-          } catch { translatedFromMessage = `Translated from ${sourceLangCode}`; }
+          } catch { translatedFromMessage = `Translated from ${langName}`; }
         }
 
         if (ctx.settings.cbAutoTranslateChat && !identicalTranslation) {
@@ -484,9 +485,13 @@ export async function doChat(
   ctx.localChattersData[username].lastMessages.push(entry);
   ctx.lastMessages.push(entry);
 
+  const spokenWithTranslation = translatedFromMessage
+    ? `${spokenText} (${translatedFromMessage})`
+    : spokenText;
+
   ctx.onSpeak({
     prefix,
-    text: spokenText,
+    text: spokenWithTranslation,
     userstate: finalUserstate,
     ssmlTextType,
     messageId: msgId,
