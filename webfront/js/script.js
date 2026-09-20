@@ -1,6 +1,5 @@
 "use strict";
 
-
 // GLOBALS YAY
 var DEBUG = false;
 var streamerIsSpeaking = false;
@@ -33,7 +32,7 @@ var messageID = 1;
 var currentSpeakingMessageID = 0;
 var audioPlayerNew = new Audio();
 var con = {};
-var backendEnabled = false;
+var backendEnabled = true;
 
 const DEFAULT_COLORS = [
   "#b52d2d",
@@ -61,7 +60,7 @@ const GetColorForUsername = (userName) =>
 
 const defaultOutput = [{ label: "Default", deviceId: "default" }];
 
-AWS.config.region = "us-west-2";
+AWS.config.region = "us-east-1";
 
 var hash = window.location.hash;
 history.pushState(
@@ -227,8 +226,8 @@ chatters["system"].spoken_name = "System";
 chatters["gpt"] = {};
 chatters["gpt"].voice = "gregory";
 chatters["gpt"].voice_option = "neural";
-chatters["gpt"].display_name = "GPT";
-chatters["gpt"].spoken_name = "GPT";
+chatters["gpt"].display_name = "ChatGPT";
+chatters["gpt"].spoken_name = "ChatGPT 4o Mini";
 
 async function loadFFZEmotes() {
   var request = new XMLHttpRequest();
@@ -358,9 +357,16 @@ function saveOption(element) {
 async function loadOptions() {
   const entries = Object.entries(localStorage);
   entries.forEach(([key, value]) => {
+    //console.log(key, value)
     try {
       if (key.startsWith("cb")) {
-        document.getElementById(key).checked = JSON.parse(value);
+        let cb = document.getElementById(key);
+        if(cb) {
+           document.getElementById(key).checked = JSON.parse(value);
+        }
+        else {
+          localStorage.setItem(key, value);
+        }
       } else if (key.startsWith("txt")) {
         document.getElementById(key).value = value;
       }
@@ -771,7 +777,7 @@ async function onCheer() {
 }
 
 async function onSub() {
-  targuments = arguments;
+  let targuments = arguments;
 
   //console.log();
   console.log("onSub:", targuments);
@@ -2967,12 +2973,13 @@ async function loadVoice(lvuserstate) {
     }
   } else {
     console.log("loadVoice(global) backend disabled: using Brian");
+    chatters[username] = {};
     chatters[username].voice = "justin";
     chatters[username].voice_option = "standard";
     chatters[username].ttsBanned = false;
     chatters[username].display_name = lvuserstate["display-name"];
     chatters[username].spoken_name = lvuserstate["display-name"];
-    chatters[username].color = lvuserstate.color;    
+    chatters[username].color = lvuserstate.color;
    }
 }
 
@@ -4035,7 +4042,8 @@ function AudioPlayer() {
   // Get a Cognito Identity ID
   await cognitoIdentity.getId(
     {
-      IdentityPoolId: "us-west-2:906a8430-e48a-4084-9513-dcf502e5e58a",
+      IdentityPoolId: "us-east-1:e9babc40-c043-4729-91be-de6c1d22b919",
+      //IdentityPoolId: "us-west-2:906a8430-e48a-4084-9513-dcf502e5e58a",
       //IdentityPoolId: "us-west-2:74292e8b-5888-4e9c-930d-a6379a9a4398",
     },
     async (err, data) => {
@@ -4046,7 +4054,8 @@ function AudioPlayer() {
 
       // Configure the Identity Pool ID and the Identity ID
       AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-        IdentityPoolId: "us-west-2:906a8430-e48a-4084-9513-dcf502e5e58a",
+        IdentityPoolId: "us-east-1:e9babc40-c043-4729-91be-de6c1d22b919",
+        //IdentityPoolId: "us-west-2:906a8430-e48a-4084-9513-dcf502e5e58a",
         //IdentityPoolId: "us-west-2:74292e8b-5888-4e9c-930d-a6379a9a4398",
         IdentityId: data.IdentityId,
       });
@@ -4056,7 +4065,7 @@ function AudioPlayer() {
         if (error) {
           console.error("Error getting credentials", error);
         } else {
-          let ep = new AWS.Endpoint("translate.us-west-2.amazonaws.com");
+          let ep = new AWS.Endpoint("translate.us-east-1.amazonaws.com");
           window.translator = new AWS.Translate({
             endpoint: ep,
             region: AWS.config.region,
@@ -4309,12 +4318,12 @@ async function finishSetup() {
     document.getElementById("chatLangSelect").value =
       document.getElementById("dstLangSelect").value;
   }
-
+/*
   if (localStorage.getItem("systemLangSelect")) {
     document.getElementById("systemLangSelect").value =
       localStorage.getItem("systemLangSelect");
   }
-
+*/
   if (localStorage.getItem("stsLangSelect")) {
     document.getElementById("stsLangSelect").value =
       localStorage.getItem("stsLangSelect");

@@ -1,4 +1,4 @@
-var supportedLanguagesTranslated = {
+var supportedLanguages = {
 "en": "English",
 "zh": "中文 (Chinese)",
 "zh-TW": "繁體中文 (Chinese Traditional)",

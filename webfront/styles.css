@@ -141,6 +141,17 @@ table td {
   overflow-wrap: anywhere;
 }
 
+.sts-options-wrapper {
+  border: 2px solid #8d8d8d; /* Change the color and size as needed */
+  padding: 10px;
+  margin: 10px;
+}
+.sts-options-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
 .settings-toggle {
   cursor: pointer;
   font-size: 24px;
@@ -152,6 +163,8 @@ table td {
   border: 1px solid #333;
   border-radius: 5px;
 }
+
+
 
 .chat-bubble {
   justify-content: space-between;
