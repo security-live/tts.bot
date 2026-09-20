@@ -78,6 +78,7 @@ interface SettingsState {
   cbSTS: boolean;
   cbSendSpeechTranslation: boolean;
   cbVoiceRecognition: boolean;
+  vrActive: boolean;
   cbPoofMessage: boolean;
   txtPoofRegex: string;
   cbBanHammer: boolean;
@@ -228,6 +229,7 @@ export const useSettingsStore = create<SettingsState>()(
       cbSTS: false,
       cbSendSpeechTranslation: false,
       cbVoiceRecognition: false,
+      vrActive: false,
       cbPoofMessage: false,
       txtPoofRegex: 'poof|pop|skip',
       cbBanHammer: false,

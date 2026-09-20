@@ -54,7 +54,6 @@ export default function StreamerDashboard() {
   const [twitchUserId, setTwitchUserId] = useState('');
   const [channelInput, setChannelInput] = useState(channel);
   const [sendMessage, setSendMessage] = useState('');
-  const [vrActive, setVrActive] = useState(false);
   const [streamerSpeaking, setStreamerSpeaking] = useState(false);
 
   const messageIdRef = useRef({ current: 0 });
@@ -432,7 +431,7 @@ export default function StreamerDashboard() {
   // ── Voice Recognition ─────────────────────────────────────────────────────
 
   useVoiceRecognition({
-    enabled: connected && vrActive,
+    enabled: connected && settings.vrActive,
     lang: voiceStore.dstLangSelect,
     stsEnabled: settings.cbSTS,
     stsLang: voiceStore.stsLang,
@@ -690,9 +689,9 @@ export default function StreamerDashboard() {
           </button>
           {connected && (settings.cbVoiceRecognition || settings.cbPauseTTSOnSpeech) && (
             <button
-              className={`btn btn-sm ${vrActive ? 'btn-danger' : 'btn-outline-secondary'}`}
-              onClick={() => setVrActive((v) => !v)}
-              title={vrActive ? 'Stop Voice Recognition' : 'Start Voice Recognition'}
+              className={`btn btn-sm ${settings.vrActive ? 'btn-danger' : 'btn-outline-secondary'}`}
+              onClick={() => settings.setSetting('vrActive', !settings.vrActive)}
+              title={settings.vrActive ? 'Stop Voice Recognition' : 'Start Voice Recognition'}
             >
               <i className="fa fa-microphone" />
             </button>

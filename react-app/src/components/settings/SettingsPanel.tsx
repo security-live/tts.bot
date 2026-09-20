@@ -10,6 +10,17 @@ interface SettingsPanelProps {
 
 type Tab = 'general' | 'voices' | 'translation' | 'filters' | 'appearance' | 'websocket' | 'cct' | 'vr';
 
+const TAB_LABELS: Record<Tab, string> = {
+  general: 'General',
+  voices: 'Voices',
+  translation: 'Translation',
+  filters: 'Filters',
+  appearance: 'Appearance',
+  websocket: 'WebSocket',
+  vr: 'Voice Recognition',
+  cct: 'Closed Captions/Translation',
+};
+
 export function SettingsPanel({ channel, onClose }: SettingsPanelProps) {
   const [tab, setTab] = useState<Tab>('general');
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'loading' | 'ok' | 'err'>('idle');
@@ -98,7 +109,7 @@ export function SettingsPanel({ channel, onClose }: SettingsPanelProps) {
               className={`nav-link py-1 px-2 small ${tab === t ? 'active' : 'text-white'}`}
               onClick={() => setTab(t)}
             >
-              {t.charAt(0).toUpperCase() + t.slice(1)}
+              {TAB_LABELS[t]}
             </button>
           </li>
         ))}
